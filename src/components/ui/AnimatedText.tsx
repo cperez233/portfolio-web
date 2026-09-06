@@ -16,7 +16,11 @@ interface AnimatedTextProps {
 }
 
 /**
- * Revelado caracter a caracter dirigido por el scroll (opacidad 0.2 -> 1).
+ * Revelado caracter a caracter dirigido por el scroll (opacidad 0.35 -> 1).
+ *
+ * El offset llega hasta `end 0.6` para que el recorrido termine mientras
+ * el bloque sigue en pantalla: con un offset mas corto las ultimas
+ * letras se quedaban apagadas y el texto no llegaba a leerse entero.
  *
  * Se parte en palabras antes que en caracteres: si cada letra fuese un
  * span suelto, el navegador podria romper la linea dentro de una palabra.
@@ -28,7 +32,7 @@ export function AnimatedText({ text, className }: AnimatedTextProps) {
 
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start 0.9", "start 0.25"],
+    offset: ["start 0.9", "end 0.6"],
   });
 
   const words = text.split(" ");
@@ -86,6 +90,6 @@ interface CharacterProps {
 }
 
 function Character({ children, progress, range }: CharacterProps) {
-  const opacity = useTransform(progress, range, [0.2, 1]);
+  const opacity = useTransform(progress, range, [0.35, 1]);
   return <motion.span style={{ opacity }}>{children}</motion.span>;
 }

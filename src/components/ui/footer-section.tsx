@@ -2,26 +2,20 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { footerGroups, site, socialLinks } from "@/data/site";
+import { footerGroups, site } from "@/data/site";
 
 /**
  * Import desde `framer-motion`, no desde `motion/react`: este proyecto
  * tiene instalada framer-motion 13 y anadir el paquete `motion`
- * duplicaria la misma libreria.
+ * embarcaria la misma libreria dos veces.
  */
 export default function Footer() {
   const shouldReduceMotion = useReducedMotion();
 
-  const reveal = {
-    initial: shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, amount: 0.2 },
-  };
-
   return (
     <footer
       id="contact"
-      className="relative overflow-x-clip border-t border-line bg-canvas px-5 pb-10 pt-20 sm:px-8 md:px-10"
+      className="relative overflow-x-clip border-t border-line bg-canvas px-5 pb-10 pt-20 transition-colors duration-300 sm:px-8 md:px-10"
     >
       <div
         aria-hidden="true"
@@ -30,12 +24,16 @@ export default function Footer() {
 
       <div className="relative mx-auto w-full max-w-6xl">
         <motion.div
-          {...reveal}
+          initial={
+            shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }
+          }
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col gap-10 border-b border-line pb-14 lg:flex-row lg:justify-between"
+          className="flex flex-col gap-12 border-b border-line pb-14 lg:flex-row lg:justify-between lg:gap-16"
         >
-          <div className="max-w-sm">
-            <p className="font-mono text-xs uppercase tracking-[0.28em] text-accent">
+          <div className="max-w-sm shrink-0">
+            <p className="font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
               [ Contact ]
             </p>
             <p className="mt-5 text-2xl font-medium tracking-tight text-ink sm:text-3xl">
@@ -45,14 +43,15 @@ export default function Footer() {
               href={site.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-6 text-sm font-medium text-canvas transition-transform duration-200 ease-[var(--ease-premium)] hover:scale-[1.03] active:scale-[0.98]"
+              className="accent-fill mt-7 inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-medium transition-transform duration-200 ease-[var(--ease-premium)] hover:scale-[1.03] active:scale-[0.98]"
             >
               Start a conversation
               <ArrowUpRight className="size-4" aria-hidden="true" />
             </a>
           </div>
 
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
+          {/* Cuatro columnas: navegacion, profesional, comunidad, contacto */}
+          <div className="grid flex-1 grid-cols-2 gap-8 sm:grid-cols-4 lg:max-w-3xl">
             {footerGroups.map((group) => (
               <nav key={group.title} aria-label={group.title}>
                 <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
@@ -66,33 +65,21 @@ export default function Footer() {
                         {...(link.external
                           ? { target: "_blank", rel: "noopener noreferrer" }
                           : {})}
-                        className="inline-flex min-h-11 items-center text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
+                        className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted transition-colors duration-200 hover:text-accent-ink"
                       >
                         {link.label}
+                        {link.external ? (
+                          <ArrowUpRight
+                            className="size-3 opacity-60"
+                            aria-hidden="true"
+                          />
+                        ) : null}
                       </a>
                     </li>
                   ))}
                 </ul>
               </nav>
             ))}
-
-            <nav aria-label="Socials">
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
-                Socials
-              </p>
-              <ul className="mt-4 space-y-1">
-                {socialLinks.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="inline-flex min-h-11 items-center text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </div>
         </motion.div>
 

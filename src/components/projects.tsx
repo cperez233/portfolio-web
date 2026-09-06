@@ -30,10 +30,10 @@ export function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="overflow-x-clip bg-canvas px-5 pb-24 pt-24 sm:px-8 md:px-10"
+      className="overflow-x-clip bg-canvas px-5 transition-colors duration-300 pb-24 pt-24 sm:px-8 md:px-10"
     >
       <div className="mx-auto mb-14 w-full max-w-6xl">
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">
+        <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
           [ 03 ]
         </p>
         <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -79,7 +79,7 @@ function ProjectCard({
     <article className="flex h-full w-full flex-col gap-6 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-4 sm:gap-6">
-          <p className="shrink-0 font-mono text-sm text-accent">
+          <p className="shrink-0 font-mono text-sm text-accent-ink">
             {project.number}
           </p>
 
@@ -101,7 +101,7 @@ function ProjectCard({
           href={site.whatsapp}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
         >
           Discuss this
           <ArrowUpRight className="size-4" aria-hidden="true" />
@@ -141,11 +141,12 @@ function ProjectCard({
   );
 }
 
+/* Familia vino derivada de #652a31. */
 const tones: Record<ProjectShowcase["tone"], string> = {
-  lime: "from-[#c3e41d]/25 via-[#1b2005] to-[#101010]",
-  violet: "from-[#7621b0]/40 via-[#200a29] to-[#101010]",
-  amber: "from-[#be4c00]/35 via-[#241408] to-[#101010]",
-  slate: "from-[#646973]/40 via-[#1e2126] to-[#101010]",
+  wine: "from-[#8c3b45] via-[#4a1f24] to-[#1a0f11]",
+  plum: "from-[#7a3550] via-[#3f1c2b] to-[#170e13]",
+  clay: "from-[#9a4a3a] via-[#4e241d] to-[#1a1010]",
+  slate: "from-[#5c5054] via-[#2e2729] to-[#151315]",
 };
 
 /**

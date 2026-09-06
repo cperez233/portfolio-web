@@ -60,7 +60,7 @@ export default function InteractiveVideoScroller() {
   const active = menuItems[activeIndex] ?? menuItems[0];
 
   return (
-    <section id="services" className="overflow-x-clip bg-surface">
+    <section id="services" className="overflow-x-clip bg-surface transition-colors duration-300">
       <div
         ref={containerRef}
         style={{ height: `${total * 100}svh` }}
@@ -70,7 +70,7 @@ export default function InteractiveVideoScroller() {
           <div className="mx-auto w-full max-w-6xl">
             <div className="mb-8 flex items-end justify-between gap-4 sm:mb-12">
               <div>
-                <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">
+                <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
                   [ 02 ]
                 </p>
                 <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -85,7 +85,7 @@ export default function InteractiveVideoScroller() {
 
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
               {/* Panel de medios */}
-              <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-2xl border border-neutral-800 bg-surface-2 lg:order-2 lg:aspect-[5/4]">
+              <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface-2 lg:order-2 lg:aspect-[5/4]">
                 <MediaPanel item={active} isMuted={isMuted} />
 
                 {hasVideo ? (
@@ -93,7 +93,7 @@ export default function InteractiveVideoScroller() {
                     type="button"
                     onClick={() => setIsMuted((value) => !value)}
                     aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    className="absolute bottom-4 right-4 inline-flex size-11 items-center justify-center rounded-full border border-neutral-700 bg-black/60 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent"
+                    className="absolute bottom-4 right-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
                   >
                     {isMuted ? (
                       <VolumeX className="size-4" />
@@ -116,15 +116,15 @@ export default function InteractiveVideoScroller() {
                         onClick={() => goToIndex(index)}
                         aria-current={isActive ? "true" : undefined}
                         className={cn(
-                          "flex w-full items-baseline gap-4 border-t border-neutral-800 py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6 sm:py-5",
+                          "flex w-full items-baseline gap-4 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6 sm:py-5",
                           index === menuItems.length - 1 &&
-                            "border-b border-neutral-800",
+                            "border-b border-line",
                         )}
                       >
                         <span
                           className={cn(
                             "shrink-0 font-mono text-xs transition-colors duration-300",
-                            isActive ? "text-accent" : "text-ink-subtle",
+                            isActive ? "text-accent-ink" : "text-ink-subtle",
                           )}
                         >
                           {item.number}
@@ -144,7 +144,7 @@ export default function InteractiveVideoScroller() {
                           <span
                             className={cn(
                               "mt-1 block font-mono text-[11px] uppercase tracking-wider transition-colors duration-300",
-                              isActive ? "text-accent" : "text-ink-subtle/60",
+                              isActive ? "text-accent-ink" : "text-ink-subtle/60",
                             )}
                           >
                             {item.location}
@@ -163,12 +163,13 @@ export default function InteractiveVideoScroller() {
   );
 }
 
+/* Familia vino derivada de #652a31, en vez de los tonos sueltos previos. */
 const tones: Record<ServiceItem["tone"], string> = {
-  lime: "from-[#c3e41d]/25 via-[#1b2005] to-[#0c0c0c]",
-  violet: "from-[#7621b0]/30 via-[#1a0a22] to-[#0c0c0c]",
-  teal: "from-[#0d9488]/30 via-[#06201d] to-[#0c0c0c]",
-  amber: "from-[#be4c00]/30 via-[#21120a] to-[#0c0c0c]",
-  slate: "from-[#646973]/30 via-[#16181c] to-[#0c0c0c]",
+  wine: "from-[#8c3b45] via-[#4a1f24] to-[#1a0f11]",
+  plum: "from-[#7a3550] via-[#3f1c2b] to-[#170e13]",
+  clay: "from-[#9a4a3a] via-[#4e241d] to-[#1a1010]",
+  slate: "from-[#5c5054] via-[#2e2729] to-[#151315]",
+  ink: "from-[#4a3238] via-[#28191d] to-[#130d0f]",
 };
 
 /**
@@ -203,7 +204,7 @@ function MediaPanel({
         tones[item.tone],
       )}
     >
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
+      <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
         {item.location}
       </p>
       <p className="mt-2 text-xl italic text-ink/80 sm:text-2xl">

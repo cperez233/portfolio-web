@@ -23,12 +23,12 @@ export interface ServiceItem {
   number: string;
   /** Video de fondo. Sin fuente todavia: cae al poster degradado. */
   video?: string;
-  tone: "lime" | "violet" | "amber" | "slate" | "teal";
+  tone: "wine" | "plum" | "clay" | "slate" | "ink";
 }
 
 export interface ProjectShowcase {
   label: string;
-  tone: "lime" | "violet" | "amber" | "slate";
+  tone: "wine" | "plum" | "clay" | "slate";
 }
 
 export interface Project {
@@ -72,33 +72,61 @@ export const hero = {
   secondaryCta: { label: "Explore Projects & Work", href: "#projects" },
 } as const;
 
-export const aboutText =
-  "My foundation is software engineering: I handle end-to-end full-stack projects, designing solid relational schemas, clean APIs, and responsive frontends. I don't anchor myself to a single tool: while I have deep experience with Laravel and React, I adapt to whatever stack best fits the problem (JS/TS ecosystems, Python, containerized Docker setups). Additionally, my cybersecurity internship at FCV ingrained in me the habit of auditing data flows and keeping security top-of-mind. Beyond code, I produce organic content and live stream (criscx1905 / Tostu), turning complex technical architectures into clear, relatable stories.";
+export interface AboutBlock {
+  eyebrow: string;
+  title: string;
+  body: string;
+}
+
+export const aboutBlocks: AboutBlock[] = [
+  {
+    eyebrow: "01",
+    title: "Engineering & Systems",
+    body: "My foundation is software engineering: I handle end-to-end full-stack projects, designing solid relational schemas, clean APIs, and responsive frontends (Laravel, React, Node, Docker). My cybersecurity background at FCV ingrained the discipline of auditing data flows, validating input integrity, and keeping security top-of-mind from day one.",
+  },
+  {
+    eyebrow: "02",
+    title: "Communication & Video",
+    body: "Beyond code, I produce organic content and live stream (criscx1905 / Tostu) on TikTok, Instagram, and Twitch, running the entire production pipeline. This allows me to explain complex technical architectures in clear, human, jargon-free terms.",
+  },
+];
+
+export interface Highlight {
+  label: string;
+  detail: string;
+}
+
+export const aboutHighlights: Highlight[] = [
+  { label: "Full-Stack Focus", detail: "Laravel / React / Node / Docker" },
+  { label: "Security Mindset", detail: "Data flow auditing, input integrity" },
+  { label: "Content & Streaming", detail: "TikTok / Instagram / Twitch" },
+  { label: "Bucaramanga, Colombia", detail: "Remote / Worldwide" },
+];
 
 export const menuItems: ServiceItem[] = [
   {
     name: "Full-Stack Web Development",
     location: "LARAVEL / REACT / DOCKER",
     number: "01",
-    tone: "lime",
+    tone: "wine",
   },
   {
     name: "Workflow Automation",
     location: "N8N / PYTHON / WEBHOOKS",
     number: "02",
-    tone: "violet",
+    tone: "plum",
   },
   {
     name: "AI & Document Extraction",
     location: "LANGCHAIN / CLAUDE / AZURE",
     number: "03",
-    tone: "teal",
+    tone: "ink",
   },
   {
     name: "Audiovisual & Live Content",
     location: "TIKTOK / TWITCH / EDITING",
     number: "04",
-    tone: "amber",
+    tone: "clay",
   },
   {
     name: "Secure Systems & APIs",
@@ -116,9 +144,9 @@ export const projects: Project[] = [
     tagline: "Collaborative Environment Powered by AI",
     stack: "Laravel, React, WebSockets, Claude API, Docker",
     showcase: [
-      { label: "Realtime session", tone: "violet" },
+      { label: "Realtime session", tone: "plum" },
       { label: "AI pair review", tone: "slate" },
-      { label: "Workspace", tone: "violet" },
+      { label: "Workspace", tone: "plum" },
     ],
   },
   {
@@ -128,9 +156,9 @@ export const projects: Project[] = [
     tagline: "FCV Internship",
     stack: "Python, Azure Document Intelligence, OCR",
     showcase: [
-      { label: "Ingest pipeline", tone: "amber" },
+      { label: "Ingest pipeline", tone: "clay" },
       { label: "Field mapping", tone: "slate" },
-      { label: "Validation run", tone: "amber" },
+      { label: "Validation run", tone: "clay" },
     ],
   },
   {
@@ -140,9 +168,9 @@ export const projects: Project[] = [
     tagline: "Tostu / criscx1905",
     stack: "TikTok, Instagram, Twitch community",
     showcase: [
-      { label: "Vertical edit", tone: "lime" },
+      { label: "Vertical edit", tone: "wine" },
       { label: "Live set", tone: "slate" },
-      { label: "Community", tone: "lime" },
+      { label: "Community", tone: "wine" },
     ],
   },
 ];
@@ -163,28 +191,47 @@ export const footerGroups: FooterLinkGroup[] = [
     ],
   },
   {
+    title: "Professional",
+    links: [
+      {
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/in/cristianperez879m/",
+        external: true,
+      },
+      {
+        label: "GitHub",
+        href: "https://github.com/cperez233",
+        external: true,
+      },
+    ],
+  },
+  {
+    title: "Content & Community",
+    links: [
+      { label: "Linktree", href: "https://linktr.ee/crxscx", external: true },
+      {
+        label: "TikTok",
+        href: "https://www.tiktok.com/@criscx1905",
+        external: true,
+      },
+      {
+        label: "Instagram",
+        href: "https://www.instagram.com/criscx1905/",
+        external: true,
+      },
+    ],
+  },
+  {
     title: "Direct Contact",
     links: [
       {
         label: "WhatsApp",
-        href: "https://wa.me/573052669219",
+        href: "https://wa.me/573052669219?text=Hi%20Cristian,%20I%20saw%20your%20portfolio",
         external: true,
       },
       { label: "Email", href: "mailto:crisperezm879@gmail.com" },
     ],
   },
-];
-
-/**
- * Perfiles sociales. Los href son marcadores: sustituir por las URLs
- * reales de cada perfil antes de publicar.
- */
-export const socialLinks: { label: string; href: string }[] = [
-  { label: "LinkedIn", href: "#" },
-  { label: "GitHub", href: "#" },
-  { label: "Twitch", href: "#" },
-  { label: "TikTok", href: "#" },
-  { label: "Instagram", href: "#" },
 ];
 
 /** Marquee fila 1. Assets alojados por motionsites.ai (terceros). */

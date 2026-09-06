@@ -36,9 +36,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // `dark` se sirve desde el servidor: si lo anadiera un efecto en
+    // cliente, la primera pintura seria clara y habria destello.
     <html
       lang="en"
-      className={`${geistSans.variable} ${firaCode.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${firaCode.variable} h-full antialiased`}
     >
       {/* overflow-x-clip en la raiz, no overflow-hidden: clip no crea un
           contenedor de scroll, asi que el sticky de las secciones sigue
