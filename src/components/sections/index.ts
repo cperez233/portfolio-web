@@ -1,3 +1,5 @@
-export { CallToAction } from "./CallToAction";
-export { Hero } from "./Hero";
-export { Process } from "./Process";
+export { About } from "./About";
+export { HeroHybrid } from "./HeroHybrid";
+export { MarqueeShowcase } from "./MarqueeShowcase";
+export { Projects } from "./Projects";
+export { Services } from "./Services";

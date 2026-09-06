@@ -7,7 +7,7 @@
 ------------------------------------------------------------------ */
 @theme {
   /* Superficies por elevacion (~3-5% de luminancia entre capas) */
-  --color-canvas: #09090b;
+  --color-canvas: #0c0c0c;
   --color-surface: #111113;
   --color-surface-2: #18181b;
   --color-surface-3: #1f1f23;
@@ -27,7 +27,8 @@
   --color-line-strong: rgba(255, 255, 255, 0.1);
 
   /* Tipografia */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Escala fluida - directriz 6: el cuerpo nunca baja de 16px */
@@ -102,5 +103,26 @@
       var(--color-line-strong),
       transparent
     );
+  }
+}
+
+@layer components {
+  /* Gradiente de titulares monumentales. El fallback de color importa:
+     si el navegador no soporta background-clip:text, el texto seguiria
+     siendo invisible con -webkit-text-fill-color transparente. */
+  .hero-heading {
+    background: linear-gradient(180deg, #646973 0%, #bbccd7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #bbccd7;
+  }
+
+  @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .hero-heading {
+      background: none;
+      -webkit-text-fill-color: currentColor;
+      color: #bbccd7;
+    }
   }
 }

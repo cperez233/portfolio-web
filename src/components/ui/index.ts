@@ -1,6 +1,11 @@
+export { AnimatedText } from "./AnimatedText";
 export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Container } from "./Container";
+export { ContactButton } from "./ContactButton";
+export { FadeIn } from "./FadeIn";
 export { LayeredStack } from "./LayeredStack";
+export { LiveProjectButton } from "./LiveProjectButton";
+export { Magnet } from "./Magnet";
 export { Reveal } from "./Reveal";
 export { Section } from "./Section";
