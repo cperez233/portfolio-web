@@ -1,47 +1,45 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   Directriz 1 - Brand: oscuro premium.
-   Todos los colores del sitio salen de aqui. Ningun componente
-   hardcodea un hex: si un color no esta en este bloque, no existe.
+   Tokens del sitio. Ningun componente hardcodea un hex que no salga
+   de aqui, salvo los gradientes de marca puntuales.
 ------------------------------------------------------------------ */
 @theme {
-  /* Superficies por elevacion (~3-5% de luminancia entre capas) */
-  --color-canvas: #0c0c0c;
-  --color-surface: #111113;
-  --color-surface-2: #18181b;
-  --color-surface-3: #1f1f23;
+  /* Superficies por elevacion */
+  --color-canvas: #09090b;
+  --color-surface: #0c0c0c;
+  --color-surface-2: #141414;
+  --color-surface-3: #1c1c1f;
 
   /* Texto */
   --color-ink: #fafafa;
   --color-ink-muted: #a1a1aa;
   --color-ink-subtle: #71717a;
 
-  /* Acento unico. Cambiar estas tres lineas repinta todo el sitio. */
-  --color-accent: #e6b980;
-  --color-accent-strong: #f2d0a4;
-  --color-accent-dim: rgba(230, 185, 128, 0.1);
+  /* Acento unico: verde lima, usado con avaricia */
+  --color-accent: #c3e41d;
+  --color-accent-strong: #d4f03a;
+  --color-accent-dim: rgba(195, 228, 29, 0.1);
 
-  /* Bordes: contraste sutil, nunca gris plano */
+  /* Bordes neutros tenues */
   --color-line: rgba(255, 255, 255, 0.06);
-  --color-line-strong: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.12);
 
-  /* Tipografia */
-  --font-sans: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* Tipografia: grotesca sobria para lectura, mono para tags y marcas */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-fira-code), ui-monospace, monospace;
 
-  /* Escala fluida - directriz 6: el cuerpo nunca baja de 16px */
-  --text-display: clamp(2.75rem, 1.2rem + 6.4vw, 5.75rem);
-  --text-display--line-height: 0.96;
-  --text-display--letter-spacing: -0.035em;
-  --text-h2: clamp(2rem, 1.2rem + 3.2vw, 3.5rem);
-  --text-h2--line-height: 1.05;
-  --text-h2--letter-spacing: -0.025em;
-  --text-lead: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem);
-  --text-lead--line-height: 1.6;
+  /* Escala fluida. El cuerpo nunca baja de 16px. */
+  --text-display: clamp(3rem, 1rem + 9vw, 9rem);
+  --text-display--line-height: 0.86;
+  --text-display--letter-spacing: -0.04em;
+  --text-section: clamp(2.5rem, 1rem + 7vw, 7rem);
+  --text-section--line-height: 0.92;
+  --text-section--letter-spacing: -0.035em;
+  --text-lead: clamp(1rem, 0.95rem + 0.35vw, 1.1875rem);
+  --text-lead--line-height: 1.65;
 
-  /* Movimiento - directriz 4: 150-250ms con easing suave */
+  /* Movimiento */
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -62,14 +60,13 @@
     color: var(--color-canvas);
   }
 
-  /* Directriz 7: foco visible en todo elemento interactivo */
+  /* Foco visible en todo elemento interactivo */
   :focus-visible {
     outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline-offset: 3px;
     border-radius: 2px;
   }
 
-  /* Directriz 3 y 6: si el usuario pide menos movimiento, se lo damos */
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
@@ -86,17 +83,8 @@
 }
 
 @layer components {
-  /* Glow radial muy tenue. Decorativo: siempre aria-hidden y pointer-events-none. */
-  .glow-accent {
-    background-image: radial-gradient(
-      closest-side,
-      var(--color-accent-dim),
-      transparent
-    );
-  }
-
-  /* Borde de 1px con gradiente - detalle premium de la directriz 1 */
-  .hairline-top {
+  /* Linea de 1px con gradiente: separador casi invisible. */
+  .hairline {
     background-image: linear-gradient(
       to right,
       transparent,
@@ -104,25 +92,13 @@
       transparent
     );
   }
-}
 
-@layer components {
-  /* Gradiente de titulares monumentales. El fallback de color importa:
-     si el navegador no soporta background-clip:text, el texto seguiria
-     siendo invisible con -webkit-text-fill-color transparente. */
-  .hero-heading {
-    background: linear-gradient(180deg, #646973 0%, #bbccd7 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: #bbccd7;
-  }
-
-  @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-    .hero-heading {
-      background: none;
-      -webkit-text-fill-color: currentColor;
-      color: #bbccd7;
-    }
+  /* Glow radial muy tenue. Siempre decorativo y pointer-events-none. */
+  .glow-accent {
+    background-image: radial-gradient(
+      closest-side,
+      var(--color-accent-dim),
+      transparent
+    );
   }
 }

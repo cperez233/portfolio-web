@@ -1,5 +1,5 @@
 /**
- * Directriz 5: el contenido vive en datos tipados, nunca incrustado en el JSX.
+ * El contenido vive aqui como datos tipados, nunca incrustado en el JSX.
  */
 
 export interface NavLink {
@@ -13,19 +13,22 @@ export interface SiteMeta {
   email: string;
   location: string;
   whatsapp: string;
+  whatsappPlain: string;
 }
 
-export interface Service {
-  number: string;
+export interface ServiceItem {
   name: string;
-  description: string;
-  stack: string;
+  /** Stack, mostrado como subtitulo en mayusculas. */
+  location: string;
+  number: string;
+  /** Video de fondo. Sin fuente todavia: cae al poster degradado. */
+  video?: string;
+  tone: "lime" | "violet" | "amber" | "slate" | "teal";
 }
 
 export interface ProjectShowcase {
-  /** Etiqueta del tile de muestra. Sustituir por capturas reales. */
   label: string;
-  tone: "violet" | "amber" | "slate";
+  tone: "lime" | "violet" | "amber" | "slate";
 }
 
 export interface Project {
@@ -33,65 +36,75 @@ export interface Project {
   category: string;
   name: string;
   tagline: string;
-  cta: { label: string; href: string };
+  stack: string;
   showcase: [ProjectShowcase, ProjectShowcase, ProjectShowcase];
 }
 
 export const site: SiteMeta = {
   name: "Cristian Perez",
-  role: "Full-stack software engineer & creator",
-  email: "cperez233@unab.edu.co",
-  location: "Colombia - Remote / Worldwide",
+  role: "Full-stack engineer, automation & content",
+  email: "crisperezm879@gmail.com",
+  location: "Bucaramanga, Colombia",
   whatsapp:
     "https://wa.me/573052669219?text=Hi%20Cristian,%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project",
+  whatsappPlain: "https://wa.me/573052669219",
 };
 
 export const navLinks: NavLink[] = [
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Projects", href: "#projects" },
-  { label: "Contact", href: "#contact" },
+  { label: "HOME", href: "#" },
+  { label: "ABOUT", href: "#about" },
+  { label: "SERVICES", href: "#services" },
+  { label: "PROJECTS", href: "#projects" },
+  { label: "CONTACT", href: "#contact" },
 ];
 
 export const hero = {
-  /** Dos lineas: en una sola, 14 caracteres a 13vw desbordan el ancho. */
-  headingLines: ["CRISTIAN", "PÉREZ"] as const,
-  badge: "Available for Projects",
-  statement:
-    "Full-stack software engineer & creator building high-performance architectures, smart automation (n8n/AI), and organic content.",
+  firstName: "CRISTIAN",
+  lastName: "PÉREZ",
+  tagline:
+    "Full-stack software engineering, smart automation, and digital communication that connects.",
+  description:
+    "I build complete web applications tailored to each project's stack (Laravel, React, Node), automate operational workflows with n8n, Python, and AI, and produce organic video content from script to screen.",
+  badges: {
+    availability: "Available for Projects & Roles",
+    location: "Remote / Bucaramanga, Colombia",
+  },
+  secondaryCta: { label: "Explore Projects & Work", href: "#projects" },
 } as const;
 
 export const aboutText =
-  "My foundation is software engineering: I handle end-to-end full-stack projects, designing solid relational schemas, clean APIs, and responsive frontends (Laravel, React, Node, Docker). My cybersecurity background at FCV ingrained the discipline of auditing data flows, validating input integrity, and keeping security top-of-mind. Beyond code, I produce organic content and live stream (criscx1905 / Tostu), translating complex technical architectures into clear, relatable stories for clients and communities.";
+  "My foundation is software engineering: I handle end-to-end full-stack projects, designing solid relational schemas, clean APIs, and responsive frontends. I don't anchor myself to a single tool: while I have deep experience with Laravel and React, I adapt to whatever stack best fits the problem (JS/TS ecosystems, Python, containerized Docker setups). Additionally, my cybersecurity internship at FCV ingrained in me the habit of auditing data flows and keeping security top-of-mind. Beyond code, I produce organic content and live stream (criscx1905 / Tostu), turning complex technical architectures into clear, relatable stories.";
 
-export const services: Service[] = [
+export const menuItems: ServiceItem[] = [
   {
+    name: "Full-Stack Web Development",
+    location: "LARAVEL / REACT / DOCKER",
     number: "01",
-    name: "Custom Full-Stack & Web Development",
-    description:
-      "End-to-end web apps: database design, robust backend business logic, internal dashboards, dynamic interfaces.",
-    stack: "Laravel, React, Node.js, PostgreSQL, Docker",
+    tone: "lime",
   },
   {
+    name: "Workflow Automation",
+    location: "N8N / PYTHON / WEBHOOKS",
     number: "02",
-    name: "Workflow Automation & Orchestration",
-    description:
-      "Automated pipelines connecting third-party tools and databases to cut manual tasks.",
-    stack: "n8n, Python, Webhooks, RESTful APIs",
+    tone: "violet",
   },
   {
+    name: "AI & Document Extraction",
+    location: "LANGCHAIN / CLAUDE / AZURE",
     number: "03",
-    name: "AI Integration & Document Processing",
-    description:
-      "Language model workflows and practical extraction pipelines (OCR, data parsing, semantic queries).",
-    stack: "LangChain, Claude API, Azure Doc Intelligence, Python",
+    tone: "teal",
   },
   {
+    name: "Audiovisual & Live Content",
+    location: "TIKTOK / TWITCH / EDITING",
     number: "04",
-    name: "Audiovisual Production, Scripting & Video",
-    description:
-      "Turnkey video production for social platforms: concept development, scripting, presenting on camera, fast-paced vertical editing.",
-    stack: "TikTok, Instagram, Twitch",
+    tone: "amber",
+  },
+  {
+    name: "Secure Systems & APIs",
+    location: "AUDITING / INTEGRITY / DB",
+    number: "05",
+    tone: "slate",
   },
 ];
 
@@ -101,7 +114,7 @@ export const projects: Project[] = [
     category: "Full-Stack + AI",
     name: "PairSync",
     tagline: "Collaborative Environment Powered by AI",
-    cta: { label: "Live Project", href: "#contact" },
+    stack: "Laravel, React, WebSockets, Claude API, Docker",
     showcase: [
       { label: "Realtime session", tone: "violet" },
       { label: "AI pair review", tone: "slate" },
@@ -112,8 +125,8 @@ export const projects: Project[] = [
     number: "02",
     category: "Automation & OCR",
     name: "Document Extraction Automation",
-    tagline: "FCV Internship - Python, Azure Document Intelligence",
-    cta: { label: "View Case", href: "#contact" },
+    tagline: "FCV Internship",
+    stack: "Python, Azure Document Intelligence, OCR",
     showcase: [
       { label: "Ingest pipeline", tone: "amber" },
       { label: "Field mapping", tone: "slate" },
@@ -124,14 +137,54 @@ export const projects: Project[] = [
     number: "03",
     category: "Content Creation",
     name: "Organic Content & Live Streaming",
-    tagline: "Tostu / criscx1905 - TikTok, Instagram, Twitch",
-    cta: { label: "View Case", href: "#contact" },
+    tagline: "Tostu / criscx1905",
+    stack: "TikTok, Instagram, Twitch community",
     showcase: [
-      { label: "Vertical edit", tone: "slate" },
-      { label: "Live set", tone: "violet" },
-      { label: "Community", tone: "slate" },
+      { label: "Vertical edit", tone: "lime" },
+      { label: "Live set", tone: "slate" },
+      { label: "Community", tone: "lime" },
     ],
   },
+];
+
+export interface FooterLinkGroup {
+  title: string;
+  links: { label: string; href: string; external?: boolean }[];
+}
+
+export const footerGroups: FooterLinkGroup[] = [
+  {
+    title: "Navigation",
+    links: [
+      { label: "Home", href: "#" },
+      { label: "About", href: "#about" },
+      { label: "Services", href: "#services" },
+      { label: "Projects", href: "#projects" },
+    ],
+  },
+  {
+    title: "Direct Contact",
+    links: [
+      {
+        label: "WhatsApp",
+        href: "https://wa.me/573052669219",
+        external: true,
+      },
+      { label: "Email", href: "mailto:crisperezm879@gmail.com" },
+    ],
+  },
+];
+
+/**
+ * Perfiles sociales. Los href son marcadores: sustituir por las URLs
+ * reales de cada perfil antes de publicar.
+ */
+export const socialLinks: { label: string; href: string }[] = [
+  { label: "LinkedIn", href: "#" },
+  { label: "GitHub", href: "#" },
+  { label: "Twitch", href: "#" },
+  { label: "TikTok", href: "#" },
+  { label: "Instagram", href: "#" },
 ];
 
 /** Marquee fila 1. Assets alojados por motionsites.ai (terceros). */
@@ -163,42 +216,7 @@ export const marqueeRowTwo: string[] = [
   "https://motionsites.ai/assets/hero-celestia-preview-0yO3jXO8.gif",
 ];
 
-const FIGMA_ASSETS =
-  "https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7";
-
-export interface FloatingAsset {
-  src: string;
-  alt: string;
-  className: string;
-}
-
-/** Assets 3D de las esquinas del about. Alojados por figma.site (terceros). */
-export const aboutAssets: FloatingAsset[] = [
-  {
-    src: `${FIGMA_ASSETS}/moon_icon.11395d36.png`,
-    alt: "",
-    className: "left-0 top-0 w-16 sm:w-24 md:w-32",
-  },
-  {
-    src: `${FIGMA_ASSETS}/p59_1.4659672e.png`,
-    alt: "",
-    className: "bottom-0 left-0 w-16 sm:w-24 md:w-32",
-  },
-  {
-    src: `${FIGMA_ASSETS}/lego_icon-1.703bb594.png`,
-    alt: "",
-    className: "right-0 top-0 w-16 sm:w-24 md:w-32",
-  },
-  {
-    src: `${FIGMA_ASSETS}/Group_134-1.2e04f3ce.png`,
-    alt: "",
-    className: "bottom-0 right-0 w-16 sm:w-24 md:w-32",
-  },
-];
-
-/** Retrato del hero: local, con fallback remoto de Figma. */
+/** Retrato del hero. */
 export const portrait = {
   local: "/perfil.png",
-  fallback:
-    "https://shrug-person-78902957.figma.site/_components/v2/d24c01ad3a56fc65e942a1f501eb73db42d7cf9a/Rectangle_40443.81459862.png",
 } as const;

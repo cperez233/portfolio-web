@@ -1,22 +1,22 @@
-import {
-  About,
-  HeroHybrid,
-  MarqueeShowcase,
-  Projects,
-  Services,
-} from "@/components/sections";
+import { AboutSection } from "@/components/about";
+import { MarqueeSection } from "@/components/marquee-section";
+import { ProjectsSection } from "@/components/projects";
+import Footer from "@/components/ui/footer-section";
+import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
+import PortfolioHero from "@/components/ui/portfolio-hero";
 
 /**
- * Directriz 5: la pagina solo compone secciones. Cero markup de detalle.
+ * La pagina solo compone secciones. Cero markup de detalle.
  */
 export default function Home() {
   return (
-    <main id="contenido" className="flex-1 overflow-x-clip">
-      <HeroHybrid />
-      <MarqueeShowcase />
-      <About />
-      <Services />
-      <Projects />
+    <main id="content" className="flex-1 overflow-x-clip">
+      <PortfolioHero />
+      <MarqueeSection />
+      <AboutSection />
+      <InteractiveVideoScroller />
+      <ProjectsSection />
+      <Footer />
     </main>
   );
 }

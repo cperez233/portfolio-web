@@ -6,13 +6,14 @@ import { useReducedMotion } from "framer-motion";
 import { marqueeRowOne, marqueeRowTwo } from "@/data/site";
 
 /**
- * Dos filas que se desplazan en sentidos opuestos segun la posicion
- * del scroll. Listener pasivo, y solo se toca transform.
+ * Dos filas que se desplazan en sentidos opuestos segun la posicion del
+ * scroll. Listener pasivo y solo se toca transform.
  *
  * Cada fila se recorta con overflow-x-clip: sin eso, las filas
- * trasladadas generarian scroll horizontal en toda la pagina.
+ * trasladadas medirian mas de 15.000px y arrastrarian scroll
+ * horizontal a toda la pagina.
  */
-export function MarqueeShowcase() {
+export function MarqueeSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState(200);
   const shouldReduceMotion = useReducedMotion();
@@ -25,9 +26,7 @@ export function MarqueeShowcase() {
       if (!element) return;
 
       const sectionTop = element.getBoundingClientRect().top + window.scrollY;
-      setOffset(
-        (window.scrollY - sectionTop + window.innerHeight) * 0.3,
-      );
+      setOffset((window.scrollY - sectionTop + window.innerHeight) * 0.3);
     };
 
     handleScroll();
@@ -41,7 +40,7 @@ export function MarqueeShowcase() {
     <section
       ref={sectionRef}
       aria-label="Motion showcase"
-      className="overflow-x-clip bg-[#0c0c0c] pb-10 pt-24 sm:pt-32 md:pt-40"
+      className="overflow-x-clip bg-canvas pb-10 pt-20 sm:pt-28 md:pt-32"
     >
       <MarqueeRow
         sources={[...marqueeRowOne, ...marqueeRowOne, ...marqueeRowOne]}
@@ -74,17 +73,17 @@ function MarqueeRow({ sources, translateX }: MarqueeRowProps) {
         {sources.map((src, index) => (
           <div
             key={`${src}-${index}`}
-            className="relative h-[270px] w-[420px] shrink-0 overflow-hidden rounded-2xl bg-white/5"
+            className="relative h-[210px] w-[330px] shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 sm:h-[270px] sm:w-[420px]"
           >
             <Image
               src={src}
               alt=""
               aria-hidden="true"
               fill
-              // GIF animado: optimizarlo lo congelaria en el primer frame.
+              // GIF animado: optimizarlo lo congela en el primer frame.
               unoptimized
               loading="lazy"
-              sizes="420px"
+              sizes="(min-width: 640px) 420px, 330px"
               className="object-cover"
             />
           </div>
