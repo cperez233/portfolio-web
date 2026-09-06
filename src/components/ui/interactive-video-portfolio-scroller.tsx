@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Volume2, VolumeX } from "lucide-react";
 import { menuItems, type ServiceItem } from "@/data/site";
+import { useLanguage } from "@/lib/language";
+import { FadeSwap } from "./FadeSwap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,6 +17,7 @@ import { cn } from "@/lib/utils";
  * intercepta, asi que el usuario siempre puede salir.
  */
 export default function InteractiveVideoScroller() {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
@@ -50,17 +54,20 @@ export default function InteractiveVideoScroller() {
       if (!element) return;
 
       const scrollable = element.offsetHeight - window.innerHeight;
-      const top =
-        element.offsetTop + (scrollable * (index + 0.5)) / total;
+      const top = element.offsetTop + (scrollable * (index + 0.5)) / total;
       window.scrollTo({ top });
     },
     [total],
   );
 
   const active = menuItems[activeIndex] ?? menuItems[0];
+  const activeName = t.services.items[activeIndex] ?? t.services.items[0];
 
   return (
-    <section id="services" className="overflow-x-clip bg-surface transition-colors duration-300">
+    <section
+      id="services"
+      className="overflow-x-clip bg-surface transition-colors duration-300"
+    >
       <div
         ref={containerRef}
         style={{ height: `${total * 100}svh` }}
@@ -69,24 +76,30 @@ export default function InteractiveVideoScroller() {
         <div className="sticky top-0 flex h-svh flex-col justify-center px-5 py-16 sm:px-8 md:px-10">
           <div className="mx-auto w-full max-w-6xl">
             <div className="mb-8 flex items-end justify-between gap-4 sm:mb-12">
-              <div>
+              <FadeSwap>
                 <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
-                  [ 02 ]
+                  {t.services.eyebrow}
                 </p>
                 <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
-                  Services
+                  {t.services.title}
                 </h2>
-              </div>
+              </FadeSwap>
 
               <p className="hidden font-mono text-xs uppercase tracking-wider text-ink-subtle sm:block">
-                {String(activeIndex + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+                {String(activeIndex + 1).padStart(2, "0")} /{" "}
+                {String(total).padStart(2, "0")}
               </p>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
               {/* Panel de medios */}
               <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface-2 lg:order-2 lg:aspect-[5/4]">
-                <MediaPanel item={active} isMuted={isMuted} />
+                <MediaPanel
+                  item={active}
+                  name={activeName}
+                  stack={active.location}
+                  isMuted={isMuted}
+                />
 
                 {hasVideo ? (
                   <button
@@ -139,12 +152,14 @@ export default function InteractiveVideoScroller() {
                                 : "text-ink-subtle",
                             )}
                           >
-                            {item.name}
+                            {t.services.items[index]}
                           </span>
                           <span
                             className={cn(
                               "mt-1 block font-mono text-[11px] uppercase tracking-wider transition-colors duration-300",
-                              isActive ? "text-accent-ink" : "text-ink-subtle/60",
+                              isActive
+                                ? "text-accent-ink"
+                                : "text-ink-subtle/60",
                             )}
                           >
                             {item.location}
@@ -163,24 +178,19 @@ export default function InteractiveVideoScroller() {
   );
 }
 
-/* Familia vino derivada de #652a31, en vez de los tonos sueltos previos. */
-const tones: Record<ServiceItem["tone"], string> = {
-  wine: "from-[#8c3b45] via-[#4a1f24] to-[#1a0f11]",
-  plum: "from-[#7a3550] via-[#3f1c2b] to-[#170e13]",
-  clay: "from-[#9a4a3a] via-[#4e241d] to-[#1a1010]",
-  slate: "from-[#5c5054] via-[#2e2729] to-[#151315]",
-  ink: "from-[#4a3238] via-[#28191d] to-[#130d0f]",
-};
-
 /**
- * Reproduce el video del servicio si existe. Mientras no haya fuentes,
- * cae a un poster degradado que ocupa exactamente el mismo hueco.
+ * Reproduce el video del servicio si existe; mientras no haya fuentes,
+ * muestra la miniatura tematica en el mismo hueco.
  */
 function MediaPanel({
   item,
+  name,
+  stack,
   isMuted,
 }: {
   item: ServiceItem;
+  name: string;
+  stack: string;
   isMuted: boolean;
 }) {
   if (item.video) {
@@ -198,18 +208,27 @@ function MediaPanel({
   }
 
   return (
-    <div
-      className={cn(
-        "flex h-full w-full flex-col justify-end bg-gradient-to-br p-6 sm:p-8",
-        tones[item.tone],
-      )}
-    >
-      <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
-        {item.location}
-      </p>
-      <p className="mt-2 text-xl italic text-ink/80 sm:text-2xl">
-        {item.name}
-      </p>
-    </div>
+    <>
+      <Image
+        key={item.image}
+        src={item.image}
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        className="object-cover"
+      />
+      {/* Velo para que el texto se lea sobre cualquier foto. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"
+      />
+      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
+          {stack}
+        </p>
+        <p className="mt-2 text-xl italic text-white sm:text-2xl">{name}</p>
+      </div>
+    </>
   );
 }

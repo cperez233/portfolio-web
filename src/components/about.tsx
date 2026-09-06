@@ -1,13 +1,19 @@
+"use client";
+
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { FadeIn } from "@/components/ui/FadeIn";
-import { aboutBlocks, aboutHighlights } from "@/data/site";
+import { FadeSwap } from "@/components/ui/FadeSwap";
+import { useLanguage } from "@/lib/language";
 
 /**
  * About editorial: dos bloques tematicos y una rejilla de datos clave.
- * Sin assets 3D ni iconos de esquina; el peso lo llevan el aire y la
- * jerarquia tipografica.
+ *
+ * Es Client Component porque consume el idioma. El texto traducido se
+ * envuelve en FadeSwap para que el cambio funda en lugar de saltar.
  */
 export function AboutSection() {
+  const { t, language } = useLanguage();
+
   return (
     <section
       id="about"
@@ -15,18 +21,20 @@ export function AboutSection() {
     >
       <div className="mx-auto w-full max-w-6xl">
         <FadeIn>
-          <p className="mb-5 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
-            [ 01 ] About
-          </p>
-          <h2 className="max-w-3xl text-section font-semibold uppercase text-ink">
-            About me
-          </h2>
+          <FadeSwap>
+            <p className="mb-5 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+              {t.about.eyebrow}
+            </p>
+            <h2 className="max-w-3xl text-section font-semibold uppercase text-ink">
+              {t.about.title}
+            </h2>
+          </FadeSwap>
           <div className="hairline mt-10 h-px w-full" />
         </FadeIn>
 
         {/* Dos columnas editoriales */}
         <div className="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-16">
-          {aboutBlocks.map((block, index) => (
+          {t.about.blocks.map((block, index) => (
             <FadeIn key={block.eyebrow} delay={0.1 + index * 0.08}>
               <article>
                 <div className="flex items-baseline gap-4">
@@ -38,7 +46,13 @@ export function AboutSection() {
                   </h3>
                 </div>
 
+                {/*
+                  La key remonta AnimatedText al cambiar de idioma: sin
+                  ella el revelado por caracteres conservaria el progreso
+                  del texto anterior, que tiene otra longitud.
+                */}
                 <AnimatedText
+                  key={language}
                   text={block.body}
                   className="mt-6 text-lead text-ink-muted"
                 />
@@ -49,18 +63,20 @@ export function AboutSection() {
 
         {/* Micro-tarjetas de datos clave */}
         <div className="mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-          {aboutHighlights.map((item, index) => (
+          {t.about.highlights.map((item, index) => (
             <FadeIn key={item.label} delay={0.05 * index}>
               <div className="h-full bg-surface p-6 transition-colors duration-300">
                 <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-ink">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <p className="mt-4 text-base font-medium tracking-tight text-ink">
-                  {item.label}
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-ink-subtle">
-                  {item.detail}
-                </p>
+                <FadeSwap>
+                  <p className="mt-4 text-base font-medium tracking-tight text-ink">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-subtle">
+                    {item.detail}
+                  </p>
+                </FadeSwap>
               </div>
             </FadeIn>
           ))}

@@ -4,6 +4,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { Menu, X, ChevronDown, ArrowUpRight, Moon, Sun } from "lucide-react";
 import { hero, navLinks, portrait, site } from "@/data/site";
+import { useLanguage } from "@/lib/language";
+import { LanguageToggle } from "./LanguageToggle";
+import { FadeSwap } from "./FadeSwap";
 
 interface BlurTextProps {
   text: string;
@@ -70,6 +73,7 @@ const BlurText: React.FC<BlurTextProps> = ({
 };
 
 export default function PortfolioHero() {
+  const { t, language } = useLanguage();
   // El servidor ya pinta <html class="dark">, asi que `true` coincide con
   // la primera pintura: no hace falta leer el DOM ni hay parpadeo. Este
   // estado solo refleja el icono del boton; la verdad vive en <html>.
@@ -146,7 +150,7 @@ export default function PortfolioHero() {
               >
                 {navLinks.map((item, index) => (
                   <a
-                    key={item.label}
+                    key={item.key}
                     href={item.href}
                     className={`block rounded-md px-3 py-2 text-lg font-bold tracking-tight transition-colors duration-200 ${
                       index === 0
@@ -155,7 +159,7 @@ export default function PortfolioHero() {
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {item.label}
+                    {t.nav[item.key]}
                   </a>
                 ))}
               </div>
@@ -166,7 +170,10 @@ export default function PortfolioHero() {
             PORTFOLIO<span className="text-accent-ink">.</span>
           </div>
 
-          <button
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+
+            <button
             type="button"
             onClick={toggleTheme}
             className="inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-surface-2 text-ink-muted transition-colors duration-300 hover:text-accent-ink"
@@ -178,7 +185,8 @@ export default function PortfolioHero() {
             ) : (
               <Moon className="size-4" aria-hidden="true" />
             )}
-          </button>
+            </button>
+          </div>
         </nav>
       </header>
 
@@ -215,30 +223,39 @@ export default function PortfolioHero() {
 
       {/* Narrativa y llamadas a la accion */}
       <div className="z-20 mx-auto flex w-full max-w-2xl flex-col items-center gap-2 text-center sm:gap-3">
-        <BlurText
-          text={hero.tagline}
-          animateBy="words"
-          delay={90}
-          direction="top"
-          className="flex-wrap justify-center text-base font-medium tracking-wide text-ink sm:text-lg md:text-xl"
-        />
+        {/* FadeSwap funde el bloque al cambiar de idioma; la key del
+            BlurText lo remonta para que su animacion vuelva a correr. */}
+        <FadeSwap className="flex w-full flex-col items-center gap-2 sm:gap-3">
+          <BlurText
+            key={language}
+            text={t.hero.tagline}
+            animateBy="words"
+            delay={60}
+            direction="top"
+            className="flex-wrap justify-center text-base font-medium tracking-wide text-ink sm:text-lg md:text-xl"
+          />
 
-        <p className="max-w-xl px-2 text-sm leading-relaxed text-ink-muted">
-          {hero.description}
-        </p>
+          <p className="max-w-xl px-2 text-sm leading-relaxed text-ink-muted">
+            {t.hero.description}
+          </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+          <p className="max-w-xl px-2 text-xs leading-relaxed text-accent-ink sm:text-sm">
+            {t.hero.philosophy}
+          </p>
+        </FadeSwap>
+
+        <FadeSwap className="flex flex-wrap items-center justify-center gap-2 pt-1">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
             <span
               aria-hidden="true"
               className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
             />
-            {hero.badges.availability}
+            {t.hero.badgeAvailability}
           </span>
           <span className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
-            {hero.badges.location}
+            {t.hero.badgeLocation}
           </span>
-        </div>
+        </FadeSwap>
 
         <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row">
           <a
@@ -247,15 +264,15 @@ export default function PortfolioHero() {
             rel="noopener noreferrer"
             className="accent-fill inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
           >
-            Let&apos;s Talk on WhatsApp
+            {t.hero.ctaPrimary}
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </a>
 
           <a
-            href={hero.secondaryCta.href}
+            href={hero.secondaryCtaHref}
             className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
           >
-            {hero.secondaryCta.label}
+            {t.hero.ctaSecondary}
           </a>
         </div>
 
@@ -265,7 +282,7 @@ export default function PortfolioHero() {
         <a
           href="#about"
           className="mt-2 hidden text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
-          aria-label="Scroll to about"
+          aria-label={t.hero.scrollLabel}
         >
           <ChevronDown className="h-6 w-6 animate-bounce" />
         </a>

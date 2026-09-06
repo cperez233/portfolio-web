@@ -15,6 +15,13 @@ const nextConfig: NextConfig = {
         hostname: "shrug-person-78902957.figma.site",
         pathname: "/_components/**",
       },
+      {
+        // CDN de Unsplash: servir desde aqui es su uso previsto,
+        // a diferencia del hotlinking a sitios de terceros.
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
     ],
   },
 };

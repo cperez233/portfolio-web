@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import {
   motion,
   useReducedMotion,
@@ -9,7 +10,9 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { projects, site, type Project, type ProjectShowcase } from "@/data/site";
+import { projects, site, type Project } from "@/data/site";
+import { useLanguage } from "@/lib/language";
+import { FadeSwap } from "@/components/ui/FadeSwap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,6 +24,7 @@ import { cn } from "@/lib/utils";
 export function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLanguage();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -30,15 +34,17 @@ export function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="overflow-x-clip bg-canvas px-5 transition-colors duration-300 pb-24 pt-24 sm:px-8 md:px-10"
+      className="overflow-x-clip bg-canvas px-5 pb-24 pt-24 transition-colors duration-300 sm:px-8 md:px-10"
     >
       <div className="mx-auto mb-14 w-full max-w-6xl">
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
-          [ 03 ]
-        </p>
-        <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
-          Projects
-        </h2>
+        <FadeSwap>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+            {t.projects.eyebrow}
+          </p>
+          <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
+            {t.projects.title}
+          </h2>
+        </FadeSwap>
       </div>
 
       <div ref={containerRef} className="mx-auto w-full max-w-6xl">
@@ -72,6 +78,9 @@ function ProjectCard({
   progress,
   reduceMotion,
 }: ProjectCardProps) {
+  const { t } = useLanguage();
+  const copy = t.projects.items[index];
+
   const targetScale = 1 - (total - 1 - index) * 0.03;
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
 
@@ -84,13 +93,15 @@ function ProjectCard({
           </p>
 
           <div className="min-w-0">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
-              {project.category}
-            </p>
-            <h3 className="mt-2 text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl">
-              {project.name}
-            </h3>
-            <p className="mt-1 text-sm text-ink-muted">{project.tagline}</p>
+            <FadeSwap>
+              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
+                {copy.category}
+              </p>
+              <h3 className="mt-2 text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+                {project.name}
+              </h3>
+              <p className="mt-1 text-sm text-ink-muted">{copy.tagline}</p>
+            </FadeSwap>
             <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-subtle">
               {project.stack}
             </p>
@@ -103,7 +114,7 @@ function ProjectCard({
           rel="noopener noreferrer"
           className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
         >
-          Discuss this
+          {t.projects.cta}
           <ArrowUpRight className="size-4" aria-hidden="true" />
         </a>
       </div>
@@ -111,11 +122,20 @@ function ProjectCard({
       {/* 40% dos muestras apiladas, 60% una alta */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-5">
         <div className="flex min-h-0 flex-col gap-3 sm:col-span-2">
-          <ShowcaseTile item={project.showcase[0]} className="min-h-24 flex-1" />
-          <ShowcaseTile item={project.showcase[1]} className="min-h-24 flex-1" />
+          <ShowcaseTile
+            src={project.showcase[0]}
+            label={copy.showcase[0]}
+            className="min-h-24 flex-1"
+          />
+          <ShowcaseTile
+            src={project.showcase[1]}
+            label={copy.showcase[1]}
+            className="min-h-24 flex-1"
+          />
         </div>
         <ShowcaseTile
-          item={project.showcase[2]}
+          src={project.showcase[2]}
+          label={copy.showcase[2]}
           className="hidden min-h-0 sm:col-span-3 sm:block"
         />
       </div>
@@ -141,35 +161,38 @@ function ProjectCard({
   );
 }
 
-/* Familia vino derivada de #652a31. */
-const tones: Record<ProjectShowcase["tone"], string> = {
-  wine: "from-[#8c3b45] via-[#4a1f24] to-[#1a0f11]",
-  plum: "from-[#7a3550] via-[#3f1c2b] to-[#170e13]",
-  clay: "from-[#9a4a3a] via-[#4e241d] to-[#1a1010]",
-  slate: "from-[#5c5054] via-[#2e2729] to-[#151315]",
-};
-
-/**
- * Placeholder de muestra. Sustituir por capturas reales del proyecto:
- * la maqueta ya reserva el hueco exacto.
- */
 function ShowcaseTile({
-  item,
+  src,
+  label,
   className,
 }: {
-  item: ProjectShowcase;
+  src: string;
+  label: string;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "flex items-end overflow-hidden rounded-2xl bg-gradient-to-br p-4 sm:rounded-3xl sm:p-5",
-        tones[item.tone],
+        "relative overflow-hidden rounded-2xl bg-surface-2 sm:rounded-3xl",
         className,
       )}
     >
-      <p className="font-mono text-[11px] uppercase tracking-wider text-ink-muted">
-        {item.label}
+      <Image
+        src={src}
+        alt=""
+        aria-hidden="true"
+        fill
+        loading="lazy"
+        sizes="(min-width: 640px) 40vw, 100vw"
+        className="object-cover"
+      />
+      {/* Velo inferior: mantiene la etiqueta legible sobre la foto. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"
+      />
+      <p className="absolute bottom-0 left-0 p-4 font-mono text-[11px] uppercase tracking-wider text-white sm:p-5">
+        {label}
       </p>
     </div>
   );
