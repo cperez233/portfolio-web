@@ -34,7 +34,7 @@ export function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="overflow-x-clip bg-canvas px-5 pb-24 pt-24 transition-colors duration-300 sm:px-8 md:px-10"
+      className="layer-top relative z-30 -mt-8 overflow-x-clip rounded-t-[32px] bg-canvas px-5 pb-24 pt-24 transition-colors duration-500 sm:rounded-t-[48px] sm:px-8 md:px-10"
     >
       <div className="mx-auto mb-14 w-full max-w-6xl">
         <FadeSwap>
@@ -85,7 +85,7 @@ function ProjectCard({
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
 
   const card = (
-    <article className="flex h-full w-full flex-col gap-6 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8">
+    <article className="flex h-full w-full flex-col gap-5 overflow-hidden rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-4 sm:gap-6">
           <p className="shrink-0 font-mono text-sm text-accent-ink">
@@ -98,7 +98,7 @@ function ProjectCard({
                 {copy.category}
               </p>
               <h3 className="mt-2 text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl">
-                {project.name}
+                {copy.name}
               </h3>
               <p className="mt-1 text-sm text-ink-muted">{copy.tagline}</p>
             </FadeSwap>
@@ -108,16 +108,40 @@ function ProjectCard({
           </div>
         </div>
 
-        <a
-          href={site.whatsapp}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
-        >
-          {t.projects.cta}
-          <ArrowUpRight className="size-4" aria-hidden="true" />
-        </a>
+        <FadeSwap className="shrink-0">
+          <a
+            href={site.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
+          >
+            {copy.cta}
+            <ArrowUpRight className="size-4" aria-hidden="true" />
+          </a>
+        </FadeSwap>
       </div>
+
+      {/* Contexto / Solucion / Impacto */}
+      <FadeSwap>
+        <dl className="grid gap-4 border-y border-line py-5 sm:grid-cols-3 sm:gap-6">
+          {(
+            [
+              ["context", copy.context],
+              ["solution", copy.solution],
+              ["impact", copy.impact],
+            ] as const
+          ).map(([key, value]) => (
+            <div key={key} className="min-w-0">
+              <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-ink">
+                {t.projects.labels[key]}
+              </dt>
+              <dd className="mt-2 text-sm leading-relaxed text-ink-muted">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </FadeSwap>
 
       {/* 40% dos muestras apiladas, 60% una alta */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-5">
@@ -125,12 +149,12 @@ function ProjectCard({
           <ShowcaseTile
             src={project.showcase[0]}
             label={copy.showcase[0]}
-            className="min-h-24 flex-1"
+            className="min-h-20 flex-1"
           />
           <ShowcaseTile
             src={project.showcase[1]}
             label={copy.showcase[1]}
-            className="min-h-24 flex-1"
+            className="min-h-20 flex-1"
           />
         </div>
         <ShowcaseTile
@@ -148,7 +172,7 @@ function ProjectCard({
 
   return (
     <div
-      className="sticky top-24 h-[78svh] md:top-28"
+      className="sticky top-20 h-[86svh] md:top-24"
       style={{ paddingTop: `${index * 24}px` }}
     >
       <motion.div
@@ -191,9 +215,11 @@ function ShowcaseTile({
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"
       />
-      <p className="absolute bottom-0 left-0 p-4 font-mono text-[11px] uppercase tracking-wider text-white sm:p-5">
-        {label}
-      </p>
+      <FadeSwap className="absolute bottom-0 left-0 p-4 sm:p-5">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-white">
+          {label}
+        </p>
+      </FadeSwap>
     </div>
   );
 }

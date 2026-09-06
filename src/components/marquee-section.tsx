@@ -40,7 +40,7 @@ export function MarqueeSection() {
     <section
       ref={sectionRef}
       aria-label="Motion showcase"
-      className="overflow-x-clip bg-canvas transition-colors duration-300 pb-10 pt-20 sm:pt-28 md:pt-32"
+      className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas pb-10 pt-20 transition-colors duration-500 sm:rounded-t-[48px] sm:pt-28 md:pt-32"
     >
       <MarqueeRow
         sources={[...marqueeRowOne, ...marqueeRowOne, ...marqueeRowOne]}

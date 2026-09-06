@@ -35,11 +35,17 @@ export interface Dictionary {
   projects: {
     eyebrow: string;
     title: string;
-    cta: string;
+    labels: { context: string; solution: string; impact: string };
     /** Por proyecto, en el orden de `projects`. */
     items: Array<{
+      /** El nombre tambien se traduce en los proyectos 02 y 03. */
+      name: string;
       category: string;
       tagline: string;
+      context: string;
+      solution: string;
+      impact: string;
+      cta: string;
       showcase: [string, string, string];
     }>;
   };
@@ -110,21 +116,45 @@ const en: Dictionary = {
   projects: {
     eyebrow: "[ 03 ]",
     title: "Projects",
-    cta: "Discuss this",
+    labels: { context: "Context", solution: "Solution", impact: "Impact" },
     items: [
       {
+        name: "PairSync",
         category: "Full-Stack + AI",
         tagline: "Collaborative Environment Powered by AI",
+        context:
+          "Remote pairs lose time re-explaining context every time they switch machines or pick a session back up.",
+        solution:
+          "A shared workspace where session state, code and an AI reviewer live in one place, synced over WebSockets.",
+        impact:
+          "Pairs resume exactly where they left off, and review feedback arrives while the code is still fresh.",
+        cta: "Explore Project",
         showcase: ["Realtime session", "AI pair review", "Workspace"],
       },
       {
-        category: "Automation & OCR",
+        name: "Document Extraction Automation",
+        category: "Automation & Data Pipelines",
         tagline: "FCV Internship",
+        context:
+          "Clinical and administrative documents arrived as scans and were transcribed by hand, one field at a time.",
+        solution:
+          "An ingest pipeline that runs OCR through Azure Document Intelligence, maps the fields, and flags anything that fails validation.",
+        impact:
+          "Manual transcription becomes a review step, and every extracted field carries a traceable confidence check.",
+        cta: "View Case",
         showcase: ["Ingest pipeline", "Field mapping", "Validation run"],
       },
       {
-        category: "Content Creation",
+        name: "Organic Content Creation & Live Streaming",
+        category: "Digital Media & Community",
         tagline: "Tostu / criscx1905",
+        context:
+          "Technical work rarely reaches the people it could help, because it is explained in the vocabulary of whoever built it.",
+        solution:
+          "A full production pipeline run solo: concept, script, on-camera presenting and vertical editing across TikTok, Instagram and Twitch.",
+        impact:
+          "Complex architecture lands as something a non-technical audience can follow and act on.",
+        cta: "View Case",
         showcase: ["Vertical edit", "Live set", "Community"],
       },
     ],
@@ -207,21 +237,49 @@ const es: Dictionary = {
   projects: {
     eyebrow: "[ 03 ]",
     title: "Proyectos",
-    cta: "Hablemos de esto",
+    labels: { context: "Contexto", solution: "Solución", impact: "Impacto" },
     items: [
       {
-        category: "Full-Stack + IA",
-        tagline: "Entorno colaborativo impulsado por IA",
-        showcase: ["Sesión en tiempo real", "Revisión con IA", "Espacio de trabajo"],
+        name: "PairSync",
+        category: "Desarrollo Full-Stack + IA",
+        tagline: "Entorno Colaborativo Impulsado por IA",
+        context:
+          "Las parejas de trabajo en remoto pierden tiempo reexplicando el contexto cada vez que cambian de equipo o retoman una sesión.",
+        solution:
+          "Un espacio compartido donde el estado de la sesión, el código y un revisor con IA viven en el mismo sitio, sincronizados por WebSockets.",
+        impact:
+          "Se retoma exactamente donde se dejó, y la revisión llega cuando el código todavía está fresco.",
+        cta: "Explorar Proyecto",
+        showcase: [
+          "Sesión en tiempo real",
+          "Revisión con IA",
+          "Espacio de trabajo",
+        ],
       },
       {
-        category: "Automatización y OCR",
+        name: "Automatización de Extracción Documental",
+        category: "Automatización y Flujos de Datos",
         tagline: "Prácticas en la FCV",
+        context:
+          "Los documentos clínicos y administrativos llegaban escaneados y se transcribían a mano, campo por campo.",
+        solution:
+          "Un pipeline de ingesta que pasa OCR con Azure Document Intelligence, mapea los campos y marca lo que no supera la validación.",
+        impact:
+          "La transcripción manual pasa a ser un paso de revisión, y cada campo extraído lleva una comprobación de confianza trazable.",
+        cta: "Ver Caso",
         showcase: ["Pipeline de ingesta", "Mapeo de campos", "Validación"],
       },
       {
-        category: "Creación de contenido",
+        name: "Creación de Contenido Orgánico y Streaming en Vivo",
+        category: "Medios Digitales y Comunidad",
         tagline: "Tostu / criscx1905",
+        context:
+          "El trabajo técnico rara vez llega a quien podría aprovecharlo, porque se explica en el vocabulario de quien lo construyó.",
+        solution:
+          "Una cadena de producción completa en solitario: concepto, guion, presentación en cámara y edición vertical para TikTok, Instagram y Twitch.",
+        impact:
+          "La arquitectura compleja aterriza como algo que una audiencia no técnica puede seguir y aplicar.",
+        cta: "Ver Caso",
         showcase: ["Edición vertical", "Directo", "Comunidad"],
       },
     ],

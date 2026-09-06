@@ -66,7 +66,7 @@ export default function InteractiveVideoScroller() {
   return (
     <section
       id="services"
-      className="overflow-x-clip bg-surface transition-colors duration-300"
+      className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
     >
       <div
         ref={containerRef}

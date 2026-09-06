@@ -34,6 +34,14 @@
   --color-on-accent: #ffffff;
   --color-accent-dim: rgba(101, 42, 49, 0.12);
 
+  /*
+    Color del nombre monumental. Solido y no gradiente a proposito: los
+    gradientes no interpolan en CSS, asi que con background-clip:text el
+    nombre saltaria de golpe mientras el resto del sitio funde en 500ms.
+    Claro: blush #c46d79 (3.42:1, cumple el minimo de texto grande).
+  */
+  --color-name: #c46d79;
+
   /* Tipografia */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-fira-code), ui-monospace, monospace;
@@ -64,6 +72,8 @@ html.dark {
 
   /* Tinte vino claro: 7.3:1 sobre #09090b, legible a cualquier tamano. */
   --color-accent-ink: #c98d95;
+  /* Vinotinto profundo pedido para modo oscuro. */
+  --color-name: #652a31;
   --color-accent-dim: rgba(140, 59, 69, 0.18);
 }
 
@@ -134,5 +144,34 @@ html.dark {
       var(--color-accent-dim),
       transparent
     );
+  }
+}
+
+/* ------------------------------------------------------------------
+   Lenis. Reglas minimas de su hoja oficial: sin ellas el scroll nativo
+   suave pelea con la inercia de Lenis en los enlaces ancla.
+------------------------------------------------------------------ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+@layer components {
+  /* Capa que se desliza sobre la anterior: borde superior redondeado y
+     sombra proyectada hacia arriba, para que se lea la profundidad. */
+  .layer-top {
+    box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.18);
+  }
+
+  html.dark .layer-top {
+    box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.5);
   }
 }

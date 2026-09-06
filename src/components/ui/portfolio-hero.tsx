@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Menu, X, ChevronDown, ArrowUpRight, Moon, Sun } from "lucide-react";
 import { hero, navLinks, portrait, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
@@ -72,13 +73,35 @@ const BlurText: React.FC<BlurTextProps> = ({
   );
 };
 
+/*
+  El nombre se revela letra a letra: "CRISTIAN" son 8 letras a 90ms de
+  retardo mas 500ms de transicion, asi que termina cerca de 1.13s. El
+  copy arranca en 1.0s para encadenar sin dejar un hueco muerto.
+*/
+const copyContainerVariants = {
+  hidden: {},
+  visible: { transition: { delayChildren: 1, staggerChildren: 0.08 } },
+};
+
+const copyItemVariants = {
+  hidden: { opacity: 0, y: 16, filter: "blur(6px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
 export default function PortfolioHero() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   // El servidor ya pinta <html class="dark">, asi que `true` coincide con
   // la primera pintura: no hace falta leer el DOM ni hay parpadeo. Este
   // estado solo refleja el icono del boton; la verdad vive en <html>.
   const [isDark, setIsDark] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -99,6 +122,21 @@ export default function PortfolioHero() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
+  /*
+    Capa fora.so: el hero queda pegado y las secciones siguientes se
+    deslizan por encima mientras el retrocede en escala y opacidad.
+
+    El ref va en el envoltorio EXTERNO, que no es sticky. Medir el propio
+    elemento pegado no funciona: su rect se queda clavado en top 0 y el
+    progreso nunca avanza de 0.
+  */
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const layerScale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
+  const layerOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.45]);
+
   /** Alterna `.dark` en <html>: de ahi cuelga el tema de todo el sitio. */
   const toggleTheme = () => {
     const next = !isDark;
@@ -113,17 +151,18 @@ export default function PortfolioHero() {
     El contenedor va a ancho completo a proposito: un `max-w` fijo era lo
     que partia "CRISTIAN" en "CRISTI / AN" en pantallas anchas.
 
-    Color solido, no gradiente con background-clip:text. Cada letra de
-    BlurText lleva un `filter` inline y un filter crea contexto de
-    apilado: la letra se pinta aparte, hereda text-fill transparente y,
-    sin fondo propio, desaparece. El acento solido da ademas 7.3:1 en
-    oscuro y 9.8:1 en claro; el vino #652a31 sobre negro solo daria 1.8:1.
+    Color solido (token --color-name), no gradiente. Dos razones: cada
+    letra de BlurText lleva un `filter` inline, y un filter crea contexto
+    de apilado que rompe background-clip:text; y los gradientes no
+    interpolan, asi que el nombre saltaria de golpe al cambiar de tema
+    mientras el resto funde en 500ms.
   */
   const nameClassName =
-    "w-full flex-nowrap justify-center whitespace-nowrap text-accent-ink text-[11vw] font-black uppercase leading-[0.8] tracking-tighter select-none sm:text-[12vw] md:text-[13vw] lg:text-[14vw]";
+    "w-full flex-nowrap justify-center whitespace-nowrap text-name transition-colors duration-500 text-[11vw] font-black uppercase leading-[0.8] tracking-tighter select-none sm:text-[12vw] md:text-[13vw] lg:text-[14vw]";
 
   return (
-    <div className="relative flex h-svh min-h-[600px] flex-col justify-between overflow-x-clip bg-canvas px-4 pb-4 pt-20 transition-colors duration-300 sm:pb-6 sm:pt-24">
+    <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
+      <div className="sticky top-0 h-svh min-h-[600px] overflow-x-clip bg-canvas transition-colors duration-500">
       {/* Header */}
       <header className="fixed left-0 right-0 top-0 z-50 px-6 py-6">
         <nav className="mx-auto flex max-w-screen-2xl items-center justify-between">
@@ -190,6 +229,19 @@ export default function PortfolioHero() {
         </nav>
       </header>
 
+      <motion.div
+        style={
+          shouldReduceMotion
+            ? undefined
+            : {
+                scale: layerScale,
+                opacity: layerOpacity,
+                willChange: "transform, opacity",
+              }
+        }
+        className="flex h-full origin-top flex-col justify-between px-4 pb-4 pt-20 sm:pb-6 sm:pt-24"
+      >
+
       {/* Nombre monumental con el retrato ovalado centrado entre lineas */}
       <div className="relative my-auto w-full text-center">
         <BlurText
@@ -221,71 +273,90 @@ export default function PortfolioHero() {
         </div>
       </div>
 
-      {/* Narrativa y llamadas a la accion */}
-      <div className="z-20 mx-auto flex w-full max-w-2xl flex-col items-center gap-2 text-center sm:gap-3">
-        {/* FadeSwap funde el bloque al cambiar de idioma; la key del
-            BlurText lo remonta para que su animacion vuelva a correr. */}
-        <FadeSwap className="flex w-full flex-col items-center gap-2 sm:gap-3">
-          <BlurText
-            key={language}
-            text={t.hero.tagline}
-            animateBy="words"
-            delay={60}
-            direction="top"
-            className="flex-wrap justify-center text-base font-medium tracking-wide text-ink sm:text-lg md:text-xl"
-          />
+      {/* Narrativa: entra escalonada al terminar el nombre */}
+      <motion.div
+        variants={copyContainerVariants}
+        initial={shouldReduceMotion ? "visible" : "hidden"}
+        animate="visible"
+        className="z-20 mx-auto flex w-full max-w-2xl flex-col items-center gap-2 text-center sm:gap-3"
+      >
+        <motion.div variants={copyItemVariants} className="w-full">
+          <FadeSwap>
+            <p className="text-base font-medium tracking-wide text-ink sm:text-lg md:text-xl">
+              {t.hero.tagline}
+            </p>
+          </FadeSwap>
+        </motion.div>
 
-          <p className="max-w-xl px-2 text-sm leading-relaxed text-ink-muted">
-            {t.hero.description}
-          </p>
+        <motion.div variants={copyItemVariants} className="w-full">
+          <FadeSwap>
+            <p className="mx-auto max-w-xl px-2 text-sm leading-relaxed text-ink-muted">
+              {t.hero.description}
+            </p>
+          </FadeSwap>
+        </motion.div>
 
-          <p className="max-w-xl px-2 text-xs leading-relaxed text-accent-ink sm:text-sm">
-            {t.hero.philosophy}
-          </p>
-        </FadeSwap>
+        <motion.div variants={copyItemVariants} className="w-full">
+          <FadeSwap>
+            <p className="mx-auto max-w-xl px-2 text-xs leading-relaxed text-accent-ink sm:text-sm">
+              {t.hero.philosophy}
+            </p>
+          </FadeSwap>
+        </motion.div>
 
-        <FadeSwap className="flex flex-wrap items-center justify-center gap-2 pt-1">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
-            />
-            {t.hero.badgeAvailability}
-          </span>
-          <span className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
-            {t.hero.badgeLocation}
-          </span>
-        </FadeSwap>
+        <motion.div variants={copyItemVariants}>
+          <FadeSwap className="flex flex-wrap items-center justify-center gap-2 pt-1">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
+              <span
+                aria-hidden="true"
+                className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
+              />
+              {t.hero.badgeAvailability}
+            </span>
+            <span className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
+              {t.hero.badgeLocation}
+            </span>
+          </FadeSwap>
+        </motion.div>
 
-        <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row">
-          <a
-            href={site.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="accent-fill inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
-          >
-            {t.hero.ctaPrimary}
-            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </a>
+        <motion.div
+          variants={copyItemVariants}
+          className="flex flex-col items-center gap-3 pt-2 sm:flex-row"
+        >
+          <FadeSwap>
+            <a
+              href={site.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="accent-fill inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
+            >
+              {t.hero.ctaPrimary}
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </a>
+          </FadeSwap>
 
-          <a
-            href={hero.secondaryCtaHref}
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
-          >
-            {t.hero.ctaSecondary}
-          </a>
-        </div>
+          <FadeSwap>
+            <a
+              href={hero.secondaryCtaHref}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
+            >
+              {t.hero.ctaSecondary}
+            </a>
+          </FadeSwap>
+        </motion.div>
 
         {/* Oculto en pantallas cortas: a 360x640 empujaba el contenido
-            43px por debajo del pliegue. Es solo una senal de scroll y el
-            boton "Explore Projects & Work" ya cumple esa funcion. */}
-        <a
+            43px por debajo del pliegue. */}
+        <motion.a
+          variants={copyItemVariants}
           href="#about"
           className="mt-2 hidden text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
           aria-label={t.hero.scrollLabel}
         >
           <ChevronDown className="h-6 w-6 animate-bounce" />
-        </a>
+        </motion.a>
+      </motion.div>
+      </motion.div>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="relative overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-300 sm:px-8 sm:py-28 md:px-10"
+      className="relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
       <div className="mx-auto w-full max-w-6xl">
         <FadeIn>

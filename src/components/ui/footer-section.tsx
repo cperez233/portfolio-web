@@ -19,7 +19,7 @@ export default function Footer() {
   return (
     <footer
       id="contact"
-      className="relative overflow-x-clip border-t border-line bg-canvas px-5 pb-10 pt-20 transition-colors duration-300 sm:px-8 md:px-10"
+      className="relative z-40 overflow-x-clip border-t border-line bg-canvas px-5 pb-10 pt-20 transition-colors duration-500 sm:px-8 md:px-10"
     >
       <div
         aria-hidden="true"

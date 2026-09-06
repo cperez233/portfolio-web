@@ -96,7 +96,7 @@ export const menuItems: ServiceItem[] = [
 
 export interface Project {
   number: string;
-  name: string;
+  /** El nombre visible se traduce: vive en content.ts. */
   stack: string;
   showcase: [string, string, string];
 }
@@ -104,19 +104,16 @@ export interface Project {
 export const projects: Project[] = [
   {
     number: "01",
-    name: "PairSync",
     stack: "Laravel, React, WebSockets, Claude API, Docker",
     showcase: [UNSPLASH.darkIde, UNSPLASH.dataInterface, UNSPLASH.minimalTech],
   },
   {
     number: "02",
-    name: "Document Extraction Automation",
     stack: "Python, Azure Document Intelligence, OCR",
     showcase: [UNSPLASH.dataWaves, UNSPLASH.engineering, UNSPLASH.circuits],
   },
   {
     number: "03",
-    name: "Organic Content & Live Streaming",
     stack: "TikTok, Instagram, Twitch community",
     showcase: [
       UNSPLASH.studioAudio,
