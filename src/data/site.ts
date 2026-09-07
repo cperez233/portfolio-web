@@ -22,7 +22,7 @@ export const site: SiteMeta = {
     "https://wa.me/573052669219?text=Hi%20Cristian,%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project",
 };
 
-export type NavKey = "home" | "about" | "services" | "projects";
+export type NavKey = "about" | "services" | "projects" | "contact";
 
 export interface NavLink {
   key: NavKey;
@@ -30,10 +30,10 @@ export interface NavLink {
 }
 
 export const navLinks: NavLink[] = [
-  { key: "home", href: "#" },
   { key: "about", href: "#about" },
   { key: "services", href: "#services" },
   { key: "projects", href: "#projects" },
+  { key: "contact", href: "#contact" },
 ];
 
 export const hero = {
@@ -105,7 +105,11 @@ export const projects: Project[] = [
   {
     number: "01",
     stack: "Laravel, React, WebSockets, Claude API, Docker",
-    showcase: [UNSPLASH.darkIde, UNSPLASH.dataInterface, UNSPLASH.minimalTech],
+    showcase: [
+      "/projects/pairsync-courses.jpg",
+      "/projects/pairsync-session.jpg",
+      "/projects/pairsync-landing.jpg",
+    ],
   },
   {
     number: "02",

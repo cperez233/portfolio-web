@@ -9,7 +9,7 @@
 export type Language = "en" | "es";
 
 export interface Dictionary {
-  nav: { home: string; about: string; services: string; projects: string };
+  nav: { about: string; services: string; projects: string; contact: string };
   hero: {
     tagline: string;
     description: string;
@@ -62,10 +62,10 @@ export interface Dictionary {
 
 const en: Dictionary = {
   nav: {
-    home: "HOME",
-    about: "ABOUT",
-    services: "SERVICES",
-    projects: "PROJECTS",
+    about: "About",
+    services: "Services",
+    projects: "Projects",
+    contact: "Contact",
   },
   hero: {
     tagline:
@@ -129,7 +129,11 @@ const en: Dictionary = {
         impact:
           "Pairs resume exactly where they left off, and review feedback arrives while the code is still fresh.",
         cta: "Explore Project",
-        showcase: ["Realtime session", "AI pair review", "Workspace"],
+        showcase: [
+          "02. Course Syllabus & Moodle Grade Integration",
+          "03. Real-Time IDE, Mobile Preview & AI Tutor Chat",
+          "01. Landing Page — Next-Gen AI Pairing Platform",
+        ],
       },
       {
         name: "Document Extraction Automation",
@@ -183,10 +187,10 @@ const en: Dictionary = {
 
 const es: Dictionary = {
   nav: {
-    home: "INICIO",
-    about: "SOBRE MÍ",
-    services: "SERVICIOS",
-    projects: "PROYECTOS",
+    about: "Sobre mí",
+    services: "Servicios",
+    projects: "Proyectos",
+    contact: "Contacto",
   },
   hero: {
     tagline:
@@ -251,9 +255,9 @@ const es: Dictionary = {
           "Se retoma exactamente donde se dejó, y la revisión llega cuando el código todavía está fresco.",
         cta: "Explorar Proyecto",
         showcase: [
-          "Sesión en tiempo real",
-          "Revisión con IA",
-          "Espacio de trabajo",
+          "02. Temario del curso e integración de notas con Moodle",
+          "03. IDE en tiempo real, vista móvil y chat con tutor IA",
+          "01. Landing — Plataforma de pairing con IA",
         ],
       },
       {

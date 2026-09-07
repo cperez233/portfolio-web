@@ -197,7 +197,7 @@ function ShowcaseTile({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-surface-2 sm:rounded-3xl",
+        "group relative overflow-hidden rounded-2xl border border-line bg-surface-2",
         className,
       )}
     >
@@ -208,7 +208,9 @@ function ShowcaseTile({
         fill
         loading="lazy"
         sizes="(min-width: 640px) 40vw, 100vw"
-        className="object-cover"
+        // object-top: son capturas de pantalla, y el encuadre util
+        // esta arriba. Centrarlas cortaria la cabecera de la interfaz.
+        className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
       />
       {/* Velo inferior: mantiene la etiqueta legible sobre la foto. */}
       <div

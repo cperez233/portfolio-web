@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fira_Code, Geist } from "next/font/google";
 import { LanguageProvider } from "@/lib/language";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
+import { FloatingNav } from "@/components/ui/floating-nav";
 import { site } from "@/data/site";
 import "./globals.css";
 
@@ -55,7 +56,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Skip to content
         </a>
         <SmoothScroll />
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <FloatingNav />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

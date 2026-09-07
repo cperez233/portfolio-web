@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { Menu, X, ChevronDown, ArrowUpRight, Moon, Sun } from "lucide-react";
-import { hero, navLinks, portrait, site } from "@/data/site";
+import { ChevronDown, ArrowUpRight } from "lucide-react";
+import { hero, portrait, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
-import { LanguageToggle } from "./LanguageToggle";
 import { FadeSwap } from "./FadeSwap";
 
 interface BlurTextProps {
@@ -95,32 +94,8 @@ const copyItemVariants = {
 
 export default function PortfolioHero() {
   const { t } = useLanguage();
-  // El servidor ya pinta <html class="dark">, asi que `true` coincide con
-  // la primera pintura: no hace falta leer el DOM ni hay parpadeo. Este
-  // estado solo refleja el icono del boton; la verdad vive en <html>.
-  const [isDark, setIsDark] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isMenuOpen &&
-        menuRef.current &&
-        buttonRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
 
   /*
     Capa fora.so: el hero queda pegado y las secciones siguientes se
@@ -136,13 +111,6 @@ export default function PortfolioHero() {
   });
   const layerScale = useTransform(scrollYProgress, [0, 1], [1, 0.94]);
   const layerOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.45]);
-
-  /** Alterna `.dark` en <html>: de ahi cuelga el tema de todo el sitio. */
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle("dark", next);
-  };
 
   /*
     Escala del nombre. "CRISTIAN" son 8 caracteres y Fira Code avanza
@@ -163,72 +131,6 @@ export default function PortfolioHero() {
   return (
     <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
       <div className="sticky top-0 h-svh min-h-[600px] overflow-x-clip bg-canvas transition-colors duration-500">
-      {/* Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 px-6 py-6">
-        <nav className="mx-auto flex max-w-screen-2xl items-center justify-between">
-          <div className="relative">
-            <button
-              ref={buttonRef}
-              type="button"
-              className="p-2 text-ink-muted transition-colors duration-300 hover:text-ink"
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="h-8 w-8" strokeWidth={2} />
-              ) : (
-                <Menu className="h-8 w-8" strokeWidth={2} />
-              )}
-            </button>
-
-            {isMenuOpen && (
-              <div
-                ref={menuRef}
-                className="absolute left-0 top-full z-100 ml-2 mt-2 w-[220px] rounded-xl border border-line-strong bg-surface/95 p-4 shadow-2xl backdrop-blur-xl"
-              >
-                {navLinks.map((item, index) => (
-                  <a
-                    key={item.key}
-                    href={item.href}
-                    className={`block rounded-md px-3 py-2 text-lg font-bold tracking-tight transition-colors duration-200 ${
-                      index === 0
-                        ? "text-accent-ink"
-                        : "text-ink hover:text-accent-ink"
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {t.nav[item.key]}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="select-none font-mono text-2xl font-bold uppercase tracking-wider text-ink">
-            PORTFOLIO<span className="text-accent-ink">.</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-
-            <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-surface-2 text-ink-muted transition-colors duration-300 hover:text-accent-ink"
-            aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-            aria-pressed={isDark}
-          >
-            {isDark ? (
-              <Sun className="size-4" aria-hidden="true" />
-            ) : (
-              <Moon className="size-4" aria-hidden="true" />
-            )}
-            </button>
-          </div>
-        </nav>
-      </header>
-
       <motion.div
         style={
           shouldReduceMotion
