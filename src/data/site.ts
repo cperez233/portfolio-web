@@ -120,9 +120,9 @@ export const projects: Project[] = [
     number: "03",
     stack: "TikTok, Instagram, Twitch community",
     showcase: [
-      UNSPLASH.studioAudio,
-      UNSPLASH.videoProduction,
-      UNSPLASH.contentLights,
+      "/projects/content-social.jpg",
+      "/projects/content-streaming.jpg",
+      "/projects/content-editing.jpg",
     ],
   },
 ];

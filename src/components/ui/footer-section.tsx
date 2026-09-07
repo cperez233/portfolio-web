@@ -44,6 +44,9 @@ export default function Footer() {
               <p className="mt-5 text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                 {t.footer.headline}
               </p>
+              <p className="mt-4 text-sm leading-relaxed text-ink-muted">
+                {t.footer.availability}
+              </p>
             </FadeSwap>
 
             <a

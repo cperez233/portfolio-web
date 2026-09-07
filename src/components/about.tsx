@@ -3,6 +3,7 @@
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { FadeSwap } from "@/components/ui/FadeSwap";
+import { BackgroundOrbs } from "@/components/ui/background-orbs";
 import { useLanguage } from "@/lib/language";
 
 /**
@@ -19,7 +20,9 @@ export function AboutSection() {
       id="about"
       className="relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
-      <div className="mx-auto w-full max-w-6xl">
+      <BackgroundOrbs variant="middle" />
+
+      <div className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn>
           <FadeSwap>
             <p className="mb-5 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">

@@ -12,6 +12,7 @@ import {
 import { ArrowUpRight } from "lucide-react";
 import { projects, site, type Project } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { BackgroundOrbs } from "@/components/ui/background-orbs";
 import { FadeSwap } from "@/components/ui/FadeSwap";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +37,9 @@ export function ProjectsSection() {
       id="projects"
       className="layer-top relative z-30 -mt-8 overflow-x-clip rounded-t-[32px] bg-canvas px-5 pb-24 pt-24 transition-colors duration-500 sm:rounded-t-[48px] sm:px-8 md:px-10"
     >
-      <div className="mx-auto mb-14 w-full max-w-6xl">
+      <BackgroundOrbs variant="wide" />
+
+      <div className="relative z-10 mx-auto mb-14 w-full max-w-6xl">
         <FadeSwap>
           <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
             {t.projects.eyebrow}
@@ -47,7 +50,7 @@ export function ProjectsSection() {
         </FadeSwap>
       </div>
 
-      <div ref={containerRef} className="mx-auto w-full max-w-6xl">
+      <div ref={containerRef} className="relative z-10 mx-auto w-full max-w-6xl">
         {projects.map((project, index) => (
           <ProjectCard
             key={project.number}
@@ -105,6 +108,20 @@ function ProjectCard({
             <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-subtle">
               {project.stack}
             </p>
+
+            {/* Micro-datos de impacto */}
+            <FadeSwap className="mt-4">
+              <ul className="flex flex-wrap gap-2">
+                {copy.metrics.map((metric) => (
+                  <li
+                    key={metric}
+                    className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-accent-ink"
+                  >
+                    {metric}
+                  </li>
+                ))}
+              </ul>
+            </FadeSwap>
           </div>
         </div>
 

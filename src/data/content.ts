@@ -46,12 +46,16 @@ export interface Dictionary {
       solution: string;
       impact: string;
       cta: string;
+      /** Micro-datos visibles bajo la cabecera de la tarjeta. */
+      metrics: string[];
       showcase: [string, string, string];
     }>;
   };
   footer: {
     eyebrow: string;
     headline: string;
+    /** Linea de disponibilidad en clave comercial. */
+    availability: string;
     cta: string;
     groups: { navigation: string; professional: string; community: string; contact: string };
     links: { home: string; about: string; services: string; projects: string; email: string };
@@ -74,7 +78,7 @@ const en: Dictionary = {
       "I build complete web applications tailored to each project's stack (Laravel, React, Node), automate operational workflows with n8n, Python, and AI, and produce organic video content from script to screen.",
     philosophy:
       "Tool-agnostic engineering: I pick the architecture and stack each problem actually needs, instead of forcing every project through the same one.",
-    badgeAvailability: "Available for Projects & Roles",
+    badgeAvailability: "Available for contracts & consulting",
     badgeLocation: "Remote / Bucaramanga, Colombia",
     ctaPrimary: "Let's Talk on WhatsApp",
     ctaSecondary: "Explore Projects & Work",
@@ -92,7 +96,7 @@ const en: Dictionary = {
       {
         eyebrow: "02",
         title: "Communication & Video",
-        body: "Beyond code, I produce organic content and live stream (criscx1905 / Tostu) on TikTok, Instagram, and Twitch, running the entire production pipeline. This allows me to explain complex technical architectures in clear, human, jargon-free terms.",
+        body: "Beyond code, I run a full production pipeline - concept, script, on-camera delivery and editing - that has grown an organic audience of 32K+ followers on TikTok, Instagram and Twitch. For clients that becomes product demos, pitch videos and technical explainers a non-technical buyer can actually follow: the same skill that makes a stream watchable is what makes a B2B pitch land.",
       },
     ],
     highlights: [
@@ -129,6 +133,11 @@ const en: Dictionary = {
         impact:
           "Pairs resume exactly where they left off, and review feedback arrives while the code is still fresh.",
         cta: "Explore Project",
+        metrics: [
+          "Realtime Sync",
+          "AI-Assisted Review",
+          "Dockerised Delivery",
+        ],
         showcase: [
           "02. Course Syllabus & Moodle Grade Integration",
           "03. Real-Time IDE, Mobile Preview & AI Tutor Chat",
@@ -146,26 +155,43 @@ const en: Dictionary = {
         impact:
           "Manual transcription becomes a review step, and every extracted field carries a traceable confidence check.",
         cta: "View Case",
+        metrics: [
+          "OCR Pipeline",
+          "Field-Level Validation",
+          "Azure Doc Intelligence",
+        ],
         showcase: ["Ingest pipeline", "Field mapping", "Validation run"],
       },
       {
-        name: "Organic Content Creation & Live Streaming",
-        category: "Digital Media & Community",
+        name: "Content Creation & Media Pipeline",
+        category: "Digital Media & B2B Communication",
         tagline: "Tostu / criscx1905",
         context:
-          "Technical work rarely reaches the people it could help, because it is explained in the vocabulary of whoever built it.",
+          "Technical products lose deals in the explanation, not in the build. Teams demo features in the vocabulary of whoever wrote them, and the buyer never sees the value.",
         solution:
-          "A full production pipeline run solo: concept, script, on-camera presenting and vertical editing across TikTok, Instagram and Twitch.",
+          "An end-to-end production pipeline run solo: concept, script, on-camera delivery and high-retention vertical editing. The same pipeline behind an organic audience of 32K+ followers and 2M+ likes.",
         impact:
-          "Complex architecture lands as something a non-technical audience can follow and act on.",
+          "It transfers straight to client work: product demos, pitch videos and technical explainers a non-technical decision-maker can follow and act on.",
         cta: "View Case",
-        showcase: ["Vertical edit", "Live set", "Community"],
+        metrics: [
+          "+2M Organic Impressions",
+          "High-Retention Pacing",
+          "Multistream Production",
+          "End-to-End Delivery",
+        ],
+        showcase: [
+          "02. Community Growth & Organic Reach (32K+ Followers, 2M+ Likes)",
+          "03. Live Broadcasting Architecture (OBS Multistream Setup)",
+          "01. High-Retention Vertical Editing (After Effects Pipeline)",
+        ],
       },
     ],
   },
   footer: {
     eyebrow: "[ Contact ]",
     headline: "Let's build something that ships.",
+    availability:
+      "Available for engineering contracts, automation systems, and high-impact digital consulting.",
     cta: "Start a conversation",
     groups: {
       navigation: "Navigation",
@@ -199,7 +225,7 @@ const es: Dictionary = {
       "Construyo aplicaciones web completas adaptadas al stack de cada proyecto (Laravel, React, Node), automatizo flujos operativos con n8n, Python e IA, y produzco contenido audiovisual de principio a fin.",
     philosophy:
       "Ingeniería agnóstica de herramientas: elijo la arquitectura y el stack que cada problema necesita, en lugar de forzar todos los proyectos por el mismo camino.",
-    badgeAvailability: "Disponible para proyectos y roles",
+    badgeAvailability: "Disponible para contratos y consultoría",
     badgeLocation: "Remoto / Bucaramanga, Colombia",
     ctaPrimary: "Hablemos por WhatsApp",
     ctaSecondary: "Ver proyectos y trabajo",
@@ -217,7 +243,7 @@ const es: Dictionary = {
       {
         eyebrow: "02",
         title: "Comunicación y video",
-        body: "Más allá del código, produzco contenido orgánico y hago streaming en directo (criscx1905 / Tostu) en TikTok, Instagram y Twitch, gestionando toda la cadena de producción. Eso me permite explicar arquitecturas técnicas complejas en términos claros, humanos y sin jerga.",
+        body: "Más allá del código, gestiono una cadena de producción completa (concepto, guion, cámara y edición) que ha construido una audiencia orgánica de 32K+ seguidores en TikTok, Instagram y Twitch. Para un cliente eso se traduce en demos de producto, vídeos de pitch y explicaciones técnicas que un comprador no técnico sí entiende: la misma habilidad que hace ver un directo es la que hace aterrizar un pitch B2B.",
       },
     ],
     highlights: [
@@ -254,6 +280,11 @@ const es: Dictionary = {
         impact:
           "Se retoma exactamente donde se dejó, y la revisión llega cuando el código todavía está fresco.",
         cta: "Explorar Proyecto",
+        metrics: [
+          "Sincronía en vivo",
+          "Revisión asistida por IA",
+          "Entrega con Docker",
+        ],
         showcase: [
           "02. Temario del curso e integración de notas con Moodle",
           "03. IDE en tiempo real, vista móvil y chat con tutor IA",
@@ -271,26 +302,43 @@ const es: Dictionary = {
         impact:
           "La transcripción manual pasa a ser un paso de revisión, y cada campo extraído lleva una comprobación de confianza trazable.",
         cta: "Ver Caso",
+        metrics: [
+          "Pipeline OCR",
+          "Validación por campo",
+          "Azure Doc Intelligence",
+        ],
         showcase: ["Pipeline de ingesta", "Mapeo de campos", "Validación"],
       },
       {
-        name: "Creación de Contenido Orgánico y Streaming en Vivo",
-        category: "Medios Digitales y Comunidad",
+        name: "Creación de Contenido y Cadena de Producción",
+        category: "Medios Digitales y Comunicación B2B",
         tagline: "Tostu / criscx1905",
         context:
-          "El trabajo técnico rara vez llega a quien podría aprovecharlo, porque se explica en el vocabulario de quien lo construyó.",
+          "Los productos técnicos pierden ventas en la explicación, no en la construcción. Se demuestran en el vocabulario de quien los programó, y el cliente nunca llega a ver el valor.",
         solution:
-          "Una cadena de producción completa en solitario: concepto, guion, presentación en cámara y edición vertical para TikTok, Instagram y Twitch.",
+          "Una cadena de producción completa en solitario: concepto, guion, presentación en cámara y edición vertical de alta retención. La misma que sostiene una audiencia orgánica de 32K+ seguidores y 2M+ likes.",
         impact:
-          "La arquitectura compleja aterriza como algo que una audiencia no técnica puede seguir y aplicar.",
+          "Se traslada directo al trabajo con clientes: demos de producto, vídeos de pitch y explicaciones técnicas que un decisor no técnico puede seguir y accionar.",
         cta: "Ver Caso",
-        showcase: ["Edición vertical", "Directo", "Comunidad"],
+        metrics: [
+          "+2M impresiones orgánicas",
+          "Ritmo de alta retención",
+          "Producción multistream",
+          "Entrega de principio a fin",
+        ],
+        showcase: [
+          "02. Crecimiento de comunidad y alcance orgánico (32K+ seguidores, 2M+ likes)",
+          "03. Arquitectura de directo (montaje multistream con OBS)",
+          "01. Edición vertical de alta retención (pipeline en After Effects)",
+        ],
       },
     ],
   },
   footer: {
     eyebrow: "[ Contacto ]",
     headline: "Construyamos algo que salga a producción.",
+    availability:
+      "Disponible para consultoría, desarrollo de software y producción digital enfocada en resultados.",
     cta: "Iniciar una conversación",
     groups: {
       navigation: "Navegación",
