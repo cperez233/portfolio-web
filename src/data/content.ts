@@ -29,8 +29,8 @@ export interface Dictionary {
   services: {
     eyebrow: string;
     title: string;
-    /** Un nombre por servicio, en el orden de `menuItems`. */
-    items: string[];
+    /** Un bloque por servicio, en el orden de `menuItems`. */
+    items: Array<{ name: string; tag: string; description: string }>;
   };
   projects: {
     eyebrow: string;
@@ -110,11 +110,36 @@ const en: Dictionary = {
     eyebrow: "[ 02 ]",
     title: "Services",
     items: [
-      "Full-Stack Web Development",
-      "Workflow Automation",
-      "AI & Document Extraction",
-      "Audiovisual & Live Content",
-      "Secure Systems & APIs",
+      {
+        name: "Full-Stack Systems & Web Architecture",
+        tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
+        description:
+          "Design and delivery of complete web applications, scalable and secure, from relational models through to high-performance interactive interfaces.",
+      },
+      {
+        name: "Workflow Automation & Integration",
+        tag: "N8N / PYTHON / WEBHOOKS / APIS",
+        description:
+          "Connecting business tools, databases and CRMs through automated pipelines that remove operational friction and repetitive manual work.",
+      },
+      {
+        name: "AI Pipeline & Intelligent Document Extraction",
+        tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
+        description:
+          "Language-model workflows and intelligent ingestion of unstructured data - physical records, complex PDFs, medical and legal forms - into databases you can query instantly.",
+      },
+      {
+        name: "Technical & Business Process Audit",
+        tag: "SECURITY / DATA INTEGRITY / WORKFLOW AUDITING",
+        description:
+          "A deep review of data flows, input validation, operational bottlenecks and security posture, so the technology protects the processes the business actually runs on.",
+      },
+      {
+        name: "Audiovisual Production & Technical Communication",
+        tag: "SCRIPTING / HIGH-RETENTION EDITING / STREAMING",
+        description:
+          "End-to-end vertical video and on-camera product demos that turn dense technical subjects into commercial messages a B2B audience remembers.",
+      },
     ],
   },
   projects: {
@@ -257,11 +282,36 @@ const es: Dictionary = {
     eyebrow: "[ 02 ]",
     title: "Servicios",
     items: [
-      "Desarrollo web full-stack",
-      "Automatización de flujos",
-      "IA y extracción documental",
-      "Audiovisual y contenido en vivo",
-      "Sistemas y APIs seguras",
+      {
+        name: "Sistemas full-stack y arquitectura web",
+        tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
+        description:
+          "Diseño e implementación de aplicaciones web completas, escalables y seguras, desde los modelos relacionales hasta interfaces interactivas de alto rendimiento.",
+      },
+      {
+        name: "Automatización e integración de flujos",
+        tag: "N8N / PYTHON / WEBHOOKS / APIS",
+        description:
+          "Conexión de herramientas empresariales, bases de datos y CRMs mediante pipelines automatizados que eliminan fricción operativa y tareas manuales repetitivas.",
+      },
+      {
+        name: "Pipeline de IA y extracción documental",
+        tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
+        description:
+          "Modelos de lenguaje e ingesta inteligente de datos no estructurados (registros físicos, PDFs complejos, formularios médicos y legales) hacia bases de datos consultables al instante.",
+      },
+      {
+        name: "Auditoría técnica y de procesos de negocio",
+        tag: "SEGURIDAD / INTEGRIDAD DE DATOS / AUDITORÍA DE FLUJOS",
+        description:
+          "Evaluación profunda de flujos de datos, validación de entradas, cuellos de botella operativos y postura de seguridad, para que la tecnología proteja los procesos de los que vive el negocio.",
+      },
+      {
+        name: "Producción audiovisual y comunicación técnica",
+        tag: "GUION / EDICIÓN DE ALTA RETENCIÓN / STREAMING",
+        description:
+          "Producción integral de vídeo vertical y demostraciones de producto en cámara que convierten temas técnicos densos en mensajes comerciales que una audiencia B2B recuerda.",
+      },
     ],
   },
   projects: {

@@ -2,11 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { BackgroundOrbs } from "./background-orbs";
 import { FadeSwap } from "./FadeSwap";
 import { cn } from "@/lib/utils";
+
+/** Velo del panel: mantiene el texto legible sobre cualquier foto. */
+const MEDIA_SCRIM =
+  "linear-gradient(to top, rgba(12,12,12,0.85) 0%, rgba(12,12,12,0.2) 60%, transparent 100%)";
 
 /**
  * Scroller de servicios con scroll-lock aparente.
@@ -21,6 +27,7 @@ export default function InteractiveVideoScroller() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
 
   const total = menuItems.length;
   const hasVideo = menuItems.some((item) => item.video);
@@ -61,17 +68,19 @@ export default function InteractiveVideoScroller() {
   );
 
   const active = menuItems[activeIndex] ?? menuItems[0];
-  const activeName = t.services.items[activeIndex] ?? t.services.items[0];
+  const activeCopy = t.services.items[activeIndex] ?? t.services.items[0];
 
   return (
     <section
       id="services"
       className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
     >
+      <BackgroundOrbs variant="middle" />
+
       <div
         ref={containerRef}
         style={{ height: `${total * 100}svh` }}
-        className="relative"
+        className="relative z-10"
       >
         <div className="sticky top-0 flex h-svh flex-col justify-center px-5 py-16 sm:px-8 md:px-10">
           <div className="mx-auto w-full max-w-6xl">
@@ -94,19 +103,51 @@ export default function InteractiveVideoScroller() {
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
               {/* Panel de medios */}
               <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface-2 lg:order-2 lg:aspect-[5/4]">
-                <MediaPanel
-                  item={active}
-                  name={activeName}
-                  stack={active.location}
-                  isMuted={isMuted}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={active.number}
+                    className="absolute inset-0"
+                    initial={
+                      shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
+                    }
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+                    transition={{
+                      duration: shouldReduceMotion ? 0 : 0.45,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <MediaPanel item={active} isMuted={isMuted} />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Velo fijo: no se remonta con el cambio de servicio. */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ backgroundImage: MEDIA_SCRIM }}
                 />
+
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+                  <FadeSwap>
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-ink">
+                      {activeCopy.tag}
+                    </p>
+                    <p className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl">
+                      {activeCopy.name}
+                    </p>
+                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70">
+                      {activeCopy.description}
+                    </p>
+                  </FadeSwap>
+                </div>
 
                 {hasVideo ? (
                   <button
                     type="button"
                     onClick={() => setIsMuted((value) => !value)}
                     aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    className="absolute bottom-4 right-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
+                    className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
                   >
                     {isMuted ? (
                       <VolumeX className="size-4" />
@@ -121,6 +162,7 @@ export default function InteractiveVideoScroller() {
               <ul className="order-2 flex flex-col lg:order-1">
                 {menuItems.map((item, index) => {
                   const isActive = index === activeIndex;
+                  const copy = t.services.items[index];
 
                   return (
                     <li key={item.number}>
@@ -129,7 +171,7 @@ export default function InteractiveVideoScroller() {
                         onClick={() => goToIndex(index)}
                         aria-current={isActive ? "true" : undefined}
                         className={cn(
-                          "flex w-full items-baseline gap-4 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6 sm:py-5",
+                          "flex w-full items-baseline gap-4 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6",
                           index === menuItems.length - 1 &&
                             "border-b border-line",
                         )}
@@ -146,23 +188,23 @@ export default function InteractiveVideoScroller() {
                         <span className="min-w-0 flex-1">
                           <span
                             className={cn(
-                              "block text-lg tracking-tight transition-colors duration-300 sm:text-2xl",
+                              "block text-balance text-base tracking-tight transition-colors duration-300 sm:text-xl",
                               isActive
                                 ? "font-medium text-ink"
                                 : "text-ink-subtle",
                             )}
                           >
-                            {t.services.items[index]}
+                            {copy.name}
                           </span>
                           <span
                             className={cn(
-                              "mt-1 block font-mono text-[11px] uppercase tracking-wider transition-colors duration-300",
+                              "mt-1 block font-mono text-[10px] uppercase tracking-wider transition-colors duration-300",
                               isActive
                                 ? "text-accent-ink"
                                 : "text-ink-subtle/60",
                             )}
                           >
-                            {item.location}
+                            {copy.tag}
                           </span>
                         </span>
                       </button>
@@ -179,25 +221,22 @@ export default function InteractiveVideoScroller() {
 }
 
 /**
- * Reproduce el video del servicio si existe; mientras no haya fuentes,
- * muestra la miniatura tematica en el mismo hueco.
+ * Reproduce el video del servicio si existe. No hay fuentes todavia, asi
+ * que en la practica siempre sirve la imagen: nunca se pide un .mp4 que
+ * devolveria 404.
  */
 function MediaPanel({
   item,
-  name,
-  stack,
   isMuted,
 }: {
   item: ServiceItem;
-  name: string;
-  stack: string;
   isMuted: boolean;
 }) {
   if (item.video) {
     return (
       <video
-        key={item.video}
         src={item.video}
+        poster={item.image}
         autoPlay
         loop
         playsInline
@@ -208,27 +247,13 @@ function MediaPanel({
   }
 
   return (
-    <>
-      <Image
-        key={item.image}
-        src={item.image}
-        alt=""
-        aria-hidden="true"
-        fill
-        sizes="(min-width: 1024px) 50vw, 100vw"
-        className="object-cover"
-      />
-      {/* Velo para que el texto se lea sobre cualquier foto. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"
-      />
-      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
-          {stack}
-        </p>
-        <p className="mt-2 text-xl italic text-white sm:text-2xl">{name}</p>
-      </div>
-    </>
+    <Image
+      src={item.image}
+      alt=""
+      aria-hidden="true"
+      fill
+      sizes="(min-width: 1024px) 50vw, 100vw"
+      className="object-cover"
+    />
   );
 }

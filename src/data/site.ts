@@ -44,54 +44,46 @@ export const hero = {
 
 export interface ServiceItem {
   number: string;
-  /** Stack: nombres propios, iguales en ambos idiomas. */
-  location: string;
-  /** Miniatura tematica del servicio. */
+  /** Imagen tematica del servicio. Hace de poster si algun dia hay video. */
   image: string;
-  /** Video de fondo. Sin fuentes todavia: cae a la miniatura. */
+  /**
+   * Video de fondo. No hay fuentes todavia, asi que ninguna entrada lo
+   * define y el panel se queda en la imagen: cero peticiones rotas.
+   */
   video?: string;
 }
 
+/** Imagenes curadas por servicio. Verificadas: las cinco responden 200. */
 const UNSPLASH = {
   darkIde:
     "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
-  dataInterface:
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-  minimalTech:
-    "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
+  nodeNetwork:
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
   dataWaves:
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+  securityAudit:
+    "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+  productionStudio:
+    "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
+  /*
+    Solo para el proyecto 02, que aun no tiene capturas propias. Los
+    proyectos 01 y 03 ya usan imagenes reales desde /public/projects.
+  */
   engineering:
     "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1200&q=80",
-  circuits:
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
-  studioAudio:
-    "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80",
-  videoProduction:
-    "https://images.unsplash.com/photo-1533750516457-a7f992034fec?auto=format&fit=crop&w=1200&q=80",
-  contentLights:
-    "https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?auto=format&fit=crop&w=1200&q=80",
 } as const;
 
-/** Cinco servicios, cada uno con una miniatura que refleja su tema. */
+/**
+ * Cinco servicios. Nombre, tag y descripcion viven en content.ts: el
+ * tag de los servicios 04 y 05 son frases descriptivas, no nombres
+ * propios, asi que tambien se traducen.
+ */
 export const menuItems: ServiceItem[] = [
-  { number: "01", location: "LARAVEL / REACT / DOCKER", image: UNSPLASH.darkIde },
-  { number: "02", location: "N8N / PYTHON / WEBHOOKS", image: UNSPLASH.circuits },
-  {
-    number: "03",
-    location: "LANGCHAIN / CLAUDE / AZURE",
-    image: UNSPLASH.dataWaves,
-  },
-  {
-    number: "04",
-    location: "TIKTOK / TWITCH / EDITING",
-    image: UNSPLASH.studioAudio,
-  },
-  {
-    number: "05",
-    location: "AUDITING / INTEGRITY / DB",
-    image: UNSPLASH.engineering,
-  },
+  { number: "01", image: UNSPLASH.darkIde },
+  { number: "02", image: UNSPLASH.nodeNetwork },
+  { number: "03", image: UNSPLASH.dataWaves },
+  { number: "04", image: UNSPLASH.securityAudit },
+  { number: "05", image: UNSPLASH.productionStudio },
 ];
 
 export interface Project {
@@ -114,7 +106,7 @@ export const projects: Project[] = [
   {
     number: "02",
     stack: "Python, Azure Document Intelligence, OCR",
-    showcase: [UNSPLASH.dataWaves, UNSPLASH.engineering, UNSPLASH.circuits],
+    showcase: [UNSPLASH.dataWaves, UNSPLASH.engineering, UNSPLASH.nodeNetwork],
   },
   {
     number: "03",
