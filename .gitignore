@@ -40,10 +40,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# claude code (local)
-.claude/settings.local.json
 
 # originales sin optimizar (fuente de public/projects/*.jpg)
 assets-src/
 
 .vercel
+
+# herramientas de asistencia local: no forman parte del proyecto
+CLAUDE.md
+AGENTS.md
+.claude/
