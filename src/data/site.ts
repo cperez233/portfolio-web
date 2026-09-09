@@ -197,20 +197,27 @@ export const footerGroups: FooterGroup[] = [
 ];
 
 /**
- * Fila 1 del marquee: trabajo real, no imagenes de stock.
- * Son las mismas capturas que sostienen los proyectos, usadas aqui
- * como anticipo en movimiento.
+ * Tecnologias de la fila inferior del marquee. Nombres propios: no se
+ * traducen, por eso viven aqui y no en el diccionario.
  */
-export const marqueeRowOne: string[] = [
-  "/projects/pairsync-landing.jpg",
-  "/projects/actas-buscador.jpg",
-  "/projects/content-editing.jpg",
-  "/projects/pairsync-session.jpg",
-  "/projects/actas-excel.jpg",
-  "/projects/content-social.jpg",
-  "/projects/pairsync-courses.jpg",
-  "/projects/actas-pipeline.jpg",
-  "/projects/content-streaming.jpg",
+export const marqueeTechnologies: string[] = [
+  'Laravel',
+  'React',
+  'Next.js',
+  'TypeScript',
+  'Node.js',
+  'Python',
+  'PostgreSQL',
+  'Docker',
+  'n8n',
+  'LangChain',
+  'Claude API',
+  'Azure Doc Intelligence',
+  'OCR',
+  'WebSockets',
+  'Linux',
+  'OBS',
+  'After Effects',
 ];
 
 export const portrait = { local: "/perfil.png" } as const;

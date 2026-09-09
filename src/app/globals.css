@@ -132,6 +132,28 @@ html.dark {
     color: #ffffff;
   }
 
+  /*
+    Desvanecido en los bordes del marquee. Sin esto las filas se cortan
+    a cuchillo contra el borde de la pantalla y el movimiento se lee
+    como un recorte, no como algo que sigue mas alla.
+  */
+  .marquee-fade {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 90%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 90%,
+      transparent 100%
+    );
+  }
+
   .hairline {
     background-image: linear-gradient(
       to right,

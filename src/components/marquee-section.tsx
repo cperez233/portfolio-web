@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
-import { marqueeRowOne } from "@/data/site";
+import { marqueeTechnologies } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { BackgroundOrbs } from "./ui/background-orbs";
 import { SectionEdge, SectionTransition } from "./ui/section-transition";
+import { cn } from "@/lib/utils";
 
 /**
- * Dos filas que se desplazan en sentidos opuestos segun la posicion del
- * scroll. Listener pasivo y solo se toca transform.
+ * Banda de transicion entre el hero y el resto. Dos filas de texto que
+ * se desplazan en sentidos opuestos segun la posicion del scroll.
  *
- * Arriba, capturas del trabajo real; abajo, una fila de texto con lo que
- * el visitante se lleva. Antes las dos filas eran GIFs de plantillas de
- * terceros: se veian bien, pero no eran suyas y no decian nada.
+ * Arriba, en grande, lo que se lleva quien contrata. Abajo, en mono y
+ * mas discreto, el stack: la misma jerarquia de dos capas que el resto
+ * del sitio, lo llano delante y el detalle tecnico un paso por detras.
+ *
+ * Antes habia dos filas de imagenes. Las de plantillas ajenas no eran
+ * suyas; las de trabajo propio repetian la seccion de Proyectos, que
+ * esta a un scroll de distancia y las ensena mejor.
  *
  * Cada fila se recorta con overflow-x-clip: sin eso, las filas
  * trasladadas arrastrarian scroll horizontal a toda la pagina.
@@ -46,98 +50,102 @@ export function MarqueeSection() {
   return (
     <section
       ref={sectionRef}
-      aria-label="Work showcase"
-      className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas pb-14 pt-20 transition-colors duration-500 sm:rounded-t-[48px] sm:pt-28 md:pt-32"
+      aria-label="Highlights"
+      className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas py-16 transition-colors duration-500 sm:rounded-t-[48px] sm:py-24"
     >
       <SectionEdge />
       <BackgroundOrbs variant="top" />
 
       <SectionTransition className="relative z-10">
-        <ImageRow
-          sources={[...marqueeRowOne, ...marqueeRowOne]}
-          translateX={shift}
-        />
-        <PhraseRow
-          phrases={[
-            ...t.marqueePhrases,
-            ...t.marqueePhrases,
-            ...t.marqueePhrases,
-          ]}
-          translateX={-shift}
-        />
+        <Row translateX={shift}>
+          {t.marqueePhrases.map((phrase, index) => (
+            <Item
+              key={`${phrase}-${index}`}
+              className={cn(
+                // 4xl y no 5xl: a mas tamano solo caben dos palabras en
+                // pantalla y la frase deja de leerse como frase.
+                "text-2xl font-medium tracking-tight sm:text-4xl",
+                // Alternar acento da ritmo sin pintar la fila entera.
+                index % 2 === 0 ? "text-ink" : "text-accent-ink",
+              )}
+            >
+              {phrase}
+            </Item>
+          ))}
+        </Row>
+
+        <Row translateX={-shift} className="mt-6 sm:mt-8">
+          {marqueeTechnologies.map((tech, index) => (
+            <Item
+              key={`${tech}-${index}`}
+              className="font-mono text-sm uppercase tracking-[0.18em] text-ink-subtle sm:text-base"
+              dotClassName="size-1"
+            >
+              {tech}
+            </Item>
+          ))}
+        </Row>
       </SectionTransition>
     </section>
   );
 }
 
-function ImageRow({
-  sources,
+/**
+ * Una fila. El contenido se repite tres veces para que el desplazamiento
+ * nunca deje un hueco visible por ninguno de los dos lados.
+ */
+function Row({
+  children,
   translateX,
+  className,
 }: {
-  sources: string[];
+  children: React.ReactNode;
   translateX: number;
+  className?: string;
 }) {
   return (
-    <div className="overflow-x-clip">
+    <div
+      aria-hidden="true"
+      className={cn("marquee-fade overflow-x-clip", className)}
+    >
       <div
-        className="flex w-max gap-3"
+        className="flex w-max items-center"
         style={{
           transform: `translateX(${translateX}px)`,
           willChange: "transform",
         }}
       >
-        {sources.map((src, index) => (
-          <div
-            key={`${src}-${index}`}
-            className="relative h-[190px] w-[300px] shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 sm:h-[250px] sm:w-[400px]"
-          >
-            <Image
-              src={src}
-              alt=""
-              aria-hidden="true"
-              fill
-              loading="lazy"
-              sizes="(min-width: 640px) 400px, 300px"
-              className="object-cover object-top"
-            />
-          </div>
-        ))}
+        {children}
+        {children}
+        {children}
       </div>
     </div>
   );
 }
 
-/**
- * Fila de texto: dice en palabras lo que la fila de arriba ensena en
- * imagenes. Como banda es decorativa, asi que se oculta al lector de
- * pantalla; las mismas ideas estan en Servicios como contenido real.
- */
-function PhraseRow({
-  phrases,
-  translateX,
+function Item({
+  children,
+  className,
+  dotClassName,
 }: {
-  phrases: string[];
-  translateX: number;
+  children: React.ReactNode;
+  className?: string;
+  dotClassName?: string;
 }) {
   return (
-    <div aria-hidden="true" className="mt-3 overflow-x-clip">
-      <div
-        className="flex w-max items-center gap-6 sm:gap-10"
-        style={{
-          transform: `translateX(${translateX}px)`,
-          willChange: "transform",
-        }}
-      >
-        {phrases.map((phrase, index) => (
-          <span
-            key={`${phrase}-${index}`}
-            className="flex shrink-0 items-center gap-6 whitespace-nowrap text-2xl font-medium tracking-tight text-ink-muted sm:gap-10 sm:text-4xl"
-          >
-            {phrase}
-            <span className="size-1.5 shrink-0 rounded-full bg-accent-ink" />
-          </span>
-        ))}
-      </div>
-    </div>
+    <span
+      className={cn(
+        "flex shrink-0 items-center gap-6 whitespace-nowrap sm:gap-10",
+        className,
+      )}
+    >
+      {children}
+      <span
+        className={cn(
+          "shrink-0 rounded-full bg-accent-ink/60",
+          dotClassName ?? "size-1.5",
+        )}
+      />
+    </span>
   );
 }
