@@ -45,3 +45,5 @@ next-env.d.ts
 
 # originales sin optimizar (fuente de public/projects/*.jpg)
 assets-src/
+
+.vercel

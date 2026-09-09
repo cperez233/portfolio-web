@@ -1,0 +1,7 @@
+# Originales sin censurar de las capturas de actas: contienen nombres y
+# cedulas reales. Solo se publica la version difuminada que vive en
+# public/projects/. Esta carpeta no debe salir de la maquina local.
+assets-src/
+
+node_modules
+.next
