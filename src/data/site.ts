@@ -9,7 +9,6 @@ export interface SiteMeta {
   email: string;
   emailHref: string;
   location: string;
-  whatsapp: string;
 }
 
 export const site: SiteMeta = {
@@ -18,8 +17,6 @@ export const site: SiteMeta = {
   email: "crisperezm879@gmail.com",
   emailHref: "mailto:crisperezm879@gmail.com",
   location: "Bucaramanga, Colombia",
-  whatsapp:
-    "https://wa.me/573052669219?text=Hi%20Cristian,%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project",
 };
 
 export type NavKey = "about" | "services" | "projects" | "contact";
@@ -63,6 +60,11 @@ const UNSPLASH = {
     "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
   securityAudit:
     "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
+  /* Capturas reales del proyecto de digitalizacion de actas (FCV).
+     Las dos que mostraban cedulas y nombres van censuradas. */
+  actasPipeline: "/projects/actas-pipeline.jpg",
+  actasBuscador: "/projects/actas-buscador.jpg",
+  actasExcel: "/projects/actas-excel.jpg",
   productionStudio:
     "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
   /*
@@ -81,7 +83,7 @@ const UNSPLASH = {
 export const menuItems: ServiceItem[] = [
   { number: "01", image: UNSPLASH.darkIde },
   { number: "02", image: UNSPLASH.nodeNetwork },
-  { number: "03", image: UNSPLASH.dataWaves },
+  { number: "03", image: UNSPLASH.actasPipeline },
   { number: "04", image: UNSPLASH.securityAudit },
   { number: "05", image: UNSPLASH.productionStudio },
 ];
@@ -106,7 +108,11 @@ export const projects: Project[] = [
   {
     number: "02",
     stack: "Python, Azure Document Intelligence, OCR",
-    showcase: [UNSPLASH.dataWaves, UNSPLASH.engineering, UNSPLASH.nodeNetwork],
+    showcase: [
+      UNSPLASH.actasPipeline,
+      UNSPLASH.actasExcel,
+      UNSPLASH.actasBuscador,
+    ],
   },
   {
     number: "03",
@@ -178,9 +184,11 @@ export const footerGroups: FooterGroup[] = [
   {
     key: "contact",
     links: [
+      /* Sin ?text: el mensaje traducido lo ponen los CTA grandes.
+         Aqui es un enlace de directorio, no una llamada a la accion. */
       {
         label: "WhatsApp",
-        href: "https://wa.me/573052669219?text=Hi%20Cristian,%20I%20saw%20your%20portfolio",
+        href: "https://wa.me/573052669219",
         external: true,
       },
       { labelKey: "email", href: "mailto:crisperezm879@gmail.com" },
@@ -188,33 +196,21 @@ export const footerGroups: FooterGroup[] = [
   },
 ];
 
-/** Marquee fila 1. Assets alojados por motionsites.ai (terceros). */
+/**
+ * Fila 1 del marquee: trabajo real, no imagenes de stock.
+ * Son las mismas capturas que sostienen los proyectos, usadas aqui
+ * como anticipo en movimiento.
+ */
 export const marqueeRowOne: string[] = [
-  "https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif",
-  "https://motionsites.ai/assets/hero-codenest-preview-Cgppc2qV.gif",
-  "https://motionsites.ai/assets/hero-vex-ventures-preview-BczMFIiw.gif",
-  "https://motionsites.ai/assets/hero-stellar-ai-v2-preview-DjvxjG3C.gif",
-  "https://motionsites.ai/assets/hero-asme-preview-B_nGDnTP.gif",
-  "https://motionsites.ai/assets/hero-transform-data-preview-Cx5OU29N.gif",
-  "https://motionsites.ai/assets/hero-vitara-preview-Cjz2QYyU.gif",
-  "https://motionsites.ai/assets/hero-terra-preview-BFjrCr7T.gif",
-  "https://motionsites.ai/assets/hero-skyelite-preview-DHaZIgUv.gif",
-  "https://motionsites.ai/assets/hero-aethera-preview-DknSlcTa.gif",
-  "https://motionsites.ai/assets/hero-designpro-preview-D8c5_een.gif",
-];
-
-/** Marquee fila 2. */
-export const marqueeRowTwo: string[] = [
-  "https://motionsites.ai/assets/hero-stellar-ai-preview-D3HL6bw1.gif",
-  "https://motionsites.ai/assets/hero-xportfolio-preview-D4A8maiC.gif",
-  "https://motionsites.ai/assets/hero-orbit-web3-preview-BXt4OttD.gif",
-  "https://motionsites.ai/assets/hero-nexora-preview-cx5HmUgo.gif",
-  "https://motionsites.ai/assets/hero-evr-ventures-preview-DZxeVFEX.gif",
-  "https://motionsites.ai/assets/hero-planet-orbit-preview-DWAP8Z1P.gif",
-  "https://motionsites.ai/assets/hero-new-era-preview-CocuDUm9.gif",
-  "https://motionsites.ai/assets/hero-wealth-preview-B70idl_u.gif",
-  "https://motionsites.ai/assets/hero-luminex-preview-CxOP7ce6.gif",
-  "https://motionsites.ai/assets/hero-celestia-preview-0yO3jXO8.gif",
+  "/projects/pairsync-landing.jpg",
+  "/projects/actas-buscador.jpg",
+  "/projects/content-editing.jpg",
+  "/projects/pairsync-session.jpg",
+  "/projects/actas-excel.jpg",
+  "/projects/content-social.jpg",
+  "/projects/pairsync-courses.jpg",
+  "/projects/actas-pipeline.jpg",
+  "/projects/content-streaming.jpg",
 ];
 
 export const portrait = { local: "/perfil.png" } as const;

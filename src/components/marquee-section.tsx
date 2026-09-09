@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
-import { marqueeRowOne, marqueeRowTwo } from "@/data/site";
+import { marqueeRowOne } from "@/data/site";
+import { useLanguage } from "@/lib/language";
 import { BackgroundOrbs } from "./ui/background-orbs";
 import { SectionEdge, SectionTransition } from "./ui/section-transition";
 
@@ -11,14 +12,18 @@ import { SectionEdge, SectionTransition } from "./ui/section-transition";
  * Dos filas que se desplazan en sentidos opuestos segun la posicion del
  * scroll. Listener pasivo y solo se toca transform.
  *
+ * Arriba, capturas del trabajo real; abajo, una fila de texto con lo que
+ * el visitante se lleva. Antes las dos filas eran GIFs de plantillas de
+ * terceros: se veian bien, pero no eran suyas y no decian nada.
+ *
  * Cada fila se recorta con overflow-x-clip: sin eso, las filas
- * trasladadas medirian mas de 15.000px y arrastrarian scroll
- * horizontal a toda la pagina.
+ * trasladadas arrastrarian scroll horizontal a toda la pagina.
  */
 export function MarqueeSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [offset, setOffset] = useState(200);
   const shouldReduceMotion = useReducedMotion();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (shouldReduceMotion) return;
@@ -41,33 +46,37 @@ export function MarqueeSection() {
   return (
     <section
       ref={sectionRef}
-      aria-label="Motion showcase"
-      className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas pb-10 pt-20 transition-colors duration-500 sm:rounded-t-[48px] sm:pt-28 md:pt-32"
+      aria-label="Work showcase"
+      className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas pb-14 pt-20 transition-colors duration-500 sm:rounded-t-[48px] sm:pt-28 md:pt-32"
     >
       <SectionEdge />
       <BackgroundOrbs variant="top" />
 
       <SectionTransition className="relative z-10">
-      <MarqueeRow
-        sources={[...marqueeRowOne, ...marqueeRowOne, ...marqueeRowOne]}
-        translateX={shift}
-      />
-      <div className="h-3" />
-      <MarqueeRow
-        sources={[...marqueeRowTwo, ...marqueeRowTwo, ...marqueeRowTwo]}
-        translateX={-shift}
-      />
+        <ImageRow
+          sources={[...marqueeRowOne, ...marqueeRowOne]}
+          translateX={shift}
+        />
+        <PhraseRow
+          phrases={[
+            ...t.marqueePhrases,
+            ...t.marqueePhrases,
+            ...t.marqueePhrases,
+          ]}
+          translateX={-shift}
+        />
       </SectionTransition>
     </section>
   );
 }
 
-interface MarqueeRowProps {
+function ImageRow({
+  sources,
+  translateX,
+}: {
   sources: string[];
   translateX: number;
-}
-
-function MarqueeRow({ sources, translateX }: MarqueeRowProps) {
+}) {
   return (
     <div className="overflow-x-clip">
       <div
@@ -80,20 +89,53 @@ function MarqueeRow({ sources, translateX }: MarqueeRowProps) {
         {sources.map((src, index) => (
           <div
             key={`${src}-${index}`}
-            className="relative h-[210px] w-[330px] shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 sm:h-[270px] sm:w-[420px]"
+            className="relative h-[190px] w-[300px] shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 sm:h-[250px] sm:w-[400px]"
           >
             <Image
               src={src}
               alt=""
               aria-hidden="true"
               fill
-              // GIF animado: optimizarlo lo congela en el primer frame.
-              unoptimized
               loading="lazy"
-              sizes="(min-width: 640px) 420px, 330px"
-              className="object-cover"
+              sizes="(min-width: 640px) 400px, 300px"
+              className="object-cover object-top"
             />
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Fila de texto: dice en palabras lo que la fila de arriba ensena en
+ * imagenes. Como banda es decorativa, asi que se oculta al lector de
+ * pantalla; las mismas ideas estan en Servicios como contenido real.
+ */
+function PhraseRow({
+  phrases,
+  translateX,
+}: {
+  phrases: string[];
+  translateX: number;
+}) {
+  return (
+    <div aria-hidden="true" className="mt-3 overflow-x-clip">
+      <div
+        className="flex w-max items-center gap-6 sm:gap-10"
+        style={{
+          transform: `translateX(${translateX}px)`,
+          willChange: "transform",
+        }}
+      >
+        {phrases.map((phrase, index) => (
+          <span
+            key={`${phrase}-${index}`}
+            className="flex shrink-0 items-center gap-6 whitespace-nowrap text-2xl font-medium tracking-tight text-ink-muted sm:gap-10 sm:text-4xl"
+          >
+            {phrase}
+            <span className="size-1.5 shrink-0 rounded-full bg-accent-ink" />
+          </span>
         ))}
       </div>
     </div>

@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown, ArrowUpRight } from "lucide-react";
-import { hero, portrait, site } from "@/data/site";
+import { hero, portrait } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { buildWhatsappUrl } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
 
 interface BlurTextProps {
@@ -219,7 +220,7 @@ export default function PortfolioHero() {
         >
           <FadeSwap>
             <a
-              href={site.whatsapp}
+              href={buildWhatsappUrl(t.whatsappMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="accent-fill inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"

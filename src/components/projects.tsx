@@ -10,8 +10,9 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { projects, site, type Project } from "@/data/site";
+import { projects, type Project } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { buildWhatsappUrl } from "@/lib/contact";
 import { BackgroundOrbs } from "@/components/ui/background-orbs";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { SectionEdge } from "@/components/ui/section-transition";
@@ -130,7 +131,7 @@ function ProjectCard({
 
         <FadeSwap className="shrink-0">
           <a
-            href={site.whatsapp}
+            href={buildWhatsappUrl(t.whatsappMessage)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong px-6 text-sm uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"

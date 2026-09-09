@@ -61,6 +61,10 @@ export interface Dictionary {
     rights: string;
   };
   languageToggle: { label: string };
+  /** Mensaje que se abre ya escrito en WhatsApp. */
+  whatsappMessage: string;
+  /** Frases de la fila de texto del marquee. */
+  marqueePhrases: string[];
 }
 
 const en: Dictionary = {
@@ -181,7 +185,11 @@ const en: Dictionary = {
           "Field-Level Validation",
           "Azure Doc Intelligence",
         ],
-        showcase: ["Ingest pipeline", "Field mapping", "Validation run"],
+        showcase: [
+          "02. The pipeline reading 83 scanned batches",
+          "03. The index it generates, one row per record",
+          "01. Search by ID, name or site across 746 records",
+        ],
       },
       {
         name: "Content Creation & Media Pipeline",
@@ -230,6 +238,16 @@ const en: Dictionary = {
     rights: "All rights reserved.",
   },
   languageToggle: { label: "Change language" },
+  whatsappMessage:
+    "Hi Cristian, I saw your portfolio and I would like to talk about a project.",
+  marqueePhrases: [
+    "Systems that ship",
+    "Automation that removes manual work",
+    "Documents turned into searchable data",
+    "Security checked from day one",
+    "Video that explains what you sell",
+    "Built for small teams",
+  ],
 };
 
 const es: Dictionary = {
@@ -350,7 +368,11 @@ const es: Dictionary = {
           "Validación por campo",
           "Azure Doc Intelligence",
         ],
-        showcase: ["Pipeline de ingesta", "Mapeo de campos", "Validación"],
+        showcase: [
+          "02. El pipeline leyendo 83 lotes escaneados",
+          "03. El índice que genera, una fila por acta",
+          "01. Búsqueda por cédula, nombre o sede sobre 746 actas",
+        ],
       },
       {
         name: "Creación de Contenido y Cadena de Producción",
@@ -399,6 +421,16 @@ const es: Dictionary = {
     rights: "Todos los derechos reservados.",
   },
   languageToggle: { label: "Cambiar idioma" },
+  whatsappMessage:
+    "Hola Cristian, vi tu portafolio y me gustaría hablar de un proyecto.",
+  marqueePhrases: [
+    "Sistemas que salen a producción",
+    "Automatización que quita trabajo manual",
+    "Documentos convertidos en datos",
+    "Seguridad revisada desde el primer día",
+    "Video que explica lo que vendes",
+    "Hecho para equipos pequeños",
+  ],
 };
 
 export const dictionaries: Record<Language, Dictionary> = { en, es };

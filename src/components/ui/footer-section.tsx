@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { footerGroups, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { buildWhatsappUrl } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
 import { SectionEdge } from "./section-transition";
 
@@ -52,7 +53,7 @@ export default function Footer() {
             </FadeSwap>
 
             <a
-              href={site.whatsapp}
+              href={buildWhatsappUrl(t.whatsappMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="accent-fill mt-7 inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-medium transition-transform duration-200 ease-[var(--ease-premium)] hover:scale-[1.03] active:scale-[0.98]"
