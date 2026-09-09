@@ -103,7 +103,7 @@ const en: Dictionary = {
       { label: "Tool-Agnostic", detail: "The right stack per problem, not per habit" },
       { label: "Security Mindset", detail: "Data flow auditing, input integrity" },
       { label: "Content & Streaming", detail: "TikTok / Instagram / Twitch" },
-      { label: "Bucaramanga, Colombia", detail: "Remote / Worldwide" },
+      { label: "GEO, SEO & AEO", detail: "Built to rank on Google and get cited by AI" },
     ],
   },
   services: {
@@ -286,7 +286,7 @@ const es: Dictionary = {
       { label: "Agnóstico a herramientas", detail: "El stack que pide el problema, no la costumbre" },
       { label: "Mentalidad de seguridad", detail: "Auditoría de flujos, integridad de datos" },
       { label: "Contenido y streaming", detail: "TikTok / Instagram / Twitch" },
-      { label: "Bucaramanga, Colombia", detail: "Remoto / Global" },
+      { label: "GEO, SEO y AEO", detail: "Pensado para posicionar en Google y ser citado por la IA" },
     ],
   },
   services: {

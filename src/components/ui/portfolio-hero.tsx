@@ -114,9 +114,17 @@ export default function PortfolioHero() {
   const layerOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.45]);
 
   /*
-    Escala del nombre. "CRISTIAN" son 8 caracteres y Fira Code avanza
-    0.6em cada uno; con `tracking-tighter` (-0.05em) queda en 0.55em.
-    A 14vw eso son 8 x 0.55 x 14vw = 61.6vw: entra de sobra en una linea.
+    Escala del nombre. Medido sobre la Geist Black con `tracking-tighter`,
+    "CRISTIAN" ocupa 4.57 veces el tamano de fuente, asi que el ancho que
+    llena es font-size x 4.57 y sale igual en cualquier pantalla.
+
+    De ahi la escalera invertida. En un movil de 390px, 11vw dejaba el
+    nombre en 196px: la mitad justa de la pantalla, y con el hueco
+    vertical del hero se leia pequeno en lugar de monumental. A 19vw
+    ocupa el 87% del ancho y vuelve a mandar en la composicion. En
+    pantallas anchas el 64% de 14vw si es la proporcion buscada: llenar
+    el ancho ahi daria un nombre de 180px de alto.
+
     El contenedor va a ancho completo a proposito: un `max-w` fijo era lo
     que partia "CRISTIAN" en "CRISTI / AN" en pantallas anchas.
 
@@ -127,7 +135,7 @@ export default function PortfolioHero() {
     mientras el resto funde en 500ms.
   */
   const nameClassName =
-    "w-full flex-nowrap justify-center whitespace-nowrap text-name transition-colors duration-500 text-[11vw] font-black uppercase leading-[0.8] tracking-tighter select-none sm:text-[12vw] md:text-[13vw] lg:text-[14vw]";
+    "w-full flex-nowrap justify-center whitespace-nowrap text-name transition-colors duration-500 text-[19vw] font-black uppercase leading-[0.8] tracking-tighter select-none sm:text-[16vw] md:text-[15vw] lg:text-[14vw]";
 
   return (
     <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
@@ -162,14 +170,24 @@ export default function PortfolioHero() {
           className={nameClassName}
         />
 
+        {/*
+          z-10 a proposito: el retrato es un medallon incrustado sobre el
+          nombre, no un accidente de apilado. Por debajo de 640px el
+          tamano base tiene que encajar en el hueco entre las dos lineas
+          en vez de heredar el de sm: a 19vw con leading-0.8, dos lineas
+          miden font-size*1.6 de alto (97px a 320px, 130px a 428px); un
+          ovalo de 150px (el tamano de sm/md/lg) se sale de ese hueco y
+          tapa el interior de "CRISTIAN"/"PEREZ" en cualquier telefono
+          real. 100px si cabe con margen en todo el rango 320-490px.
+        */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <div className="relative h-[115px] w-[68px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[160px] sm:w-[95px] md:h-[195px] md:w-[115px] lg:h-[225px] lg:w-[135px]">
+          <div className="relative h-[100px] w-[60px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[170px] sm:w-[100px] md:h-[195px] md:w-[115px] lg:h-[225px] lg:w-[135px]">
             <Image
               src={portrait.local}
               alt="Cristian Perez"
               fill
               priority
-              sizes="(min-width: 1024px) 135px, (min-width: 768px) 115px, (min-width: 640px) 95px, 68px"
+              sizes="(min-width: 1024px) 135px, (min-width: 768px) 115px, (min-width: 640px) 100px, 89px"
               className="object-cover"
             />
           </div>
@@ -200,17 +218,25 @@ export default function PortfolioHero() {
         </motion.div>
 
         <motion.div variants={copyItemVariants}>
-          <FadeSwap className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
-              />
-              {t.hero.badgeAvailability}
-            </span>
-            <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
-              {t.hero.badgeLocation}
-            </span>
+          {/*
+            FadeSwap envuelve `children` en su propio div de crossfade
+            (`col-start-1 row-start-1`, sin flex): el `flex gap-*` tiene
+            que ir en ESTE div de adentro, no en el className de
+            FadeSwap, o el espacio entre placas no aplica.
+          */}
+          <FadeSwap className="pt-1">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
+                />
+                {t.hero.badgeAvailability}
+              </span>
+              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
+                {t.hero.badgeLocation}
+              </span>
+            </div>
           </FadeSwap>
         </motion.div>
 

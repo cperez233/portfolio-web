@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useSyncExternalStore,
 } from "react";
@@ -82,6 +83,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const toggleLanguage = useCallback(() => {
     writeLanguage(getSnapshot() === "en" ? "es" : "en");
   }, []);
+
+  /*
+    El atributo `lang` de <html> tiene que seguir al idioma elegido. Se
+    sirve como "en" desde el servidor, y sin esto se quedaba asi para
+    siempre: un lector de pantalla leia todo el sitio en espanol con
+    reglas foneticas inglesas.
+  */
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const value = useMemo<LanguageContextValue>(
     () => ({

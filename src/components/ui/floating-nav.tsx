@@ -1,11 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Moon, Sun } from "lucide-react";
 import { navLinks } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { useTheme } from "@/lib/theme";
 import { LanguageToggle } from "./LanguageToggle";
 import { cn } from "@/lib/utils";
+
+/*
+  Mismo --ease-premium (cubic-bezier(0.22,1,0.36,1)) que ya usa el resto
+  del sitio (portfolio-hero.tsx, projects.tsx), para que el gesto del
+  icono no desentone del resto de las transiciones.
+*/
+const hamburgerTransition = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
+
+const hamburgerLineVariants = {
+  top: {
+    closed: { rotate: 0, y: -6 },
+    open: { rotate: 45, y: 0 },
+  },
+  middle: {
+    closed: { opacity: 1 },
+    open: { opacity: 0 },
+  },
+  bottom: {
+    closed: { rotate: 0, y: 6 },
+    open: { rotate: -45, y: 0 },
+  },
+};
 
 /**
  * Pildora flotante persistente. Vive en el layout, no dentro del hero,
@@ -16,9 +40,9 @@ import { cn } from "@/lib/utils";
  */
 export function FloatingNav() {
   const { t } = useLanguage();
-  // El servidor ya pinta <html class="dark">, asi que `true` coincide
-  // con la primera pintura. La verdad del tema vive en <html>.
-  const [isDark, setIsDark] = useState(true);
+  // La verdad del tema vive en la clase de <html>; el store solo la lee
+  // y la escribe, de modo que el icono no puede desincronizarse.
+  const { isDark, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -49,13 +73,6 @@ export function FloatingNav() {
     };
   }, [isOpen]);
 
-  /** Alterna `.dark` en <html>: de ahi cuelga el tema de todo el sitio. */
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle("dark", next);
-  };
-
   const linkClass =
     "inline-flex min-h-9 items-center rounded-full px-2.5 text-base text-ink-muted transition-colors duration-200 ease-[var(--ease-premium)] hover:text-ink";
 
@@ -80,21 +97,38 @@ export function FloatingNav() {
         </ul>
 
         {/* Version compacta por debajo de md */}
-        <button
+        <motion.button
           ref={toggleRef}
           type="button"
           onClick={() => setIsOpen((value) => !value)}
+          whileTap={{ scale: 0.92 }}
           aria-expanded={isOpen}
           aria-controls="floating-nav-panel"
           aria-label={isOpen ? "Close menu" : "Open menu"}
-          className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
+          className="relative inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
         >
-          {isOpen ? (
-            <X className="size-5" aria-hidden="true" />
-          ) : (
-            <Menu className="size-5" aria-hidden="true" />
-          )}
-        </button>
+          <motion.span
+            aria-hidden="true"
+            className="absolute h-0.5 w-5 rounded-full bg-current"
+            variants={hamburgerLineVariants.top}
+            animate={isOpen ? "open" : "closed"}
+            transition={hamburgerTransition}
+          />
+          <motion.span
+            aria-hidden="true"
+            className="absolute h-0.5 w-5 rounded-full bg-current"
+            variants={hamburgerLineVariants.middle}
+            animate={isOpen ? "open" : "closed"}
+            transition={hamburgerTransition}
+          />
+          <motion.span
+            aria-hidden="true"
+            className="absolute h-0.5 w-5 rounded-full bg-current"
+            variants={hamburgerLineVariants.bottom}
+            animate={isOpen ? "open" : "closed"}
+            transition={hamburgerTransition}
+          />
+        </motion.button>
 
         <span
           aria-hidden="true"

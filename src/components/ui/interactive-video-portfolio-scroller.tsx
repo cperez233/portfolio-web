@@ -115,6 +115,159 @@ export default function InteractiveVideoScroller() {
   const active = menuItems[activeIndex] ?? menuItems[0];
   const activeCopy = t.services.items[activeIndex] ?? t.services.items[0];
 
+  /*
+    El scroll-lock mide una pantalla por servicio. El panel interior es
+    `overflow-y-auto` como red de seguridad: en un movil apaisado de
+    844x390 o un portatil bajo de 820x700 el contenido puede superar la
+    altura disponible, y sin esto se recortaba en vez de dejarse leer.
+  */
+  const scroller = (
+    <div
+      ref={containerRef}
+      style={{ height: `${total * 100}svh` }}
+      className="relative z-10"
+    >
+      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-5 py-10 sm:px-8 sm:py-16 md:px-10">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mb-6 flex items-end justify-between gap-4 sm:mb-12">
+            <FadeSwap>
+              <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
+                {t.services.eyebrow}
+              </p>
+              <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
+                {t.services.title}
+              </h2>
+            </FadeSwap>
+
+            <p className="hidden font-mono text-sm uppercase tracking-wider text-ink-subtle sm:block">
+              {String(activeIndex + 1).padStart(2, "0")} /{" "}
+              {String(total).padStart(2, "0")}
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-14">
+            {/* Panel de medios */}
+            <div className="services-media relative order-1 aspect-[16/10] overflow-hidden rounded-2xl border border-line bg-surface-2 sm:aspect-[4/3] lg:order-2 lg:aspect-[5/4]">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={active.number}
+                  className="absolute inset-0"
+                  initial={
+                    shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
+                  }
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+                  transition={{
+                    duration: shouldReduceMotion ? 0 : 0.45,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <MediaPanel item={active} isMuted={isMuted} />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Velo fijo: no se remonta con el cambio de servicio. */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0"
+                style={{ backgroundImage: MEDIA_SCRIM }}
+              />
+
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+                <FadeSwap>
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
+                    {activeCopy.tag}
+                  </p>
+                  <p className="mt-2 text-2xl font-medium tracking-tight text-white sm:text-3xl">
+                    {activeCopy.name}
+                  </p>
+                  <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
+                    {activeCopy.description}
+                  </p>
+                </FadeSwap>
+              </div>
+
+              {hasVideo ? (
+                <button
+                  type="button"
+                  onClick={() => setIsMuted((value) => !value)}
+                  aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
+                >
+                  {isMuted ? (
+                    <VolumeX className="size-4" />
+                  ) : (
+                    <Volume2 className="size-4" />
+                  )}
+                </button>
+              ) : null}
+            </div>
+
+            {/* Lista de servicios */}
+            <ul className="order-2 flex flex-col lg:order-1">
+              {menuItems.map((item, index) => {
+                const isActive = index === activeIndex;
+                const copy = t.services.items[index];
+
+                return (
+                  <li key={item.number}>
+                    <button
+                      type="button"
+                      onClick={() => goToIndex(index)}
+                      aria-current={isActive ? "true" : undefined}
+                      className={cn(
+                        "flex w-full items-baseline gap-4 border-t border-line py-3 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6 sm:py-4",
+                        index === menuItems.length - 1 &&
+                          "border-b border-line",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "shrink-0 font-mono text-sm transition-colors duration-300",
+                          isActive ? "text-accent-ink" : "text-ink-subtle",
+                        )}
+                      >
+                        {item.number}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "block text-balance text-lg tracking-tight transition-colors duration-300 sm:text-2xl",
+                            isActive
+                              ? "font-medium text-ink"
+                              : "text-ink-subtle",
+                          )}
+                        >
+                          {copy.name}
+                        </span>
+                        {/*
+                          Oculto en movil: son cinco lineas que no
+                          caben en una pantalla, y el tag del servicio
+                          activo ya se lee en el panel de medios.
+                        */}
+                        <span
+                          className={cn(
+                            "mt-1.5 hidden font-mono text-xs uppercase tracking-wider transition-colors duration-300 sm:block",
+                            isActive
+                              ? "text-accent-ink"
+                              : "text-ink-subtle/60",
+                          )}
+                        >
+                          {copy.tag}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <section
       id="services"
@@ -123,145 +276,7 @@ export default function InteractiveVideoScroller() {
       <SectionEdge />
       <BackgroundOrbs variant="middle" />
 
-      <div
-        ref={containerRef}
-        style={{ height: `${total * 100}svh` }}
-        className="relative z-10"
-      >
-        <div className="sticky top-0 flex h-svh flex-col justify-center px-5 py-16 sm:px-8 md:px-10">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="mb-8 flex items-end justify-between gap-4 sm:mb-12">
-              <FadeSwap>
-                <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
-                  {t.services.eyebrow}
-                </p>
-                <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
-                  {t.services.title}
-                </h2>
-              </FadeSwap>
-
-              <p className="hidden font-mono text-sm uppercase tracking-wider text-ink-subtle sm:block">
-                {String(activeIndex + 1).padStart(2, "0")} /{" "}
-                {String(total).padStart(2, "0")}
-              </p>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
-              {/* Panel de medios */}
-              <div className="relative order-1 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-surface-2 lg:order-2 lg:aspect-[5/4]">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={active.number}
-                    className="absolute inset-0"
-                    initial={
-                      shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
-                    }
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={shouldReduceMotion ? undefined : { opacity: 0 }}
-                    transition={{
-                      duration: shouldReduceMotion ? 0 : 0.45,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                  >
-                    <MediaPanel item={active} isMuted={isMuted} />
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Velo fijo: no se remonta con el cambio de servicio. */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{ backgroundImage: MEDIA_SCRIM }}
-                />
-
-                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-                  <FadeSwap>
-                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
-                      {activeCopy.tag}
-                    </p>
-                    <p className="mt-2 text-2xl font-medium tracking-tight text-white sm:text-3xl">
-                      {activeCopy.name}
-                    </p>
-                    <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
-                      {activeCopy.description}
-                    </p>
-                  </FadeSwap>
-                </div>
-
-                {hasVideo ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsMuted((value) => !value)}
-                    aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
-                  >
-                    {isMuted ? (
-                      <VolumeX className="size-4" />
-                    ) : (
-                      <Volume2 className="size-4" />
-                    )}
-                  </button>
-                ) : null}
-              </div>
-
-              {/* Lista de servicios */}
-              <ul className="order-2 flex flex-col lg:order-1">
-                {menuItems.map((item, index) => {
-                  const isActive = index === activeIndex;
-                  const copy = t.services.items[index];
-
-                  return (
-                    <li key={item.number}>
-                      <button
-                        type="button"
-                        onClick={() => goToIndex(index)}
-                        aria-current={isActive ? "true" : undefined}
-                        className={cn(
-                          "flex w-full items-baseline gap-4 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6",
-                          index === menuItems.length - 1 &&
-                            "border-b border-line",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "shrink-0 font-mono text-sm transition-colors duration-300",
-                            isActive ? "text-accent-ink" : "text-ink-subtle",
-                          )}
-                        >
-                          {item.number}
-                        </span>
-
-                        <span className="min-w-0 flex-1">
-                          <span
-                            className={cn(
-                              "block text-balance text-lg tracking-tight transition-colors duration-300 sm:text-2xl",
-                              isActive
-                                ? "font-medium text-ink"
-                                : "text-ink-subtle",
-                            )}
-                          >
-                            {copy.name}
-                          </span>
-                          <span
-                            className={cn(
-                              "mt-1.5 block font-mono text-xs uppercase tracking-wider transition-colors duration-300",
-                              isActive
-                                ? "text-accent-ink"
-                                : "text-ink-subtle/60",
-                            )}
-                          >
-                            {copy.tag}
-                          </span>
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+      {scroller}
     </section>
   );
 }

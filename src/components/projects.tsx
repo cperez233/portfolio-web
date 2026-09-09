@@ -20,10 +20,18 @@ import { FadeSwap } from "@/components/ui/FadeSwap";
 import { cn } from "@/lib/utils";
 
 /**
- * Tarjetas pegajosas que se apilan al hacer scroll.
+ * Tarjetas pegajosas que se apilan al hacer scroll, en todos los
+ * viewports.
  *
  * Un unico useScroll sobre el contenedor alimenta las tres: medir cada
  * tarjeta por separado no es fiable una vez esta pegada al viewport.
+ *
+ * En movil la tarjeta se fija mas abajo (`top-24`, para dejar sitio a la
+ * navbar flotante) y con una altura contenida (`74svh` en vez del
+ * `86svh` de escritorio): su contenido completo (contexto, solucion,
+ * impacto y las tres muestras) no cabe siempre en ese alto, asi que el
+ * cuerpo de la tarjeta se vuelve scrolleable por su cuenta
+ * (`overflow-y-auto`) en vez de recortarse.
  */
 export function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -92,7 +100,12 @@ function ProjectCard({
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
 
   const card = (
-    <article className="flex h-full w-full flex-col gap-5 overflow-hidden rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8">
+    <article
+      className={cn(
+        "flex h-full w-full flex-col gap-5 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8",
+        "overflow-y-auto scrollbar-hide md:overflow-hidden",
+      )}
+    >
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-4 sm:gap-6">
           <p className="shrink-0 font-mono text-sm text-accent-ink">
@@ -164,8 +177,15 @@ function ProjectCard({
         </dl>
       </FadeSwap>
 
-      {/* 40% dos muestras apiladas, 60% una alta */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-5">
+      {/*
+        40% dos muestras apiladas, 60% una alta.
+
+        En movil es `flex-col` a proposito, no `grid`: con grid, la fila
+        del par de miniaturas (un hijo flex sin alto propio) media 0px
+        de alto y la muestra grande quedaba encima de las otras dos en
+        vez de debajo. El grid de 5 columnas solo hace falta desde `sm:`.
+      */}
+      <div className="flex flex-col gap-3 sm:grid sm:min-h-0 sm:flex-1 sm:grid-cols-5">
         <div className="flex min-h-0 flex-col gap-3 sm:col-span-2">
           <ShowcaseTile
             src={project.showcase[0]}
@@ -181,19 +201,19 @@ function ProjectCard({
         <ShowcaseTile
           src={project.showcase[2]}
           label={copy.showcase[2]}
-          className="hidden min-h-0 sm:col-span-3 sm:block"
+          className="h-40 sm:h-auto sm:min-h-0 sm:col-span-3"
         />
       </div>
     </article>
   );
 
   if (reduceMotion) {
-    return <div className="mb-6 min-h-[70svh]">{card}</div>;
+    return <div className="mb-6 last:mb-0">{card}</div>;
   }
 
   return (
     <div
-      className="sticky top-20 h-[86svh] md:top-24"
+      className="sticky top-24 h-[74svh] md:h-[86svh]"
       style={{ paddingTop: `${index * 24}px` }}
     >
       <motion.div

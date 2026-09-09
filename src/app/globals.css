@@ -133,6 +133,19 @@ html.dark {
   }
 
   /*
+    Oculta la barra de scroll sin desactivar el scroll: la usan las
+    tarjetas de proyecto en movil, que se desplazan por su cuenta dentro
+    de una altura contenida y no necesitan mostrar el indicador nativo.
+  */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
     Desvanecido en los bordes del marquee. Sin esto las filas se cortan
     a cuchillo contra el borde de la pantalla y el movimiento se lee
     como un recorte, no como algo que sigue mas alla.
@@ -190,13 +203,44 @@ html.lenis body {
 }
 
 @layer components {
-  /* Capa que se desliza sobre la anterior: borde superior redondeado y
-     sombra proyectada hacia arriba, para que se lea la profundidad. */
+  /*
+    Capa que se desliza sobre la anterior: borde superior redondeado y
+    sombra proyectada hacia arriba, para que se lea la profundidad.
+
+    El `spread` negativo iguala al radio de desenfoque, asi que la sombra
+    se queda EXACTAMENTE dentro del ancho del panel y solo sobresale por
+    arriba. Sin el, se derramaba 20px por cada lado; como el panel ocupa
+    todo el ancho, ese derrame caia fuera de la pantalla y la sombra
+    llegaba al borde a plena intensidad en vez de desvanecerse: se veia
+    cortada a cuchillo en el lado izquierdo y en el derecho.
+  */
   .layer-top {
-    box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 -24px 48px -24px rgba(0, 0, 0, 0.32);
   }
 
   html.dark .layer-top {
-    box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -24px 48px -24px rgba(0, 0, 0, 0.75);
+  }
+}
+
+@layer components {
+  /*
+    Tope de altura del panel de medios de Servicios mientras la seccion
+    va en una sola columna.
+
+    La proporcion fija lo ata al ancho, y en tableta vertical un 4/3 a
+    todo lo ancho se llevaba 505px de los 1024 de pantalla: la lista ya
+    no cabia dentro del scroll-lock y se salia 93px por abajo. A partir
+    de `lg` el panel comparte fila con la lista, deja de ser el que manda
+    en la altura, y el tope sobra.
+  */
+  .services-media {
+    max-height: 34svh;
+  }
+
+  @media (width >= 64rem) {
+    .services-media {
+      max-height: none;
+    }
   }
 }
