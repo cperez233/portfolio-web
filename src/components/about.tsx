@@ -25,7 +25,7 @@ export function AboutSection() {
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn>
           <FadeSwap>
-            <p className="mb-5 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+            <p className="mb-5 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
               {t.about.eyebrow}
             </p>
             <h2 className="max-w-3xl text-section font-semibold uppercase text-ink">
@@ -41,10 +41,10 @@ export function AboutSection() {
             <FadeIn key={block.eyebrow} delay={0.1 + index * 0.08}>
               <article>
                 <div className="flex items-baseline gap-4">
-                  <span className="font-mono text-xs text-accent-ink">
+                  <span className="font-mono text-sm text-accent-ink">
                     {block.eyebrow}
                   </span>
-                  <h3 className="text-xl font-medium tracking-tight text-ink sm:text-2xl">
+                  <h3 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                     {block.title}
                   </h3>
                 </div>
@@ -69,14 +69,14 @@ export function AboutSection() {
           {t.about.highlights.map((item, index) => (
             <FadeIn key={item.label} delay={0.05 * index}>
               <div className="h-full bg-surface p-6 transition-colors duration-300">
-                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-ink">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
                   {String(index + 1).padStart(2, "0")}
                 </p>
                 <FadeSwap>
-                  <p className="mt-4 text-base font-medium tracking-tight text-ink">
+                  <p className="mt-4 text-lg font-medium tracking-tight text-ink">
                     {item.label}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-subtle">
+                  <p className="mt-2 text-base leading-relaxed text-ink-muted">
                     {item.detail}
                   </p>
                 </FadeSwap>

@@ -57,7 +57,7 @@ export function FloatingNav() {
   };
 
   const linkClass =
-    "inline-flex min-h-9 items-center rounded-full px-2 text-sm text-ink-muted transition-colors duration-200 ease-[var(--ease-premium)] hover:text-ink";
+    "inline-flex min-h-9 items-center rounded-full px-2.5 text-base text-ink-muted transition-colors duration-200 ease-[var(--ease-premium)] hover:text-ink";
 
   return (
     <div className="fixed left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-fit -translate-x-1/2">

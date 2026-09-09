@@ -13,7 +13,6 @@ export interface Dictionary {
   hero: {
     tagline: string;
     description: string;
-    philosophy: string;
     badgeAvailability: string;
     badgeLocation: string;
     ctaPrimary: string;
@@ -72,12 +71,9 @@ const en: Dictionary = {
     contact: "Contact",
   },
   hero: {
-    tagline:
-      "Full-stack software engineering, smart automation, and digital communication that connects.",
+    tagline: "Software that runs your business, and video that sells it.",
     description:
-      "I build complete web applications tailored to each project's stack (Laravel, React, Node), automate operational workflows with n8n, Python, and AI, and produce organic video content from script to screen.",
-    philosophy:
-      "Tool-agnostic engineering: I pick the architecture and stack each problem actually needs, instead of forcing every project through the same one.",
+      "I design, build and explain the systems small teams depend on. Without the jargon.",
     badgeAvailability: "Available for contracts & consulting",
     badgeLocation: "Remote / Bucaramanga, Colombia",
     ctaPrimary: "Let's Talk on WhatsApp",
@@ -91,12 +87,12 @@ const en: Dictionary = {
       {
         eyebrow: "01",
         title: "Engineering & Systems",
-        body: "My foundation is software engineering: I handle end-to-end full-stack projects, designing solid relational schemas, clean APIs, and responsive frontends (Laravel, React, Node, Docker). I stay tool-agnostic on purpose, choosing the architecture each problem actually calls for. My cybersecurity background at FCV ingrained the discipline of auditing data flows, validating input integrity, and keeping security top-of-mind from day one.",
+        body: "I build complete systems, start to finish. I don't marry one technology: I pick whatever fits the problem in front of me. And after working in cybersecurity, I check where the data goes before anything else.",
       },
       {
         eyebrow: "02",
         title: "Communication & Video",
-        body: "Beyond code, I run a full production pipeline - concept, script, on-camera delivery and editing - that has grown an organic audience of 32K+ followers on TikTok, Instagram and Twitch. For clients that becomes product demos, pitch videos and technical explainers a non-technical buyer can actually follow: the same skill that makes a stream watchable is what makes a B2B pitch land.",
+        body: "I also write, present and edit video, which built an audience of 32K+ followers. The skill that keeps a stream watchable is the same one that makes a sales pitch land.",
       },
     ],
     highlights: [
@@ -114,31 +110,31 @@ const en: Dictionary = {
         name: "Full-Stack Systems & Web Architecture",
         tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
         description:
-          "Design and delivery of complete web applications, scalable and secure, from relational models through to high-performance interactive interfaces.",
+          "The whole system: the database, the logic, and the screens your team uses every day.",
       },
       {
         name: "Workflow Automation & Integration",
         tag: "N8N / PYTHON / WEBHOOKS / APIS",
         description:
-          "Connecting business tools, databases and CRMs through automated pipelines that remove operational friction and repetitive manual work.",
+          "Your tools finally talk to each other, so nobody copies data by hand again.",
       },
       {
         name: "AI Pipeline & Intelligent Document Extraction",
         tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
         description:
-          "Language-model workflows and intelligent ingestion of unstructured data - physical records, complex PDFs, medical and legal forms - into databases you can query instantly.",
+          "Paper, PDFs and forms turned into information you can search in seconds.",
       },
       {
         name: "Technical & Business Process Audit",
         tag: "SECURITY / DATA INTEGRITY / WORKFLOW AUDITING",
         description:
-          "A deep review of data flows, input validation, operational bottlenecks and security posture, so the technology protects the processes the business actually runs on.",
+          "A clear report on where your data leaks, slows down or breaks - and what to fix first.",
       },
       {
         name: "Audiovisual Production & Technical Communication",
         tag: "SCRIPTING / HIGH-RETENTION EDITING / STREAMING",
         description:
-          "End-to-end vertical video and on-camera product demos that turn dense technical subjects into commercial messages a B2B audience remembers.",
+          "Video that explains what you sell, so people get it in thirty seconds.",
       },
     ],
   },
@@ -152,11 +148,11 @@ const en: Dictionary = {
         category: "Full-Stack + AI",
         tagline: "Collaborative Environment Powered by AI",
         context:
-          "Remote pairs lose time re-explaining context every time they switch machines or pick a session back up.",
+          "Two people coding together lose time re-explaining where they left off.",
         solution:
-          "A shared workspace where session state, code and an AI reviewer live in one place, synced over WebSockets.",
+          "One shared workspace where the code, the session and an AI helper stay in sync.",
         impact:
-          "Pairs resume exactly where they left off, and review feedback arrives while the code is still fresh.",
+          "They pick up exactly where they stopped, and feedback arrives while it still matters.",
         cta: "Explore Project",
         metrics: [
           "Realtime Sync",
@@ -174,11 +170,11 @@ const en: Dictionary = {
         category: "Automation & Data Pipelines",
         tagline: "FCV Internship",
         context:
-          "Clinical and administrative documents arrived as scans and were transcribed by hand, one field at a time.",
+          "Medical records arrived as scans and were typed out by hand, field by field.",
         solution:
-          "An ingest pipeline that runs OCR through Azure Document Intelligence, maps the fields, and flags anything that fails validation.",
+          "Software that reads the scans, fills the fields, and flags anything that looks wrong.",
         impact:
-          "Manual transcription becomes a review step, and every extracted field carries a traceable confidence check.",
+          "Typing turns into checking, and every field can be traced back to its source.",
         cta: "View Case",
         metrics: [
           "OCR Pipeline",
@@ -192,11 +188,11 @@ const en: Dictionary = {
         category: "Digital Media & B2B Communication",
         tagline: "Tostu / criscx1905",
         context:
-          "Technical products lose deals in the explanation, not in the build. Teams demo features in the vocabulary of whoever wrote them, and the buyer never sees the value.",
+          "Good products lose sales in the explanation. The buyer never sees why it matters.",
         solution:
-          "An end-to-end production pipeline run solo: concept, script, on-camera delivery and high-retention vertical editing. The same pipeline behind an organic audience of 32K+ followers and 2M+ likes.",
+          "I write, present and edit the whole thing myself. It built an audience of 32K+ followers.",
         impact:
-          "It transfers straight to client work: product demos, pitch videos and technical explainers a non-technical decision-maker can follow and act on.",
+          "The same works for clients: demos and pitch videos anyone can follow, technical or not.",
         cta: "View Case",
         metrics: [
           "+2M Organic Impressions",
@@ -244,12 +240,9 @@ const es: Dictionary = {
     contact: "Contacto",
   },
   hero: {
-    tagline:
-      "Ingeniería de software full-stack, automatización inteligente y comunicación digital que conecta.",
+    tagline: "Software que hace funcionar tu negocio, y video que lo vende.",
     description:
-      "Construyo aplicaciones web completas adaptadas al stack de cada proyecto (Laravel, React, Node), automatizo flujos operativos con n8n, Python e IA, y produzco contenido audiovisual de principio a fin.",
-    philosophy:
-      "Ingeniería agnóstica de herramientas: elijo la arquitectura y el stack que cada problema necesita, en lugar de forzar todos los proyectos por el mismo camino.",
+      "Diseño, construyo y explico los sistemas de los que depende un equipo pequeño. Sin jerga.",
     badgeAvailability: "Disponible para contratos y consultoría",
     badgeLocation: "Remoto / Bucaramanga, Colombia",
     ctaPrimary: "Hablemos por WhatsApp",
@@ -263,12 +256,12 @@ const es: Dictionary = {
       {
         eyebrow: "01",
         title: "Ingeniería y sistemas",
-        body: "Mi base es la ingeniería de software: llevo proyectos full-stack de principio a fin, diseñando esquemas relacionales sólidos, APIs limpias y frontends responsivos (Laravel, React, Node, Docker). Me mantengo agnóstico a las herramientas a propósito, eligiendo la arquitectura que cada problema pide de verdad. Mi paso por ciberseguridad en la FCV me dejó la disciplina de auditar flujos de datos, validar la integridad de las entradas y pensar en seguridad desde el primer día.",
+        body: "Construyo sistemas completos, de principio a fin. No me caso con una tecnología: elijo la que le sirve al problema que tengo delante. Y después de trabajar en ciberseguridad, lo primero que reviso es por dónde pasan los datos.",
       },
       {
         eyebrow: "02",
         title: "Comunicación y video",
-        body: "Más allá del código, gestiono una cadena de producción completa (concepto, guion, cámara y edición) que ha construido una audiencia orgánica de 32K+ seguidores en TikTok, Instagram y Twitch. Para un cliente eso se traduce en demos de producto, vídeos de pitch y explicaciones técnicas que un comprador no técnico sí entiende: la misma habilidad que hace ver un directo es la que hace aterrizar un pitch B2B.",
+        body: "También escribo, presento y edito video, y así construí una audiencia de 32K+ seguidores. La habilidad que hace que alguien se quede viendo un directo es la que hace que una propuesta convenza.",
       },
     ],
     highlights: [
@@ -286,31 +279,31 @@ const es: Dictionary = {
         name: "Sistemas full-stack y arquitectura web",
         tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
         description:
-          "Diseño e implementación de aplicaciones web completas, escalables y seguras, desde los modelos relacionales hasta interfaces interactivas de alto rendimiento.",
+          "El sistema completo: la base de datos, la lógica y las pantallas que usa tu equipo a diario.",
       },
       {
         name: "Automatización e integración de flujos",
         tag: "N8N / PYTHON / WEBHOOKS / APIS",
         description:
-          "Conexión de herramientas empresariales, bases de datos y CRMs mediante pipelines automatizados que eliminan fricción operativa y tareas manuales repetitivas.",
+          "Tus programas por fin se hablan entre ellos, y nadie vuelve a copiar datos a mano.",
       },
       {
         name: "Pipeline de IA y extracción documental",
         tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
         description:
-          "Modelos de lenguaje e ingesta inteligente de datos no estructurados (registros físicos, PDFs complejos, formularios médicos y legales) hacia bases de datos consultables al instante.",
+          "Papeles, PDFs y formularios convertidos en información que se busca en segundos.",
       },
       {
         name: "Auditoría técnica y de procesos de negocio",
         tag: "SEGURIDAD / INTEGRIDAD DE DATOS / AUDITORÍA DE FLUJOS",
         description:
-          "Evaluación profunda de flujos de datos, validación de entradas, cuellos de botella operativos y postura de seguridad, para que la tecnología proteja los procesos de los que vive el negocio.",
+          "Un informe claro de dónde se te escapan datos, dónde se frena todo y qué arreglar primero.",
       },
       {
         name: "Producción audiovisual y comunicación técnica",
         tag: "GUION / EDICIÓN DE ALTA RETENCIÓN / STREAMING",
         description:
-          "Producción integral de vídeo vertical y demostraciones de producto en cámara que convierten temas técnicos densos en mensajes comerciales que una audiencia B2B recuerda.",
+          "Video que explica lo que vendes, para que se entienda en treinta segundos.",
       },
     ],
   },
@@ -324,11 +317,11 @@ const es: Dictionary = {
         category: "Desarrollo Full-Stack + IA",
         tagline: "Entorno Colaborativo Impulsado por IA",
         context:
-          "Las parejas de trabajo en remoto pierden tiempo reexplicando el contexto cada vez que cambian de equipo o retoman una sesión.",
+          "Dos personas programando juntas pierden tiempo reexplicando dónde se quedaron.",
         solution:
-          "Un espacio compartido donde el estado de la sesión, el código y un revisor con IA viven en el mismo sitio, sincronizados por WebSockets.",
+          "Un espacio compartido donde el código, la sesión y un asistente con IA van sincronizados.",
         impact:
-          "Se retoma exactamente donde se dejó, y la revisión llega cuando el código todavía está fresco.",
+          "Se retoma justo donde se paró, y la revisión llega cuando todavía sirve.",
         cta: "Explorar Proyecto",
         metrics: [
           "Sincronía en vivo",
@@ -346,11 +339,11 @@ const es: Dictionary = {
         category: "Automatización y Flujos de Datos",
         tagline: "Prácticas en la FCV",
         context:
-          "Los documentos clínicos y administrativos llegaban escaneados y se transcribían a mano, campo por campo.",
+          "Las historias clínicas llegaban escaneadas y se pasaban a mano, campo por campo.",
         solution:
-          "Un pipeline de ingesta que pasa OCR con Azure Document Intelligence, mapea los campos y marca lo que no supera la validación.",
+          "Un programa que lee los escaneos, rellena los campos y marca lo que se ve mal.",
         impact:
-          "La transcripción manual pasa a ser un paso de revisión, y cada campo extraído lleva una comprobación de confianza trazable.",
+          "Teclear se convierte en revisar, y cada dato se puede rastrear hasta su origen.",
         cta: "Ver Caso",
         metrics: [
           "Pipeline OCR",
@@ -364,11 +357,11 @@ const es: Dictionary = {
         category: "Medios Digitales y Comunicación B2B",
         tagline: "Tostu / criscx1905",
         context:
-          "Los productos técnicos pierden ventas en la explicación, no en la construcción. Se demuestran en el vocabulario de quien los programó, y el cliente nunca llega a ver el valor.",
+          "Los buenos productos pierden ventas en la explicación. El cliente nunca ve por qué le sirve.",
         solution:
-          "Una cadena de producción completa en solitario: concepto, guion, presentación en cámara y edición vertical de alta retención. La misma que sostiene una audiencia orgánica de 32K+ seguidores y 2M+ likes.",
+          "Escribo, presento y edito todo yo. Así construí una audiencia de 32K+ seguidores.",
         impact:
-          "Se traslada directo al trabajo con clientes: demos de producto, vídeos de pitch y explicaciones técnicas que un decisor no técnico puede seguir y accionar.",
+          "Lo mismo sirve para clientes: demos y videos que entiende cualquiera, sea técnico o no.",
         cta: "Ver Caso",
         metrics: [
           "+2M impresiones orgánicas",

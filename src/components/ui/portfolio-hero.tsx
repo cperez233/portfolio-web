@@ -184,7 +184,7 @@ export default function PortfolioHero() {
       >
         <motion.div variants={copyItemVariants} className="w-full">
           <FadeSwap>
-            <p className="text-base font-medium tracking-wide text-ink sm:text-lg md:text-xl">
+            <p className="text-xl font-medium tracking-tight text-ink sm:text-2xl md:text-3xl">
               {t.hero.tagline}
             </p>
           </FadeSwap>
@@ -192,30 +192,22 @@ export default function PortfolioHero() {
 
         <motion.div variants={copyItemVariants} className="w-full">
           <FadeSwap>
-            <p className="mx-auto max-w-xl px-2 text-sm leading-relaxed text-ink-muted">
+            <p className="mx-auto max-w-xl px-2 text-base leading-relaxed text-ink-muted sm:text-lg">
               {t.hero.description}
-            </p>
-          </FadeSwap>
-        </motion.div>
-
-        <motion.div variants={copyItemVariants} className="w-full">
-          <FadeSwap>
-            <p className="mx-auto max-w-xl px-2 text-xs leading-relaxed text-accent-ink sm:text-sm">
-              {t.hero.philosophy}
             </p>
           </FadeSwap>
         </motion.div>
 
         <motion.div variants={copyItemVariants}>
           <FadeSwap className="flex flex-wrap items-center justify-center gap-2 pt-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
               <span
                 aria-hidden="true"
                 className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
               />
               {t.hero.badgeAvailability}
             </span>
-            <span className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-xs text-ink-muted">
+            <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
               {t.hero.badgeLocation}
             </span>
           </FadeSwap>
@@ -230,7 +222,7 @@ export default function PortfolioHero() {
               href={site.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
-              className="accent-fill inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
+              className="accent-fill inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
             >
               {t.hero.ctaPrimary}
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
@@ -240,7 +232,7 @@ export default function PortfolioHero() {
           <FadeSwap>
             <a
               href={hero.secondaryCtaHref}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong px-7 text-base font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
             >
               {t.hero.ctaSecondary}
             </a>

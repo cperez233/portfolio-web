@@ -86,7 +86,7 @@ export default function InteractiveVideoScroller() {
           <div className="mx-auto w-full max-w-6xl">
             <div className="mb-8 flex items-end justify-between gap-4 sm:mb-12">
               <FadeSwap>
-                <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+                <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
                   {t.services.eyebrow}
                 </p>
                 <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -94,7 +94,7 @@ export default function InteractiveVideoScroller() {
                 </h2>
               </FadeSwap>
 
-              <p className="hidden font-mono text-xs uppercase tracking-wider text-ink-subtle sm:block">
+              <p className="hidden font-mono text-sm uppercase tracking-wider text-ink-subtle sm:block">
                 {String(activeIndex + 1).padStart(2, "0")} /{" "}
                 {String(total).padStart(2, "0")}
               </p>
@@ -130,13 +130,13 @@ export default function InteractiveVideoScroller() {
 
                 <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
                   <FadeSwap>
-                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent-ink">
+                    <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
                       {activeCopy.tag}
                     </p>
-                    <p className="mt-2 text-xl font-medium tracking-tight text-white sm:text-2xl">
+                    <p className="mt-2 text-2xl font-medium tracking-tight text-white sm:text-3xl">
                       {activeCopy.name}
                     </p>
-                    <p className="mt-3 max-w-md text-sm leading-relaxed text-white/70">
+                    <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
                       {activeCopy.description}
                     </p>
                   </FadeSwap>
@@ -178,7 +178,7 @@ export default function InteractiveVideoScroller() {
                       >
                         <span
                           className={cn(
-                            "shrink-0 font-mono text-xs transition-colors duration-300",
+                            "shrink-0 font-mono text-sm transition-colors duration-300",
                             isActive ? "text-accent-ink" : "text-ink-subtle",
                           )}
                         >
@@ -188,7 +188,7 @@ export default function InteractiveVideoScroller() {
                         <span className="min-w-0 flex-1">
                           <span
                             className={cn(
-                              "block text-balance text-base tracking-tight transition-colors duration-300 sm:text-xl",
+                              "block text-balance text-lg tracking-tight transition-colors duration-300 sm:text-2xl",
                               isActive
                                 ? "font-medium text-ink"
                                 : "text-ink-subtle",
@@ -198,7 +198,7 @@ export default function InteractiveVideoScroller() {
                           </span>
                           <span
                             className={cn(
-                              "mt-1 block font-mono text-[10px] uppercase tracking-wider transition-colors duration-300",
+                              "mt-1.5 block font-mono text-xs uppercase tracking-wider transition-colors duration-300",
                               isActive
                                 ? "text-accent-ink"
                                 : "text-ink-subtle/60",

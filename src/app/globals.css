@@ -38,9 +38,12 @@
     Color del nombre monumental. Solido y no gradiente a proposito: los
     gradientes no interpolan en CSS, asi que con background-clip:text el
     nombre saltaria de golpe mientras el resto del sitio funde en 500ms.
-    Claro: blush #c46d79 (3.42:1, cumple el minimo de texto grande).
+    Claro: vino #8c3b45 (7.03:1). Oscuro: blush #c46d79 (5.51:1).
+    Antes estaban al reves: el vino profundo iba sobre el fondo negro y
+    daba 1.83:1, por debajo incluso del minimo de 3:1 para texto grande.
+    A 179px eso es lo primero que se ve, y era lo menos legible.
   */
-  --color-name: #c46d79;
+  --color-name: #8c3b45;
 
   /* Tipografia */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -72,8 +75,8 @@ html.dark {
 
   /* Tinte vino claro: 7.3:1 sobre #09090b, legible a cualquier tamano. */
   --color-accent-ink: #c98d95;
-  /* Vinotinto profundo pedido para modo oscuro. */
-  --color-name: #652a31;
+  /* Blush legible sobre negro: 5.51:1 y conserva la identidad vino. */
+  --color-name: #c46d79;
   --color-accent-dim: rgba(140, 59, 69, 0.18);
 }
 

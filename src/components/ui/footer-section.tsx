@@ -38,13 +38,13 @@ export default function Footer() {
         >
           <div className="max-w-sm shrink-0">
             <FadeSwap>
-              <p className="font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+              <p className="font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
                 {t.footer.eyebrow}
               </p>
               <p className="mt-5 text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                 {t.footer.headline}
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-ink-muted">
+              <p className="mt-4 text-base leading-relaxed text-ink-muted">
                 {t.footer.availability}
               </p>
             </FadeSwap>
@@ -61,7 +61,7 @@ export default function Footer() {
 
             <a
               href={site.emailHref}
-              className="mt-4 block font-mono text-xs text-ink-muted transition-colors duration-200 hover:text-accent-ink"
+              className="mt-4 block font-mono text-sm text-ink-muted transition-colors duration-200 hover:text-accent-ink"
             >
               {site.email}
             </a>
@@ -72,7 +72,7 @@ export default function Footer() {
             {footerGroups.map((group) => (
               <nav key={group.key} aria-label={t.footer.groups[group.key]}>
                 <FadeSwap>
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-subtle">
                     {t.footer.groups[group.key]}
                   </p>
                 </FadeSwap>
@@ -84,7 +84,7 @@ export default function Footer() {
                         {...(link.external
                           ? { target: "_blank", rel: "noopener noreferrer" }
                           : {})}
-                        className="inline-flex min-h-11 items-center gap-1 text-sm text-ink-muted transition-colors duration-200 hover:text-accent-ink"
+                        className="inline-flex min-h-11 items-center gap-1 text-base text-ink-muted transition-colors duration-200 hover:text-accent-ink"
                       >
                         {/* Los nombres propios no se traducen. */}
                         {link.labelKey ? t.footer.links[link.labelKey] : link.label}
@@ -103,7 +103,7 @@ export default function Footer() {
           </div>
         </motion.div>
 
-        <div className="mt-8 flex flex-col gap-2 text-xs text-ink-subtle sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-2 text-sm text-ink-subtle sm:flex-row sm:items-center sm:justify-between">
           <FadeSwap>
             <p>
               &copy; {year} {site.name}. {t.footer.rights}

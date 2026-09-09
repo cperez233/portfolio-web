@@ -41,7 +41,7 @@ export function ProjectsSection() {
 
       <div className="relative z-10 mx-auto mb-14 w-full max-w-6xl">
         <FadeSwap>
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent-ink">
+          <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
             {t.projects.eyebrow}
           </p>
           <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -97,15 +97,15 @@ function ProjectCard({
 
           <div className="min-w-0">
             <FadeSwap>
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-subtle">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-ink-subtle">
                 {copy.category}
               </p>
               <h3 className="mt-2 text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                 {copy.name}
               </h3>
-              <p className="mt-1 text-sm text-ink-muted">{copy.tagline}</p>
+              <p className="mt-1 text-base text-ink-muted">{copy.tagline}</p>
             </FadeSwap>
-            <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-subtle">
+            <p className="mt-3 font-mono text-xs uppercase tracking-wider text-ink-subtle">
               {project.stack}
             </p>
 
@@ -115,7 +115,7 @@ function ProjectCard({
                 {copy.metrics.map((metric) => (
                   <li
                     key={metric}
-                    className="rounded-full border border-line-strong bg-surface-2 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-accent-ink"
+                    className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-accent-ink"
                   >
                     {metric}
                   </li>
@@ -130,7 +130,7 @@ function ProjectCard({
             href={site.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-5 text-xs uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
+            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong px-6 text-sm uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"
           >
             {copy.cta}
             <ArrowUpRight className="size-4" aria-hidden="true" />
@@ -149,10 +149,10 @@ function ProjectCard({
             ] as const
           ).map(([key, value]) => (
             <div key={key} className="min-w-0">
-              <dt className="font-mono text-[10px] uppercase tracking-[0.2em] text-accent-ink">
+              <dt className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
                 {t.projects.labels[key]}
               </dt>
-              <dd className="mt-2 text-sm leading-relaxed text-ink-muted">
+              <dd className="mt-2 text-base leading-relaxed text-ink-muted">
                 {value}
               </dd>
             </div>
@@ -235,7 +235,7 @@ function ShowcaseTile({
         className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"
       />
       <FadeSwap className="absolute bottom-0 left-0 p-4 sm:p-5">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-white">
+        <p className="font-mono text-xs uppercase tracking-wider text-white">
           {label}
         </p>
       </FadeSwap>
