@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import { footerGroups, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { FadeSwap } from "./FadeSwap";
+import { SectionEdge } from "./section-transition";
 
 /**
  * Import desde `framer-motion`, no desde `motion/react`: este proyecto
@@ -21,6 +22,7 @@ export default function Footer() {
       id="contact"
       className="relative z-40 overflow-x-clip border-t border-line bg-canvas px-5 pb-10 pt-20 transition-colors duration-500 sm:px-8 md:px-10"
     >
+      <SectionEdge />
       <div
         aria-hidden="true"
         className="glow-accent pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(48rem,120vw)] -translate-x-1/2"

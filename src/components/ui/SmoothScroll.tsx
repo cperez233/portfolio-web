@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
+import { registerLenis } from "@/lib/smooth-scroll";
 
 /**
  * Scroll con inercia (estilo fora.so).
@@ -27,9 +28,21 @@ export function SmoothScroll() {
       lerp: 0.085,
       smoothWheel: true,
       autoRaf: true,
+      /*
+        Sin esto los enlaces ancla del menu no llegan a ninguna parte.
+        Lenis reescribe la posicion de scroll en cada frame, asi que el
+        salto nativo del navegador se deshace al frame siguiente. Con
+        `anchors` los gestiona Lenis y el salto se respeta.
+      */
+      anchors: true,
     });
 
-    return () => lenis.destroy();
+    registerLenis(lenis);
+
+    return () => {
+      registerLenis(null);
+      lenis.destroy();
+    };
   }, []);
 
   return null;

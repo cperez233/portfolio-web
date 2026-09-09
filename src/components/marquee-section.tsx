@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 import { marqueeRowOne, marqueeRowTwo } from "@/data/site";
 import { BackgroundOrbs } from "./ui/background-orbs";
+import { SectionEdge, SectionTransition } from "./ui/section-transition";
 
 /**
  * Dos filas que se desplazan en sentidos opuestos segun la posicion del
@@ -43,9 +44,10 @@ export function MarqueeSection() {
       aria-label="Motion showcase"
       className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas pb-10 pt-20 transition-colors duration-500 sm:rounded-t-[48px] sm:pt-28 md:pt-32"
     >
+      <SectionEdge />
       <BackgroundOrbs variant="top" />
 
-      <div className="relative z-10">
+      <SectionTransition className="relative z-10">
       <MarqueeRow
         sources={[...marqueeRowOne, ...marqueeRowOne, ...marqueeRowOne]}
         translateX={shift}
@@ -55,7 +57,7 @@ export function MarqueeSection() {
         sources={[...marqueeRowTwo, ...marqueeRowTwo, ...marqueeRowTwo]}
         translateX={-shift}
       />
-      </div>
+      </SectionTransition>
     </section>
   );
 }

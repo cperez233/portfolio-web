@@ -6,7 +6,9 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { smoothScrollTo } from "@/lib/smooth-scroll";
 import { BackgroundOrbs } from "./background-orbs";
+import { SectionEdge } from "./section-transition";
 import { FadeSwap } from "./FadeSwap";
 import { cn } from "@/lib/utils";
 
@@ -32,11 +34,27 @@ export default function InteractiveVideoScroller() {
   const total = menuItems.length;
   const hasVideo = menuItems.some((item) => item.video);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const element = containerRef.current;
-      if (!element) return;
+  /*
+    El indice se mide por frame mientras la seccion esta a la vista, en
+    vez de escuchar el evento `scroll`.
 
+    Con Lenis de por medio, un desplazamiento programatico (un ancla del
+    menu, un scrollTo) mueve la pagina sin que llegue un `scroll` fiable,
+    y el indice se quedaba congelado en el ultimo valor. Medir contra el
+    rect no depende de como se haya producido el movimiento.
+
+    El bucle solo corre mientras la seccion intersecta el viewport, y
+    setActiveIndex con el mismo valor no provoca render en React, asi
+    que el coste fuera de esta seccion es cero.
+  */
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    let frame = 0;
+    let running = false;
+
+    const measure = () => {
       const rect = element.getBoundingClientRect();
       const scrollable = element.offsetHeight - window.innerHeight;
       if (scrollable <= 0) return;
@@ -45,12 +63,31 @@ export default function InteractiveVideoScroller() {
       setActiveIndex(Math.floor(progress * total));
     };
 
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
+    const loop = () => {
+      measure();
+      frame = requestAnimationFrame(loop);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !running) {
+          running = true;
+          loop();
+        } else if (!entry.isIntersecting && running) {
+          running = false;
+          cancelAnimationFrame(frame);
+          measure();
+        }
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(element);
+    measure();
+
     return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
+      cancelAnimationFrame(frame);
+      observer.disconnect();
     };
   }, [total]);
 
@@ -61,8 +98,16 @@ export default function InteractiveVideoScroller() {
       if (!element) return;
 
       const scrollable = element.offsetHeight - window.innerHeight;
-      const top = element.offsetTop + (scrollable * (index + 0.5)) / total;
-      window.scrollTo({ top });
+      /*
+        Posicion en el documento via rect + scrollY, no `offsetTop`: el
+        offsetParent de este contenedor es la <section> `relative`, asi
+        que offsetTop valia casi 0 y el salto caia al principio de la
+        pagina en lugar de al tramo del servicio.
+      */
+      const documentTop = element.getBoundingClientRect().top + window.scrollY;
+      const top = documentTop + (scrollable * (index + 0.5)) / total;
+      // Via Lenis: un window.scrollTo se deshace en el frame siguiente.
+      smoothScrollTo(top);
     },
     [total],
   );
@@ -75,6 +120,7 @@ export default function InteractiveVideoScroller() {
       id="services"
       className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
     >
+      <SectionEdge />
       <BackgroundOrbs variant="middle" />
 
       <div
