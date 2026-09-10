@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { navLinks } from "@/data/site";
 import { useLanguage } from "@/lib/language";
@@ -15,6 +15,61 @@ import { cn } from "@/lib/utils";
   icono no desentone del resto de las transiciones.
 */
 const hamburgerTransition = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
+
+/*
+  Panel movil: cae desde la pildora y se repliega hacia ella. Solo
+  opacidad y transform: animar `filter` en el propio panel anularia su
+  backdrop-filter (el vidrio) en algunos navegadores.
+
+  Entrada y salida tienen curvas distintas a proposito. La entrada usa
+  la ease-out del sitio, que frena al llegar. Con esa misma curva la
+  salida hacia casi todo el cambio en los primeros 60ms y el panel se
+  apagaba de golpe, sin llegar a verse cerrar. Por eso la salida es
+  ease-in-out, la opacidad va 80ms por detras del movimiento (se ve la
+  forma recogerse antes de desaparecer) y los enlaces se van en orden
+  inverso, de abajo arriba.
+*/
+const panelVariants = {
+  closed: {
+    opacity: 0,
+    y: -10,
+    scale: 0.94,
+    // Deja de capturar toques en cuanto empieza a cerrarse, no al final.
+    pointerEvents: "none" as const,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1] as const,
+      opacity: { duration: 0.22, delay: 0.08, ease: "easeIn" as const },
+      staggerChildren: 0.035,
+      staggerDirection: -1,
+    },
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    pointerEvents: "auto" as const,
+    transition: {
+      duration: 0.34,
+      ease: [0.22, 1, 0.36, 1] as const,
+      staggerChildren: 0.045,
+      delayChildren: 0.06,
+    },
+  },
+};
+
+const panelItemVariants = {
+  closed: {
+    opacity: 0,
+    y: -6,
+    transition: { duration: 0.16, ease: "easeIn" as const },
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
 
 const hamburgerLineVariants = {
   top: {
@@ -43,6 +98,7 @@ export function FloatingNav() {
   // La verdad del tema vive en la clase de <html>; el store solo la lee
   // y la escribe, de modo que el icono no puede desincronizarse.
   const { isDark, toggleTheme } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -189,28 +245,36 @@ export function FloatingNav() {
         </button>
       </nav>
 
-      {isOpen ? (
-        <div
-          id="floating-nav-panel"
-          ref={panelRef}
-          data-scrolled="true"
-          className="liquid-glass mt-2 rounded-2xl p-2 md:hidden"
-        >
-          <ul className="flex flex-col">
-            {navLinks.map((link) => (
-              <li key={link.key}>
-                <a
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="flex min-h-11 items-center rounded-xl px-4 text-sm text-ink-muted transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
-                >
-                  {t.nav[link.key]}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <AnimatePresence>
+        {isOpen ? (
+          <motion.div
+            key="floating-nav-panel"
+            id="floating-nav-panel"
+            ref={panelRef}
+            data-scrolled="true"
+            variants={panelVariants}
+            initial={shouldReduceMotion ? false : "closed"}
+            animate="open"
+            exit={shouldReduceMotion ? { opacity: 0, transition: { duration: 0 } } : "closed"}
+            style={{ transformOrigin: "top center" }}
+            className="liquid-glass mt-2 rounded-2xl p-2 md:hidden"
+          >
+            <ul className="flex flex-col">
+              {navLinks.map((link) => (
+                <motion.li key={link.key} variants={panelItemVariants}>
+                  <a
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="flex min-h-11 items-center rounded-xl px-4 text-sm text-ink-muted transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
+                  >
+                    {t.nav[link.key]}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
