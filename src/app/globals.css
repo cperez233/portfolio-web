@@ -370,8 +370,8 @@ html.lenis body {
 
 @layer components {
   /*
-    Tarjetas apiladas fuera de escritorio (Proyectos y Servicios): capas
-    sin scroll atrapado.
+    Tarjetas de Proyectos fuera de escritorio: capas sin scroll atrapado.
+    (Servicios usa otro gesto, el rolodex de ServiceCard, sin fijado.)
 
     Cada tarjeta mide su alto natural y lo publica en --card-h (lo mide
     el hook useCardHeight). Se fija en el menor de dos topes:

@@ -1,26 +1,18 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
   useReducedMotion,
   useScroll,
   useTransform,
-  type MotionValue,
 } from "framer-motion";
 import { TechVisual } from "@/components/diagrams";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { DESKTOP_QUERY } from "@/lib/breakpoints";
 import { useLanguage } from "@/lib/language";
 import { smoothScrollTo } from "@/lib/smooth-scroll";
-import { useCardHeight } from "@/lib/use-card-height";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { BackgroundOrbs } from "./background-orbs";
 import { FadeIn } from "./FadeIn";
@@ -34,8 +26,8 @@ import { cn } from "@/lib/utils";
  * - Escritorio (variante `desktop`: ancho lg y puntero no tactil): lista
  *   con panel de detalle y scroll-lock aparente, pensado para rueda y
  *   trackpad.
- * - Movil y tablet, incluido un iPad en horizontal: tarjetas apiladas en
- *   orden de lectura, con el scroll 100% nativo.
+ * - Movil y tablet, incluido un iPad en horizontal: tarjetas en orden de
+ *   lectura que ruedan en 3D al pasar, con el scroll 100% nativo.
  *
  * El scroll-lock se atascaba en pantallas tactiles: el tramo fijado mide
  * cinco pantallas, y su panel con `overflow-y-auto` se quedaba el gesto
@@ -64,27 +56,19 @@ export default function InteractiveVideoScroller() {
 }
 
 /**
- * Movil y tablet: una tarjeta por servicio, apiladas como las de
- * Proyectos. Cada una se fija bajo la navbar con un desfase que deja
- * asomar el filo de las anteriores; la siguiente sube por encima y la
- * anterior retrocede y se oscurece. Sin contenedores con scroll propio:
- * el gesto siempre mueve la pagina.
+ * Movil y tablet: una tarjeta por servicio, con efecto rolodex.
+ *
+ * Distinto a propósito del mazo de Proyectos, que fija las tarjetas y
+ * las apila. Aqui nada se fija: cada tarjeta fluye con el scroll y rueda
+ * sobre su eje horizontal al pasar. Entra desde abajo inclinada hacia
+ * atras y en sombra, se endereza y se ilumina al llegar al centro, y se
+ * inclina hacia delante al salir por arriba. Sin sticky ni contenedores
+ * con scroll propio: el gesto siempre mueve la pagina.
  */
 function ServiceCards() {
   const { t } = useLanguage();
-  const listRef = useRef<HTMLOListElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const total = menuItems.length;
-
-  /*
-    Un unico useScroll para las cinco, como en Proyectos. Con
-    "end start" el progreso recorre la lista entera, asi que la tarjeta
-    `i` queda tapada aproximadamente entre i/total e (i+1)/total.
-  */
-  const { scrollYProgress } = useScroll({
-    target: listRef,
-    offset: ["start start", "end start"],
-  });
 
   return (
     <div className="relative z-10 px-5 py-20 sm:px-8 sm:py-24 md:px-10 desktop:hidden">
@@ -100,17 +84,13 @@ function ServiceCards() {
           </FadeSwap>
         </FadeIn>
 
-        <ol
-          ref={listRef}
-          className="mt-10 flex touch-manipulation flex-col gap-4 sm:gap-5"
-        >
+        <ol className="mt-10 flex touch-manipulation flex-col gap-5 sm:gap-6">
           {menuItems.map((item, index) => (
             <ServiceCard
               key={item.number}
               item={item}
               index={index}
               total={total}
-              progress={scrollYProgress}
               reduceMotion={Boolean(shouldReduceMotion)}
             />
           ))}
@@ -124,55 +104,78 @@ interface ServiceCardProps {
   item: ServiceItem;
   index: number;
   total: number;
-  progress: MotionValue<number>;
   reduceMotion: boolean;
 }
 
-function ServiceCard({
-  item,
-  index,
-  total,
-  progress,
-  reduceMotion,
-}: ServiceCardProps) {
+function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
   const { t } = useLanguage();
   const copy = t.services.items[index];
   const itemRef = useRef<HTMLLIElement>(null);
-  const cardRef = useRef<HTMLElement>(null);
-  const isLast = index === total - 1;
 
-  // Alto real para `.stack-sticky`: en un movil apaisado no cabe entera.
-  useCardHeight(itemRef, cardRef);
+  /*
+    Progreso propio de cada tarjeta: 0 cuando su borde superior asoma por
+    abajo, 0.5 con la tarjeta centrada, 1 cuando su borde inferior sale
+    por arriba. Se mide el <li>, que no lleva transform, y se anima el
+    <article> de dentro. Aqui medir cada tarjeta si es fiable: ninguna va
+    fijada al viewport.
+  */
+  const { scrollYProgress } = useScroll({
+    target: itemRef,
+    offset: ["start end", "end start"],
+  });
 
-  const scale = useTransform(
-    progress,
-    [index / total, 1],
-    [1, 1 - (total - 1 - index) * 0.02],
+  const rotateX = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    [16, 0, 0, -12],
   );
-  const dim = useTransform(
-    progress,
-    [index / total, (index + 1) / total],
-    [0, isLast ? 0 : 0.5],
+  const y = useTransform(scrollYProgress, [0, 0.35], [48, 0]);
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.65, 1],
+    [0.92, 1, 1, 0.95],
+  );
+  // Sombra fuera del centro y luz en el centro: el foco.
+  const shade = useTransform(
+    scrollYProgress,
+    [0, 0.3, 0.7, 1],
+    [0.5, 0, 0, 0.55],
+  );
+  const glow = useTransform(
+    scrollYProgress,
+    [0.2, 0.42, 0.58, 0.8],
+    [0.15, 1, 1, 0.15],
   );
 
   const tags = copy.tag.split(" / ");
 
   return (
-    <li
-      ref={itemRef}
-      style={{ "--stack-index": index } as CSSProperties}
-      // Con reduced-motion no se apila: cada tarjeta en su sitio.
-      className="stack-sticky motion-reduce:static"
-    >
+    <li ref={itemRef}>
       <motion.article
-        ref={cardRef}
-        style={reduceMotion ? undefined : { scale, willChange: "transform" }}
-        className="relative origin-top overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-[0_-18px_44px_-26px_rgba(0,0,0,0.75)]"
+        style={
+          reduceMotion
+            ? undefined
+            : {
+                rotateX,
+                y,
+                scale,
+                transformPerspective: 1100,
+                willChange: "transform",
+              }
+        }
+        className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-[0_28px_60px_-34px_rgba(0,0,0,0.85)]"
       >
-        {/* Filo de acento: es lo que asoma de cada tarjeta en la pila. */}
-        <span
+        {/* Filo de acento: se enciende con la tarjeta en el centro. */}
+        <motion.span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-tech-accent/70 to-transparent"
+          style={reduceMotion ? undefined : { opacity: glow }}
+          className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-tech-accent to-transparent"
+        />
+        {/* Borde de luz del foco, por encima del borde zinc. */}
+        <motion.span
+          aria-hidden="true"
+          style={{ opacity: reduceMotion ? 0 : glow }}
+          className="pointer-events-none absolute inset-0 z-10 rounded-3xl ring-1 ring-inset ring-tech-accent/25"
         />
 
         <div className="relative h-28 sm:h-36">
@@ -215,11 +218,11 @@ function ServiceCard({
           </FadeSwap>
         </div>
 
-        {/* Oscurece la tarjeta a medida que la siguiente la tapa. */}
-        {reduceMotion || isLast ? null : (
+        {/* Sombra de entrada y salida; en el centro desaparece. */}
+        {reduceMotion ? null : (
           <motion.div
             aria-hidden="true"
-            style={{ opacity: dim }}
+            style={{ opacity: shade }}
             className="pointer-events-none absolute inset-0 z-20 bg-black"
           />
         )}
