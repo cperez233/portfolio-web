@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { navLinks } from "@/data/site";
@@ -44,8 +44,22 @@ export function FloatingNav() {
   // y la escribe, de modo que el icono no puede desincronizarse.
   const { isDark, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+
+  /*
+    Arriba del todo la pildora casi se funde con el hero; en cuanto la
+    pagina se mueve gana fondo y sombra para separarse del contenido que
+    pasa por debajo. setState con el mismo booleano no re-renderiza, asi
+    que el listener solo cuesta algo al cruzar el umbral.
+  */
+  useEffect(() => {
+    const update = () => setIsScrolled(window.scrollY > 24);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,6 +87,22 @@ export function FloatingNav() {
     };
   }, [isOpen]);
 
+  /*
+    Reflejo que sigue al raton por la pildora: solo con raton, en tactil
+    se queda en su sitio. Al salir, la variable vuelve a su valor inicial
+    (@property en globals.css) y el reflejo se desliza de vuelta.
+  */
+  const handleGlassPointerMove = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== "mouse") return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    event.currentTarget.style.setProperty("--glass-x", `${Math.round(x)}%`);
+  };
+
+  const handleGlassPointerLeave = (event: PointerEvent<HTMLElement>) => {
+    event.currentTarget.style.removeProperty("--glass-x");
+  };
+
   const linkClass =
     "inline-flex min-h-9 items-center rounded-full px-2.5 text-base text-ink-muted transition-colors duration-200 ease-[var(--ease-premium)] hover:text-ink";
 
@@ -80,9 +110,16 @@ export function FloatingNav() {
     <div className="fixed left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-fit -translate-x-1/2">
       <nav
         aria-label={t.nav.about}
+        data-scrolled={isScrolled}
+        onPointerMove={handleGlassPointerMove}
+        onPointerLeave={handleGlassPointerLeave}
         className={cn(
-          "flex items-center gap-3 rounded-full border border-line-strong bg-canvas/75 px-4 py-2",
-          "shadow-2xl backdrop-blur-xl sm:gap-6 sm:px-6 sm:py-2.5",
+          /*
+            Liquid glass: fondo, desenfoque con saturacion, canto de luz y
+            sombras viven en `.liquid-glass` (globals.css), que lee el
+            tema y `data-scrolled`. Aqui solo queda la forma.
+          */
+          "liquid-glass flex items-center gap-3 rounded-full px-4 py-2 sm:gap-6 sm:px-6 sm:py-2.5",
         )}
       >
         {/* Enlaces en linea a partir de md */}
@@ -140,7 +177,7 @@ export function FloatingNav() {
         <button
           type="button"
           onClick={toggleTheme}
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-2 text-ink-muted transition-colors duration-200 hover:text-accent-ink"
+          className="glass-chip inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
           aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
           aria-pressed={isDark}
         >
@@ -156,7 +193,8 @@ export function FloatingNav() {
         <div
           id="floating-nav-panel"
           ref={panelRef}
-          className="mt-2 rounded-2xl border border-line-strong bg-canvas/95 p-2 shadow-2xl backdrop-blur-xl md:hidden"
+          data-scrolled="true"
+          className="liquid-glass mt-2 rounded-2xl p-2 md:hidden"
         >
           <ul className="flex flex-col">
             {navLinks.map((link) => (

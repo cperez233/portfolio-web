@@ -20,7 +20,7 @@ export function LanguageToggle() {
     <div
       role="group"
       aria-label={t.languageToggle.label}
-      className="relative inline-flex h-11 items-center rounded-full border border-line-strong bg-surface-2 p-1"
+      className="glass-chip relative inline-flex h-11 items-center rounded-full p-1"
     >
       {options.map((option) => {
         const isActive = option === language;
@@ -40,7 +40,7 @@ export function LanguageToggle() {
             {isActive ? (
               <motion.span
                 layoutId="language-pill"
-                className="accent-fill absolute inset-0 -z-10 rounded-full"
+                className="accent-fill absolute inset-0 -z-10 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_4px_14px_-4px_rgba(101,42,49,0.7)]"
                 transition={
                   shouldReduceMotion
                     ? { duration: 0 }

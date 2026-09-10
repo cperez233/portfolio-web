@@ -394,3 +394,128 @@ html.lenis body {
     );
   }
 }
+
+/*
+  Liquid glass (estilo Apple) para la navbar flotante.
+
+  Receta: vidrio muy transparente con desenfoque Y saturacion (lo que da
+  el color vivo de lo que pasa detras), un canto de luz en degradado
+  (brillante arriba a la izquierda, apagado al otro lado), brillo
+  especular interior arriba, canto oscuro abajo y un reflejo radial que
+  sigue al raton (--glass-x, lo mueve floating-nav.tsx). Registrado con
+  @property para que el reflejo se deslice en vez de saltar.
+
+  Todo por variables: el tema claro va por defecto y html.dark las
+  reescribe, como el resto de tokens. Con data-scrolled el vidrio gana
+  densidad para que el texto se lea sobre cualquier contenido.
+*/
+@property --glass-x {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 30%;
+}
+
+@layer components {
+  .liquid-glass {
+    --glass-base: 38%;
+    --glass-tint-top: rgba(255, 255, 255, 0.55);
+    --glass-tint-bottom: rgba(255, 255, 255, 0.2);
+    --glass-sheen: rgba(255, 255, 255, 0.7);
+    --glass-rim: rgba(255, 255, 255, 0.95);
+    --glass-rim-soft: rgba(255, 255, 255, 0.3);
+    --glass-highlight: rgba(255, 255, 255, 0.85);
+    --glass-edge-shade: rgba(15, 23, 42, 0.08);
+    --glass-inner-glow: rgba(255, 255, 255, 0.25);
+    --glass-drop: rgba(15, 23, 42, 0.18);
+
+    position: relative;
+    isolation: isolate;
+    background-color: color-mix(
+      in srgb,
+      var(--color-canvas) var(--glass-base),
+      transparent
+    );
+    background-image:
+      radial-gradient(
+        90% 160% at var(--glass-x) -30%,
+        var(--glass-sheen),
+        transparent 60%
+      ),
+      linear-gradient(180deg, var(--glass-tint-top), var(--glass-tint-bottom));
+    -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.04);
+    backdrop-filter: blur(14px) saturate(190%) brightness(1.04);
+    box-shadow:
+      inset 0 1px 0.5px 0 var(--glass-highlight),
+      inset 0 -1px 0.5px 0 var(--glass-edge-shade),
+      inset 0 0 18px 0 var(--glass-inner-glow),
+      0 12px 36px -14px var(--glass-drop);
+    transition:
+      background-color 0.5s var(--ease-premium),
+      box-shadow 0.5s var(--ease-premium),
+      --glass-x 0.6s var(--ease-premium);
+  }
+
+  /* Canto de luz: un borde de 1px en degradado, recortado con mascara. */
+  .liquid-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      var(--glass-rim) 0%,
+      var(--glass-rim-soft) 35%,
+      var(--glass-rim-soft) 65%,
+      color-mix(in srgb, var(--glass-rim) 55%, transparent) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .liquid-glass[data-scrolled="true"] {
+    --glass-base: 62%;
+    --glass-drop: rgba(15, 23, 42, 0.28);
+  }
+
+  html.dark .liquid-glass {
+    --glass-base: 18%;
+    --glass-tint-top: rgba(255, 255, 255, 0.09);
+    --glass-tint-bottom: rgba(255, 255, 255, 0.02);
+    --glass-sheen: rgba(255, 255, 255, 0.14);
+    --glass-rim: rgba(255, 255, 255, 0.4);
+    --glass-rim-soft: rgba(255, 255, 255, 0.06);
+    --glass-highlight: rgba(255, 255, 255, 0.22);
+    --glass-edge-shade: rgba(0, 0, 0, 0.45);
+    --glass-inner-glow: rgba(255, 255, 255, 0.045);
+    --glass-drop: rgba(0, 0, 0, 0.6);
+  }
+
+  html.dark .liquid-glass[data-scrolled="true"] {
+    --glass-base: 45%;
+    --glass-drop: rgba(0, 0, 0, 0.7);
+  }
+
+  /* Controles dentro del vidrio: translucidos, no pastillas solidas. */
+  .glass-chip {
+    background-color: rgba(255, 255, 255, 0.35);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.7),
+      inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+  }
+
+  html.dark .glass-chip {
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  }
+}
