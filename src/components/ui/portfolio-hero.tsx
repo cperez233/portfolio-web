@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ChevronDown, ArrowUpRight } from "lucide-react";
-import { hero, portrait } from "@/data/site";
+import { ChevronDown, ArrowUpRight, Download, Mail } from "lucide-react";
+import { hero, portrait, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
+import { GithubMark } from "./github-mark";
 
 interface BlurTextProps {
   text: string;
@@ -93,7 +94,15 @@ const copyItemVariants = {
   },
 };
 
-export default function PortfolioHero() {
+const linkPillClass =
+  "inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-surface-2/60 px-4 text-sm text-ink-muted transition-colors duration-300 hover:border-accent hover:text-accent-ink";
+
+interface PortfolioHeroProps {
+  /** Ruta del CV, o null si el PDF no esta en /public (ver page.tsx). */
+  cvHref: string | null;
+}
+
+export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const { t } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
@@ -263,6 +272,44 @@ export default function PortfolioHero() {
             >
               {t.hero.ctaSecondary}
             </a>
+          </FadeSwap>
+        </motion.div>
+
+        {/*
+          Enlaces directos para quien evalua el perfil: codigo, CV y
+          correo, sin pasar por WhatsApp. Pildoras y no botones completos:
+          una tercera fila de botones de 48px empujaba el hero por debajo
+          del pliegue en un movil.
+        */}
+        <motion.div variants={copyItemVariants}>
+          <FadeSwap>
+            <ul className="flex flex-wrap items-center justify-center gap-2">
+              <li>
+                <a
+                  href={site.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkPillClass}
+                >
+                  <GithubMark className="size-4" />
+                  {t.hero.links.github}
+                </a>
+              </li>
+              {cvHref ? (
+                <li>
+                  <a href={cvHref} download className={linkPillClass}>
+                    <Download className="size-4" aria-hidden="true" />
+                    {t.hero.links.cv}
+                  </a>
+                </li>
+              ) : null}
+              <li>
+                <a href={site.emailHref} className={linkPillClass}>
+                  <Mail className="size-4" aria-hidden="true" />
+                  {t.hero.links.email}
+                </a>
+              </li>
+            </ul>
           </FadeSwap>
         </motion.div>
 

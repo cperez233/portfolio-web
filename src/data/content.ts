@@ -6,7 +6,21 @@
  * quedan en site.ts junto al resto de datos independientes del idioma.
  */
 
+import type { DiagramId } from "./diagrams";
+
 export type Language = "en" | "es";
+
+/** Textos de un diagrama tecnico (la estructura vive en diagrams.ts). */
+export interface DiagramCopy {
+  /** Insignia de estado de la barra de la ventana. */
+  status: string;
+  /** Por clave de nodo. */
+  nodes?: Record<string, { title: string; detail?: string }>;
+  /** Etiqueta de cada tramo entre columnas, en orden. */
+  links?: string[];
+  /** Salida del terminal, en el orden de las lineas `output`. */
+  log?: string[];
+}
 
 export interface Dictionary {
   nav: { about: string; services: string; projects: string; contact: string };
@@ -18,6 +32,8 @@ export interface Dictionary {
     ctaPrimary: string;
     ctaSecondary: string;
     scrollLabel: string;
+    /** Enlaces directos bajo los CTA. */
+    links: { github: string; cv: string; email: string };
   };
   about: {
     eyebrow: string;
@@ -34,20 +50,25 @@ export interface Dictionary {
   projects: {
     eyebrow: string;
     title: string;
+    /** Formato case study: problema, solucion tecnica e impacto. */
     labels: { context: string; solution: string; impact: string };
+    /** CTA de las tarjetas que enlazan a su repositorio. */
+    repoCta: string;
     /** Por proyecto, en el orden de `projects`. */
     items: Array<{
-      /** El nombre tambien se traduce en los proyectos 02 y 03. */
+      /** Titulo completo de la tarjeta; se traduce salvo nombres propios. */
       name: string;
       category: string;
       tagline: string;
       context: string;
       solution: string;
       impact: string;
+      /** CTA de respaldo (WhatsApp) cuando el proyecto no tiene repoUrl. */
       cta: string;
-      /** Micro-datos visibles bajo la cabecera de la tarjeta. */
-      metrics: string[];
-      showcase: [string, string, string];
+      /** Micro-datos de impacto. Opcional: en 01 y 02 ya lo cuenta el stack. */
+      metrics?: string[];
+      /** Pies de las capturas, solo en proyectos con visual `gallery`. */
+      showcase?: [string, string, string];
     }>;
   };
   footer: {
@@ -65,6 +86,7 @@ export interface Dictionary {
   whatsappMessage: string;
   /** Frases de la fila de texto del marquee. */
   marqueePhrases: string[];
+  diagrams: Record<DiagramId, DiagramCopy>;
 }
 
 const en: Dictionary = {
@@ -83,6 +105,7 @@ const en: Dictionary = {
     ctaPrimary: "Let's Talk on WhatsApp",
     ctaSecondary: "Explore Projects & Work",
     scrollLabel: "Scroll to about",
+    links: { github: "GitHub", cv: "Download CV", email: "Email" },
   },
   about: {
     eyebrow: "[ 01 ] About",
@@ -111,85 +134,72 @@ const en: Dictionary = {
     title: "Services",
     items: [
       {
-        name: "Full-Stack Systems & Web Architecture",
+        name: "Full-Stack Web Applications",
         tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
         description:
-          "The whole system: the database, the logic, and the screens your team uses every day.",
+          "Complete web platforms built from scratch: the database, the logic and the screens your team uses every day. Clean code and infrastructure ready to scale with the business.",
       },
       {
         name: "Workflow Automation & Integration",
         tag: "N8N / PYTHON / WEBHOOKS / APIS",
         description:
-          "Your tools finally talk to each other, so nobody copies data by hand again.",
+          "Your tools finally talk to each other, and repetitive tasks disappear. Automated pipelines that save dozens of hours and remove the errors of copying data by hand.",
       },
       {
-        name: "AI Pipeline & Intelligent Document Extraction",
-        tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
+        name: "Document AI & Data Extraction",
+        tag: "AZURE DOC INTELLIGENCE / OCR / LLMS / PYTHON",
         description:
-          "Paper, PDFs and forms turned into information you can search in seconds.",
+          "PDFs, records and paper documents turned into structured data you can search in seconds. Secure OCR and AI do the reading, so nobody transcribes by hand.",
       },
       {
-        name: "Technical & Business Process Audit",
-        tag: "SECURITY / DATA INTEGRITY / WORKFLOW AUDITING",
+        name: "Business & Technical Advisory",
+        tag: "SALES FUNNEL TECH / PROCESS AUDIT / SECURITY & DATA",
         description:
-          "A clear report on where your data leaks, slows down or breaks - and what to fix first.",
+          "An audit of your sales funnel, operations and technical security. A clear report on where revenue leaks, what slows you down and which data is at risk, with what to fix first.",
       },
       {
-        name: "Audiovisual Production & Technical Communication",
-        tag: "SCRIPTING / HIGH-RETENTION EDITING / STREAMING",
+        name: "Technical Video & Product Storytelling",
+        tag: "HIGH-RETENTION EDITING / SCRIPTING / STREAMING",
         description:
-          "Video that explains what you sell, so people get it in thirty seconds.",
+          "Technical products turned into high-retention video people get in thirty seconds. Strategic scripts and dynamic editing built to earn trust and close sales.",
       },
     ],
   },
   projects: {
     eyebrow: "[ 03 ]",
     title: "Projects",
-    labels: { context: "Context", solution: "Solution", impact: "Impact" },
+    labels: {
+      context: "Problem",
+      solution: "Technical solution",
+      impact: "Impact",
+    },
+    repoCta: "View on GitHub",
     items: [
       {
-        name: "PairSync",
+        name: "PairSync — Real-Time AI Pair Programming Platform",
         category: "Full-Stack + AI",
-        tagline: "Collaborative Environment Powered by AI",
+        tagline:
+          "Collaborative coding rooms with an AI tutor and grades synced to Moodle.",
         context:
-          "Two people coding together lose time re-explaining where they left off.",
+          "Two people coding together lose time re-explaining where they left off, and grading happens somewhere else.",
         solution:
-          "One shared workspace where the code, the session and an AI helper stay in sync.",
+          "Rooms joined with a 6-character code, swappable Driver/Navigator roles, a streaming AI tutor in the chat, and one-click grade sync to Moodle.",
         impact:
-          "They pick up exactly where they stopped, and feedback arrives while it still matters.",
+          "Pairs pick up exactly where they stopped, and the teacher grades without leaving the app.",
         cta: "Explore Project",
-        metrics: [
-          "Realtime Sync",
-          "AI-Assisted Review",
-          "Dockerised Delivery",
-        ],
-        showcase: [
-          "02. Course Syllabus & Moodle Grade Integration",
-          "03. Real-Time IDE, Mobile Preview & AI Tutor Chat",
-          "01. Landing Page — Next-Gen AI Pairing Platform",
-        ],
       },
       {
-        name: "Document Extraction Automation",
-        category: "Automation & Data Pipelines",
-        tagline: "FCV Internship",
+        name: "Automated Document OCR & Security Pipeline",
+        category: "Cybersecurity Internship · FCV",
+        tagline:
+          "Ingestion, extraction and normalization pipeline for scanned institutional records.",
         context:
-          "Medical records arrived as scans and were typed out by hand, field by field.",
+          "Hundreds of manual hours spent looking up physical records, with weak traceability.",
         solution:
-          "Software that reads the scans, fills the fields, and flags anything that looks wrong.",
+          "Structured data extraction with Azure Document Intelligence, Python automation and data-integrity validation.",
         impact:
-          "Typing turns into checking, and every field can be traced back to its source.",
+          "746 records searchable by ID, name or site, with low-confidence reads flagged for human review instead of silently accepted.",
         cta: "View Case",
-        metrics: [
-          "OCR Pipeline",
-          "Field-Level Validation",
-          "Azure Doc Intelligence",
-        ],
-        showcase: [
-          "02. The pipeline reading 83 scanned batches",
-          "03. The index it generates, one row per record",
-          "01. Search by ID, name or site across 746 records",
-        ],
       },
       {
         name: "Content Creation & Media Pipeline",
@@ -248,6 +258,82 @@ const en: Dictionary = {
     "Video that explains what you sell",
     "Built for small teams",
   ],
+  diagrams: {
+    pairsync: {
+      status: "running",
+      nodes: {
+        client: { title: "Browser", detail: "Blade + JS · Driver / Navigator" },
+        laravel: { title: "Laravel 12", detail: "Rooms, roles, chat, grades" },
+        langgraph: { title: "LangGraph", detail: "AI tutor · SSE stream" },
+        moodle: { title: "Moodle", detail: "REST API · grade sync" },
+        database: { title: "SQLite", detail: "Session state & chat history" },
+      },
+      links: ["Polling · 2s", "REST · SSE"],
+    },
+    fcv: {
+      status: "done",
+      nodes: {
+        scans: { title: "Scanned records", detail: "Handwritten, multi-page PDFs" },
+        azure: {
+          title: "Azure Document Intelligence",
+          detail: "OCR · handwriting + tables",
+        },
+        python: { title: "Python pipeline", detail: "Normalize · validate · flag" },
+        index: { title: "Searchable index", detail: "Excel + offline search tool" },
+      },
+      links: ["one PDF per page", "structured fields", "reviewed rows"],
+      log: [
+        "Multi-page scans split into one PDF per page",
+        "746 records indexed by ID, name and site",
+        "Low-confidence reads flagged for human review",
+        "Search tool in sync with the reviewed Excel",
+      ],
+    },
+    "svc-fullstack": {
+      status: "200 OK",
+      nodes: {
+        ui: { title: "Interface", detail: "React · Blade" },
+        api: { title: "API", detail: "Laravel · Node.js" },
+        database: { title: "Database", detail: "PostgreSQL" },
+      },
+    },
+    "svc-automation": {
+      status: "synced",
+      nodes: {
+        webhook: { title: "Webhook", detail: "Event in" },
+        n8n: { title: "n8n", detail: "Workflow" },
+        python: { title: "Python", detail: "Transform" },
+        apis: { title: "APIs", detail: "CRM · Sheets · email" },
+      },
+    },
+    "svc-docai": {
+      status: "extracting",
+      nodes: {
+        scans: { title: "PDFs & scans", detail: "Paper, forms" },
+        ocr: { title: "OCR", detail: "Azure Doc Intelligence" },
+        llm: { title: "LLM", detail: "Structures & validates" },
+        search: { title: "Search", detail: "Seconds, not hours" },
+      },
+    },
+    "svc-audit": {
+      status: "2 findings",
+      log: [
+        "Funnel mapped from first click to paid invoice",
+        "Leads lost between the web form and the CRM",
+        "Customer data shared in a public spreadsheet",
+        "Report ready · fixes ranked by revenue and risk",
+      ],
+    },
+    "svc-media": {
+      status: "rendering",
+      nodes: {
+        script: { title: "Script", detail: "Hook in 3 s" },
+        record: { title: "Record", detail: "Multicam · OBS" },
+        edit: { title: "Edit", detail: "High-retention pacing" },
+        publish: { title: "Publish", detail: "Vertical + widescreen" },
+      },
+    },
+  },
 };
 
 const es: Dictionary = {
@@ -266,6 +352,7 @@ const es: Dictionary = {
     ctaPrimary: "Hablemos por WhatsApp",
     ctaSecondary: "Ver proyectos y trabajo",
     scrollLabel: "Ir a sobre mí",
+    links: { github: "GitHub", cv: "Descargar CV", email: "Correo" },
   },
   about: {
     eyebrow: "[ 01 ] Sobre mí",
@@ -294,85 +381,72 @@ const es: Dictionary = {
     title: "Servicios",
     items: [
       {
-        name: "Sistemas full-stack y arquitectura web",
+        name: "Aplicaciones web full-stack",
         tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
         description:
-          "El sistema completo: la base de datos, la lógica y las pantallas que usa tu equipo a diario.",
+          "Plataformas web completas desde cero: la base de datos, la lógica y las pantallas que tu equipo usa a diario. Código limpio e infraestructura lista para escalar la operación.",
       },
       {
         name: "Automatización e integración de flujos",
         tag: "N8N / PYTHON / WEBHOOKS / APIS",
         description:
-          "Tus programas por fin se hablan entre ellos, y nadie vuelve a copiar datos a mano.",
+          "Tus herramientas por fin se hablan entre ellas y las tareas repetitivas desaparecen. Pipelines automáticos que ahorran decenas de horas sin errores de copiar datos a mano.",
       },
       {
-        name: "Pipeline de IA y extracción documental",
-        tag: "AZURE DOC INTELLIGENCE / LANGCHAIN / OCR",
+        name: "IA documental y extracción de datos",
+        tag: "AZURE DOC INTELLIGENCE / OCR / LLMS / PYTHON",
         description:
-          "Papeles, PDFs y formularios convertidos en información que se busca en segundos.",
+          "PDFs, actas y documentos físicos convertidos en datos estructurados que se buscan al instante. OCR seguro e IA hacen la lectura, sin transcripción manual.",
       },
       {
-        name: "Auditoría técnica y de procesos de negocio",
-        tag: "SEGURIDAD / INTEGRIDAD DE DATOS / AUDITORÍA DE FLUJOS",
+        name: "Asesoría técnica y de negocio",
+        tag: "EMBUDOS DE VENTA / AUDITORÍA DE PROCESOS / SEGURIDAD Y DATOS",
         description:
-          "Un informe claro de dónde se te escapan datos, dónde se frena todo y qué arreglar primero.",
+          "Auditoría de tu embudo de ventas, tus procesos y tu seguridad técnica. Un informe claro de dónde se pierden ingresos, dónde se frena todo y qué datos están en riesgo, con lo primero que hay que arreglar.",
       },
       {
-        name: "Producción audiovisual y comunicación técnica",
-        tag: "GUION / EDICIÓN DE ALTA RETENCIÓN / STREAMING",
+        name: "Video técnico y storytelling de producto",
+        tag: "EDICIÓN DE ALTA RETENCIÓN / GUION / STREAMING",
         description:
-          "Video que explica lo que vendes, para que se entienda en treinta segundos.",
+          "Productos técnicos convertidos en video de alta retención que se entiende en treinta segundos. Guion estratégico y edición dinámica pensados para generar confianza y cerrar ventas.",
       },
     ],
   },
   projects: {
     eyebrow: "[ 03 ]",
     title: "Proyectos",
-    labels: { context: "Contexto", solution: "Solución", impact: "Impacto" },
+    labels: {
+      context: "Problema",
+      solution: "Solución técnica",
+      impact: "Impacto",
+    },
+    repoCta: "Ver en GitHub",
     items: [
       {
-        name: "PairSync",
+        name: "PairSync — Plataforma de pair programming con IA en tiempo real",
         category: "Desarrollo Full-Stack + IA",
-        tagline: "Entorno Colaborativo Impulsado por IA",
+        tagline:
+          "Salas de código colaborativas con tutor de IA y notas sincronizadas con Moodle.",
         context:
-          "Dos personas programando juntas pierden tiempo reexplicando dónde se quedaron.",
+          "Dos personas programando juntas pierden tiempo reexplicando dónde se quedaron, y la calificación pasa en otra herramienta.",
         solution:
-          "Un espacio compartido donde el código, la sesión y un asistente con IA van sincronizados.",
+          "Salas con código de 6 caracteres, roles Driver/Navigator intercambiables, un tutor de IA con respuesta en streaming en el chat y notas enviadas a Moodle con un clic.",
         impact:
-          "Se retoma justo donde se paró, y la revisión llega cuando todavía sirve.",
+          "La pareja retoma justo donde paró, y el profesor califica sin salir de la aplicación.",
         cta: "Explorar Proyecto",
-        metrics: [
-          "Sincronía en vivo",
-          "Revisión asistida por IA",
-          "Entrega con Docker",
-        ],
-        showcase: [
-          "02. Temario del curso e integración de notas con Moodle",
-          "03. IDE en tiempo real, vista móvil y chat con tutor IA",
-          "01. Landing — Plataforma de pairing con IA",
-        ],
       },
       {
-        name: "Automatización de Extracción Documental",
-        category: "Automatización y Flujos de Datos",
-        tagline: "Prácticas en la FCV",
+        name: "Pipeline automatizado de OCR y seguridad documental",
+        category: "Prácticas en ciberseguridad · FCV",
+        tagline:
+          "Pipeline de ingesta, extracción y normalización de registros institucionales escaneados.",
         context:
-          "Las historias clínicas llegaban escaneadas y se pasaban a mano, campo por campo.",
+          "Cientos de horas manuales invertidas en consultar actas físicas y riesgo en trazabilidad.",
         solution:
-          "Un programa que lee los escaneos, rellena los campos y marca lo que se ve mal.",
+          "Extracción analítica de datos estructurados con Azure Document Intelligence, automatización en Python y validación de integridad de datos.",
         impact:
-          "Teclear se convierte en revisar, y cada dato se puede rastrear hasta su origen.",
+          "746 actas buscables por cédula, nombre o sede, y las lecturas dudosas se marcan para revisión humana en vez de aceptarse en silencio.",
         cta: "Ver Caso",
-        metrics: [
-          "Pipeline OCR",
-          "Validación por campo",
-          "Azure Doc Intelligence",
-        ],
-        showcase: [
-          "02. El pipeline leyendo 83 lotes escaneados",
-          "03. El índice que genera, una fila por acta",
-          "01. Búsqueda por cédula, nombre o sede sobre 746 actas",
-        ],
       },
       {
         name: "Creación de Contenido y Cadena de Producción",
@@ -431,6 +505,82 @@ const es: Dictionary = {
     "Video que explica lo que vendes",
     "Hecho para equipos pequeños",
   ],
+  diagrams: {
+    pairsync: {
+      status: "activo",
+      nodes: {
+        client: { title: "Navegador", detail: "Blade + JS · Driver / Navigator" },
+        laravel: { title: "Laravel 12", detail: "Salas, roles, chat, notas" },
+        langgraph: { title: "LangGraph", detail: "Tutor IA · stream SSE" },
+        moodle: { title: "Moodle", detail: "API REST · sincroniza notas" },
+        database: { title: "SQLite", detail: "Estado de sesión e historial" },
+      },
+      links: ["Polling · 2s", "REST · SSE"],
+    },
+    fcv: {
+      status: "completado",
+      nodes: {
+        scans: { title: "Actas escaneadas", detail: "PDF manuscritos de varias páginas" },
+        azure: {
+          title: "Azure Document Intelligence",
+          detail: "OCR · manuscrito + tablas",
+        },
+        python: { title: "Pipeline en Python", detail: "Normaliza · valida · marca" },
+        index: { title: "Índice buscable", detail: "Excel + buscador sin servidor" },
+      },
+      links: ["un PDF por página", "campos estructurados", "filas revisadas"],
+      log: [
+        "Escaneos divididos en un PDF por página",
+        "746 actas indexadas por cédula, nombre y sede",
+        "Lecturas dudosas marcadas para revisión humana",
+        "Buscador sincronizado con el Excel revisado",
+      ],
+    },
+    "svc-fullstack": {
+      status: "200 OK",
+      nodes: {
+        ui: { title: "Interfaz", detail: "React · Blade" },
+        api: { title: "API", detail: "Laravel · Node.js" },
+        database: { title: "Base de datos", detail: "PostgreSQL" },
+      },
+    },
+    "svc-automation": {
+      status: "sincronizado",
+      nodes: {
+        webhook: { title: "Webhook", detail: "Entra un evento" },
+        n8n: { title: "n8n", detail: "Flujo" },
+        python: { title: "Python", detail: "Transforma" },
+        apis: { title: "APIs", detail: "CRM · Sheets · correo" },
+      },
+    },
+    "svc-docai": {
+      status: "extrayendo",
+      nodes: {
+        scans: { title: "PDFs y escaneos", detail: "Papel, formularios" },
+        ocr: { title: "OCR", detail: "Azure Doc Intelligence" },
+        llm: { title: "LLM", detail: "Estructura y valida" },
+        search: { title: "Búsqueda", detail: "Segundos, no horas" },
+      },
+    },
+    "svc-audit": {
+      status: "2 hallazgos",
+      log: [
+        "Embudo trazado del primer clic a la factura pagada",
+        "Leads perdidos entre el formulario web y el CRM",
+        "Datos de clientes en una hoja de cálculo pública",
+        "Informe listo · arreglos ordenados por ingresos y riesgo",
+      ],
+    },
+    "svc-media": {
+      status: "renderizando",
+      nodes: {
+        script: { title: "Guion", detail: "Gancho en 3 s" },
+        record: { title: "Grabación", detail: "Multicámara · OBS" },
+        edit: { title: "Edición", detail: "Ritmo de alta retención" },
+        publish: { title: "Publicación", detail: "Vertical + horizontal" },
+      },
+    },
+  },
 };
 
 export const dictionaries: Record<Language, Dictionary> = { en, es };

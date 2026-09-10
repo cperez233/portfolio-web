@@ -1,9 +1,22 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { AboutSection } from "@/components/about";
 import { MarqueeSection } from "@/components/marquee-section";
 import { ProjectsSection } from "@/components/projects";
 import Footer from "@/components/ui/footer-section";
 import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
 import PortfolioHero from "@/components/ui/portfolio-hero";
+import { site } from "@/data/site";
+
+/**
+ * El CV solo se enlaza si el PDF esta en /public. La pagina es estatica,
+ * asi que la comprobacion corre una vez, en el build: al anadir el
+ * archivo, el enlace aparece en el siguiente deploy.
+ */
+function resolveCvHref(): string | null {
+  const file = path.join(process.cwd(), "public", site.cvPath);
+  return existsSync(file) ? site.cvPath : null;
+}
 
 /**
  * La pagina solo compone secciones. Cero markup de detalle.
@@ -14,7 +27,7 @@ import PortfolioHero from "@/components/ui/portfolio-hero";
 export default function Home() {
   return (
     <main id="content" className="flex-1 overflow-x-clip">
-      <PortfolioHero />
+      <PortfolioHero cvHref={resolveCvHref()} />
       <MarqueeSection />
       <AboutSection />
       <InteractiveVideoScroller />

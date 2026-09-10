@@ -19,6 +19,7 @@ Bilingual (EN / ES), dark and light themes, scroll-driven motion.
 | Motion | Framer Motion 13 · Lenis (inertial scroll) |
 | Icons | lucide-react |
 | Fonts | Geist + Fira Code, self-hosted via `next/font` |
+| OG image | `next/og` (`ImageResponse`), generated at build time |
 
 ## Getting started
 
@@ -39,19 +40,23 @@ npm run lint    # eslint
 ```
 src/
 ├─ app/
-│  ├─ layout.tsx      fonts, metadata, providers, floating nav
+│  ├─ layout.tsx      fonts, metadata (SEO + Open Graph), providers, nav
 │  ├─ page.tsx        section composition only
+│  ├─ og-image.png/   route that renders the 1200x630 share card
 │  └─ globals.css     design tokens (@theme) + theme overrides
 ├─ components/
 │  ├─ about.tsx       editorial blocks + highlight grid
 │  ├─ marquee-section.tsx   scroll-driven text band
-│  ├─ projects.tsx    sticky stacking cards
+│  ├─ projects.tsx    sticky stacking case-study cards
+│  ├─ diagrams/       code-drawn architecture / pipeline / terminal panels
 │  └─ ui/             primitives and the larger composed pieces
 ├─ data/
 │  ├─ content.ts      every translatable string, EN + ES
+│  ├─ diagrams.ts     diagram structure: nodes, columns, commands
 │  └─ site.ts         URLs, images, proper nouns (no translation)
 └─ lib/
    ├─ language.tsx    language provider
+   ├─ theme.ts        theme store (+ theme-storage.ts for the key)
    ├─ smooth-scroll.ts  Lenis access for programmatic jumps
    └─ utils.ts        cn() helper
 ```
@@ -59,6 +64,8 @@ src/
 The split between `content.ts` and `site.ts` is deliberate: anything a
 reader sees in their own language lives in the dictionary; anything that
 is a proper noun, a URL or an asset path stays language-independent.
+Diagrams follow the same split: `diagrams.ts` holds the structure and the
+terminal commands, `content.ts` the node labels and log output.
 
 ## Theming
 
@@ -98,10 +105,17 @@ the deep wine measures 1.83:1, so text uses a lighter tint instead.
 
 ## Assets
 
-`public/projects/` holds the screenshots the site displays. The document
-extraction shots are redacted: the original captures contained real
-names and national ID numbers, and the identifying columns are blurred
-before publication.
+There is no stock photography. Services and the PairSync / document
+extraction projects are illustrated with diagrams drawn in code
+(`components/diagrams/`), always dark like an editor capture.
+
+`public/projects/` holds screenshots; only the content-creation project
+displays them today. The document extraction shots are redacted: the
+original captures contained real names and national ID numbers, and the
+identifying columns are blurred before publication.
+
+The hero links a CV from `public/cv-cristian-perez.pdf`. The link only
+renders when that file exists at build time, so it never points at a 404.
 
 The unredacted originals live in `assets-src/`, which is excluded from
 both git and the Vercel deploy. They are not in this repository and
@@ -109,8 +123,11 @@ should not be added to it.
 
 ## Deploy
 
-Vercel, from this repository. No environment variables are required.
-`next.config.ts` declares the remote image hosts, so a new external
+Vercel, from this repository. No environment variables need to be set:
+`metadataBase` reads `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel injects
+at build time, so the share card resolves to the production domain.
+
+No remote image hosts are declared in `next.config.ts`; a new external
 image source has to be added there before `next/image` will load it.
 
 ## Licence

@@ -24,13 +24,52 @@ const firaCode = Fira_Code({
   subsets: ["latin"],
 });
 
+const siteTitle = `${site.name} — ${site.role}`;
+const siteDescription =
+  "Software that runs your business, and video that sells it. Full-stack development, AI pipelines, and cybersecurity.";
+
+/*
+  metadataBase convierte /og-image.png en una URL absoluta, que es lo que
+  exigen WhatsApp, LinkedIn y Discord para la vista previa. En Vercel sale
+  del dominio de produccion del proyecto (variable que Vercel inyecta en
+  el build); en local, de localhost.
+*/
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
+/** Generada por app/og-image.png/route.tsx. */
+const ogImage = {
+  url: "/og-image.png",
+  width: 1200,
+  height: 630,
+  alt: siteTitle,
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: `${site.name} - ${site.role}`,
-    template: `%s - ${site.name}`,
+    default: siteTitle,
+    template: `%s — ${site.name}`,
   },
-  description:
-    "Full-stack software engineering, smart automation, and digital communication that connects.",
+  description: siteDescription,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: site.name,
+    title: siteTitle,
+    description: siteDescription,
+    locale: "en_US",
+    alternateLocale: ["es_CO"],
+    images: [ogImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage.url],
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,20 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
-import { menuItems, type ServiceItem } from "@/data/site";
+import { TechVisual } from "@/components/diagrams";
+import { menuItems } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { smoothScrollTo } from "@/lib/smooth-scroll";
 import { BackgroundOrbs } from "./background-orbs";
 import { SectionEdge } from "./section-transition";
 import { FadeSwap } from "./FadeSwap";
 import { cn } from "@/lib/utils";
-
-/** Velo del panel: mantiene el texto legible sobre cualquier foto. */
-const MEDIA_SCRIM =
-  "linear-gradient(to top, rgba(12,12,12,0.85) 0%, rgba(12,12,12,0.2) 60%, transparent 100%)";
 
 /**
  * Scroller de servicios con scroll-lock aparente.
@@ -28,11 +23,9 @@ export default function InteractiveVideoScroller() {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
   const shouldReduceMotion = useReducedMotion();
 
   const total = menuItems.length;
-  const hasVideo = menuItems.some((item) => item.video);
 
   /*
     El indice se mide por frame mientras la seccion esta a la vista, en
@@ -127,9 +120,9 @@ export default function InteractiveVideoScroller() {
       style={{ height: `${total * 100}svh` }}
       className="relative z-10"
     >
-      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-5 py-10 sm:px-8 sm:py-16 md:px-10">
+      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-5 py-10 sm:px-8 sm:py-12 md:px-10 lg:py-16">
         <div className="mx-auto w-full max-w-6xl">
-          <div className="mb-6 flex items-end justify-between gap-4 sm:mb-12">
+          <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8 lg:mb-12">
             <FadeSwap>
               <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
                 {t.services.eyebrow}
@@ -146,39 +139,51 @@ export default function InteractiveVideoScroller() {
           </div>
 
           <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-14">
-            {/* Panel de medios */}
-            <div className="services-media relative order-1 aspect-[16/10] overflow-hidden rounded-2xl border border-line bg-surface-2 sm:aspect-[4/3] lg:order-2 lg:aspect-[5/4]">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={active.number}
-                  className="absolute inset-0"
-                  initial={
-                    shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
-                  }
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={shouldReduceMotion ? undefined : { opacity: 0 }}
-                  transition={{
-                    duration: shouldReduceMotion ? 0 : 0.45,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                >
-                  <MediaPanel item={active} isMuted={isMuted} />
-                </motion.div>
-              </AnimatePresence>
+            {/*
+              Panel de medios: diagrama arriba, texto del servicio abajo.
+              En columna y no superpuestos: el texto (tag, nombre y
+              descripcion) mide casi todo el panel en un movil, y encima de
+              un diagrama tapaba justo las fichas que tenia que acompanar.
+              Siempre oscuro, como el propio diagrama.
+            */}
+            <div className="services-media relative order-1 flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 sm:aspect-[4/3] lg:order-2 lg:aspect-[5/4]">
+              <div className="relative min-h-16 flex-1">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={active.number}
+                    className="absolute inset-0"
+                    initial={
+                      shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
+                    }
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+                    transition={{
+                      duration: shouldReduceMotion ? 0 : 0.45,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <TechVisual
+                      id={active.diagram}
+                      density="compact"
+                      className="h-full"
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
-              {/* Velo fijo: no se remonta con el cambio de servicio. */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-0"
-                style={{ backgroundImage: MEDIA_SCRIM }}
-              />
 
-              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+                {/* Funde el diagrama con el bloque de texto de debajo. */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-zinc-950 to-transparent"
+                />
+              </div>
+
+              <div className="relative shrink-0 p-4 sm:p-6 lg:p-8">
                 <FadeSwap>
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent-ink">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-tech-accent">
                     {activeCopy.tag}
                   </p>
-                  <p className="mt-2 text-2xl font-medium tracking-tight text-white sm:text-3xl">
+                  <p className="mt-2 text-xl font-medium tracking-tight text-white sm:text-3xl">
                     {activeCopy.name}
                   </p>
                   <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
@@ -187,20 +192,6 @@ export default function InteractiveVideoScroller() {
                 </FadeSwap>
               </div>
 
-              {hasVideo ? (
-                <button
-                  type="button"
-                  onClick={() => setIsMuted((value) => !value)}
-                  aria-label={isMuted ? "Unmute video" : "Mute video"}
-                  className="absolute right-4 top-4 inline-flex size-11 items-center justify-center rounded-full border border-line-strong bg-canvas/70 text-ink backdrop-blur-sm transition-colors duration-200 hover:border-accent hover:text-accent-ink"
-                >
-                  {isMuted ? (
-                    <VolumeX className="size-4" />
-                  ) : (
-                    <Volume2 className="size-4" />
-                  )}
-                </button>
-              ) : null}
             </div>
 
             {/* Lista de servicios */}
@@ -278,43 +269,5 @@ export default function InteractiveVideoScroller() {
 
       {scroller}
     </section>
-  );
-}
-
-/**
- * Reproduce el video del servicio si existe. No hay fuentes todavia, asi
- * que en la practica siempre sirve la imagen: nunca se pide un .mp4 que
- * devolveria 404.
- */
-function MediaPanel({
-  item,
-  isMuted,
-}: {
-  item: ServiceItem;
-  isMuted: boolean;
-}) {
-  if (item.video) {
-    return (
-      <video
-        src={item.video}
-        poster={item.image}
-        autoPlay
-        loop
-        playsInline
-        muted={isMuted}
-        className="h-full w-full object-cover"
-      />
-    );
-  }
-
-  return (
-    <Image
-      src={item.image}
-      alt=""
-      aria-hidden="true"
-      fill
-      sizes="(min-width: 1024px) 50vw, 100vw"
-      className="object-cover"
-    />
   );
 }

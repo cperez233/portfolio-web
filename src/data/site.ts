@@ -3,20 +3,31 @@
  * Todo el texto traducible vive en content.ts.
  */
 
+import type { DiagramId } from "./diagrams";
+
 export interface SiteMeta {
   name: string;
   role: string;
   email: string;
   emailHref: string;
   location: string;
+  githubUrl: string;
+  /**
+   * CV descargable, relativo a /public. El hero solo lo enlaza si el
+   * archivo existe al compilar (lo comprueba page.tsx): un enlace de
+   * descarga que devuelve 404 resta mas credibilidad que no tenerlo.
+   */
+  cvPath: string;
 }
 
 export const site: SiteMeta = {
   name: "Cristian Pérez",
-  role: "Full-stack engineer, automation & content",
+  role: "Systems Engineer & Tech Creator",
   email: "crisperezm879@gmail.com",
   emailHref: "mailto:crisperezm879@gmail.com",
   location: "Bucaramanga, Colombia",
+  githubUrl: "https://github.com/cperez233",
+  cvPath: "/cv-cristian-perez.pdf",
 };
 
 export type NavKey = "about" | "services" | "projects" | "contact";
@@ -41,39 +52,13 @@ export const hero = {
 
 export interface ServiceItem {
   number: string;
-  /** Imagen tematica del servicio. Hace de poster si algun dia hay video. */
-  image: string;
   /**
-   * Video de fondo. No hay fuentes todavia, asi que ninguna entrada lo
-   * define y el panel se queda en la imagen: cero peticiones rotas.
+   * Diagrama del panel de medios (ver data/diagrams.ts). Sustituye a las
+   * fotos de stock: una foto generica de un teclado no demuestra nada, un
+   * esquema de lo que se construye si.
    */
-  video?: string;
+  diagram: DiagramId;
 }
-
-/** Imagenes curadas por servicio. Verificadas: las cinco responden 200. */
-const UNSPLASH = {
-  darkIde:
-    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
-  nodeNetwork:
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
-  dataWaves:
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
-  securityAudit:
-    "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80",
-  /* Capturas reales del proyecto de digitalizacion de actas (FCV).
-     Las dos que mostraban cedulas y nombres van censuradas. */
-  actasPipeline: "/projects/actas-pipeline.jpg",
-  actasBuscador: "/projects/actas-buscador.jpg",
-  actasExcel: "/projects/actas-excel.jpg",
-  productionStudio:
-    "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
-  /*
-    Solo para el proyecto 02, que aun no tiene capturas propias. Los
-    proyectos 01 y 03 ya usan imagenes reales desde /public/projects.
-  */
-  engineering:
-    "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1200&q=80",
-} as const;
 
 /**
  * Cinco servicios. Nombre, tag y descripcion viven en content.ts: el
@@ -81,47 +66,68 @@ const UNSPLASH = {
  * propios, asi que tambien se traducen.
  */
 export const menuItems: ServiceItem[] = [
-  { number: "01", image: UNSPLASH.darkIde },
-  { number: "02", image: UNSPLASH.nodeNetwork },
-  { number: "03", image: UNSPLASH.actasPipeline },
-  { number: "04", image: UNSPLASH.securityAudit },
-  { number: "05", image: UNSPLASH.productionStudio },
+  { number: "01", diagram: "svc-fullstack" },
+  { number: "02", diagram: "svc-automation" },
+  { number: "03", diagram: "svc-docai" },
+  { number: "04", diagram: "svc-audit" },
+  { number: "05", diagram: "svc-media" },
 ];
+
+export type ProjectVisual =
+  | { kind: "diagram"; diagram: DiagramId }
+  /** Tres capturas reales, en /public/projects. */
+  | { kind: "gallery"; images: [string, string, string] };
 
 export interface Project {
   number: string;
-  /** El nombre visible se traduce: vive en content.ts. */
-  stack: string;
-  showcase: [string, string, string];
+  /** Nombres propios de tecnologias: no se traducen. */
+  stack: string[];
+  visual: ProjectVisual;
+  /** Repositorio publico. Sin el, el CTA de la tarjeta lleva a WhatsApp. */
+  repoUrl?: string;
 }
 
 export const projects: Project[] = [
   {
     number: "01",
-    stack: "Laravel, React, WebSockets, Claude API, Docker",
-    showcase: [
-      "/projects/pairsync-courses.jpg",
-      "/projects/pairsync-session.jpg",
-      "/projects/pairsync-landing.jpg",
+    // El stack que declara el propio repositorio: Laravel 12 con Blade y
+    // JS plano en el cliente, agente LangGraph para el tutor de IA,
+    // Moodle por su API REST y SQLite como base de datos por defecto.
+    stack: [
+      "Laravel 12",
+      "Blade + JS",
+      "Tailwind CSS",
+      "LangGraph",
+      "Moodle REST API",
+      "SQLite",
+      "Docker",
     ],
+    visual: { kind: "diagram", diagram: "pairsync" },
+    repoUrl: "https://github.com/cperez233/PairProgramming",
   },
   {
     number: "02",
-    stack: "Python, Azure Document Intelligence, OCR",
-    showcase: [
-      UNSPLASH.actasPipeline,
-      UNSPLASH.actasExcel,
-      UNSPLASH.actasBuscador,
+    stack: [
+      "Python",
+      "Azure Document Intelligence",
+      "OCR",
+      "PyMuPDF",
+      "openpyxl",
     ],
+    visual: { kind: "diagram", diagram: "fcv" },
+    repoUrl: "https://github.com/cperez233/digitalizacion-actas-fcv",
   },
   {
     number: "03",
-    stack: "TikTok, Instagram, Twitch community",
-    showcase: [
-      "/projects/content-social.jpg",
-      "/projects/content-streaming.jpg",
-      "/projects/content-editing.jpg",
-    ],
+    stack: ["TikTok", "Instagram", "Twitch", "OBS", "After Effects"],
+    visual: {
+      kind: "gallery",
+      images: [
+        "/projects/content-social.jpg",
+        "/projects/content-streaming.jpg",
+        "/projects/content-editing.jpg",
+      ],
+    },
   },
 ];
 
@@ -162,7 +168,7 @@ export const footerGroups: FooterGroup[] = [
         href: "https://www.linkedin.com/in/cristianperez879m/",
         external: true,
       },
-      { label: "GitHub", href: "https://github.com/cperez233", external: true },
+      { label: "GitHub", href: site.githubUrl, external: true },
     ],
   },
   {
