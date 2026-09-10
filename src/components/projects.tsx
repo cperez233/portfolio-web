@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useRef, type CSSProperties } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -13,7 +13,8 @@ import { ArrowUpRight } from "lucide-react";
 import { projects, type Project } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl } from "@/lib/contact";
-import { TechVisual } from "@/components/diagrams";
+import { useCardHeight } from "@/lib/use-card-height";
+import { TechPanel, TechVisual } from "@/components/diagrams";
 import { BackgroundOrbs } from "@/components/ui/background-orbs";
 import { GithubMark } from "@/components/ui/github-mark";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -33,12 +34,12 @@ import { cn } from "@/lib/utils";
  *   con 24px de desfase por tarjeta para que asomen los bordes.
  * - Movil y tablet: alto natural y sin scroll propio. La tarjeta se lee
  *   entera con el scroll de la pagina y se fija cuando su borde inferior
- *   llega al del viewport (`.project-sticky` en globals.css); entonces la
+ *   llega al del viewport (`.stack-sticky` en globals.css); entonces la
  *   siguiente sube por encima.
  *
- * Antes, en movil, la tarjeta tenia alto fijo y `overflow-y-auto`: el
- * dedo desplazaba la tarjeta por dentro en vez de la pagina, y el scroll
- * parecia atascado salvo tocando los margenes.
+ * Las tres comparten estructura: cabecera (categoria, titulo, tagline y
+ * stack), problema / solucion / impacto, y una ventana oscura con el
+ * visual del proyecto, sea un diagrama o una galeria de capturas.
  */
 export function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -108,23 +109,8 @@ function ProjectCard({
   const targetScale = 1 - (total - 1 - index) * 0.03;
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
 
-  /*
-    Alto real de la tarjeta, para que el CSS decida donde fijarla: si no
-    cabe en el viewport, se fija por su borde inferior. ResizeObserver y
-    no una medida al montar: el alto cambia con el idioma y con el ancho.
-    `offsetHeight` es el alto de layout, sin la escala del transform.
-  */
-  useEffect(() => {
-    const wrapper = wrapperRef.current;
-    const article = articleRef.current;
-    if (!wrapper || !article) return;
-
-    const observer = new ResizeObserver(() => {
-      wrapper.style.setProperty("--card-h", `${article.offsetHeight}px`);
-    });
-    observer.observe(article);
-    return () => observer.disconnect();
-  }, []);
+  // Alto real para `.stack-sticky`: si no cabe, se fija por abajo.
+  useCardHeight(wrapperRef, articleRef);
 
   const card = (
     <article
@@ -164,22 +150,6 @@ function ProjectCard({
                 </li>
               ))}
             </ul>
-
-            {/* Micro-datos de impacto, donde el stack no lo cuenta ya. */}
-            {copy.metrics ? (
-              <FadeSwap className="mt-3">
-                <ul className="flex flex-wrap gap-2">
-                  {copy.metrics.map((metric) => (
-                    <li
-                      key={metric}
-                      className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-accent-ink"
-                    >
-                      {metric}
-                    </li>
-                  ))}
-                </ul>
-              </FadeSwap>
-            ) : null}
           </div>
         </div>
 
@@ -220,7 +190,12 @@ function ProjectCard({
         </dl>
       </FadeSwap>
 
-      <ProjectVisual project={project} captions={copy.showcase} />
+      <ProjectVisual
+        project={project}
+        captions={copy.showcase}
+        metrics={copy.metrics}
+        status={copy.panelStatus}
+      />
     </article>
   );
 
@@ -232,7 +207,7 @@ function ProjectCard({
     <div
       ref={wrapperRef}
       style={{ "--stack-index": index } as CSSProperties}
-      className="project-stack project-sticky mb-6 last:mb-0 desktop:top-24 desktop:mb-0 desktop:h-[86svh] desktop:pt-[calc(var(--stack-index)*24px)]"
+      className="project-stack stack-sticky mb-6 last:mb-0 desktop:top-24 desktop:mb-0 desktop:h-[86svh] desktop:pt-[calc(var(--stack-index)*24px)]"
     >
       <motion.div
         style={{ scale, willChange: "transform" }}
@@ -245,7 +220,12 @@ function ProjectCard({
 }
 
 /**
- * Diagrama tecnico o galeria de capturas, segun el proyecto.
+ * La ventana oscura del proyecto: diagrama tecnico o galeria de capturas.
+ *
+ * La galeria va en la misma carcasa que los diagramas (barra, insignia de
+ * estado, rejilla) para que las tres tarjetas se lean como una serie. Sus
+ * metricas de audiencia viven dentro, como fichas del panel, en lugar de
+ * alargar la cabecera: asi las tres cabeceras miden lo mismo.
  *
  * Fuera de escritorio va a su altura natural; en escritorio ocupa el alto
  * que deja libre la tarjeta fijada.
@@ -253,9 +233,13 @@ function ProjectCard({
 function ProjectVisual({
   project,
   captions,
+  metrics,
+  status,
 }: {
   project: Project;
   captions?: [string, string, string];
+  metrics?: string[];
+  status?: string;
 }) {
   const { visual } = project;
 
@@ -272,39 +256,60 @@ function ProjectVisual({
   const labels = captions ?? ["", "", ""];
 
   return (
-    <>
-      {/*
-        40% dos muestras apiladas, 60% una alta.
+    <TechPanel
+      window={visual.window}
+      status={status}
+      className="shrink-0 desktop:min-h-0 desktop:flex-1"
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 sm:p-4">
+        {metrics ? (
+          <FadeSwap>
+            <ul className="flex flex-wrap gap-1.5">
+              {metrics.map((metric) => (
+                <li
+                  key={metric}
+                  className="rounded-md border border-tech-accent/20 bg-tech-accent/[0.07] px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-tech-accent sm:text-[11px]"
+                >
+                  {metric}
+                </li>
+              ))}
+            </ul>
+          </FadeSwap>
+        ) : null}
 
-        En movil es `flex-col` a proposito, no `grid`: con grid, la fila
-        del par de miniaturas (un hijo flex sin alto propio) media 0px
-        de alto y la muestra grande quedaba encima de las otras dos en
-        vez de debajo. El grid de 5 columnas solo hace falta desde `sm:`.
+        {/*
+          40% dos muestras apiladas, 60% una alta.
 
-        Fuera de escritorio la tarjeta no tiene alto impuesto, asi que las
-        muestras llevan alto propio: repartirse el sobrante con `flex-1`
-        solo funciona dentro de la tarjeta fija de escritorio.
-      */}
-      <div className="flex flex-col gap-3 sm:grid sm:grid-cols-5 desktop:min-h-0 desktop:flex-1">
-        <div className="flex flex-col gap-3 sm:col-span-2 desktop:min-h-0">
+          En movil es `flex-col` a proposito, no `grid`: con grid, la fila
+          del par de miniaturas (un hijo flex sin alto propio) media 0px
+          de alto y la muestra grande quedaba encima de las otras dos en
+          vez de debajo. El grid de 5 columnas solo hace falta desde `sm:`.
+
+          Fuera de escritorio la tarjeta no tiene alto impuesto, asi que las
+          muestras llevan alto propio: repartirse el sobrante con `flex-1`
+          solo funciona dentro de la tarjeta fija de escritorio.
+        */}
+        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-5 desktop:min-h-0 desktop:flex-1">
+          <div className="flex flex-col gap-3 sm:col-span-2 desktop:min-h-0">
+            <ShowcaseTile
+              src={first}
+              label={labels[0]}
+              className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
+            />
+            <ShowcaseTile
+              src={second}
+              label={labels[1]}
+              className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
+            />
+          </div>
           <ShowcaseTile
-            src={first}
-            label={labels[0]}
-            className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
-          />
-          <ShowcaseTile
-            src={second}
-            label={labels[1]}
-            className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
+            src={third}
+            label={labels[2]}
+            className="h-40 sm:col-span-3 sm:h-auto desktop:min-h-0"
           />
         </div>
-        <ShowcaseTile
-          src={third}
-          label={labels[2]}
-          className="h-40 sm:col-span-3 sm:h-auto desktop:min-h-0"
-        />
       </div>
-    </>
+    </TechPanel>
   );
 }
 
@@ -320,7 +325,7 @@ function ShowcaseTile({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-line bg-surface-2",
+        "group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900",
         className,
       )}
     >

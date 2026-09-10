@@ -1,11 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { TechVisual } from "@/components/diagrams";
-import { menuItems } from "@/data/site";
+import { menuItems, type ServiceItem } from "@/data/site";
+import { DESKTOP_QUERY } from "@/lib/breakpoints";
 import { useLanguage } from "@/lib/language";
 import { smoothScrollTo } from "@/lib/smooth-scroll";
+import { useCardHeight } from "@/lib/use-card-height";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { BackgroundOrbs } from "./background-orbs";
 import { FadeIn } from "./FadeIn";
 import { FadeSwap } from "./FadeSwap";
@@ -15,22 +31,24 @@ import { cn } from "@/lib/utils";
 /**
  * Seccion de Servicios: dos presentaciones del mismo contenido.
  *
- * - Escritorio (variante `desktop`: ancho lg y puntero fino): lista con
- *   panel de detalle y scroll-lock aparente, pensado para rueda y
+ * - Escritorio (variante `desktop`: ancho lg y puntero no tactil): lista
+ *   con panel de detalle y scroll-lock aparente, pensado para rueda y
  *   trackpad.
- * - Movil y tablet, incluido un iPad en horizontal: tarjetas en orden de
- *   lectura, con el scroll 100% nativo.
+ * - Movil y tablet, incluido un iPad en horizontal: tarjetas apiladas en
+ *   orden de lectura, con el scroll 100% nativo.
  *
  * El scroll-lock se atascaba en pantallas tactiles: el tramo fijado mide
  * cinco pantallas, y su panel con `overflow-y-auto` se quedaba el gesto
  * del dedo en cuanto desbordaba, asi que la pagina parecia congelada.
- * Ademas el detalle quedaba arriba y los titulos abajo, justo al reves
- * de como se lee en un movil.
  *
- * La eleccion es CSS y no JS: el HTML del servidor ya trae las dos, sin
- * salto de layout al hidratar, y la que no toca va en `display: none`.
+ * El HTML del servidor trae las dos presentaciones y el CSS muestra la
+ * que toca, sin salto de layout al hidratar. Despues, en escritorio, las
+ * tarjetas se desmontan (useMediaQuery), para que su useScroll no mida
+ * nada mientras estan ocultas.
  */
 export default function InteractiveVideoScroller() {
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+
   return (
     <section
       id="services"
@@ -39,20 +57,34 @@ export default function InteractiveVideoScroller() {
       <SectionEdge />
       <BackgroundOrbs variant="middle" />
 
-      <ServiceCards />
+      {isDesktop ? null : <ServiceCards />}
       <DesktopScroller />
     </section>
   );
 }
 
 /**
- * Movil y tablet: una tarjeta por servicio, con numero, titulo, tags y
- * descripcion seguidos. Sin sticky, sin contenedores con scroll propio y
- * sin medir el scroll: cada tarjeta solo entra con FadeIn, que anima
- * opacidad y transform una vez al aparecer.
+ * Movil y tablet: una tarjeta por servicio, apiladas como las de
+ * Proyectos. Cada una se fija bajo la navbar con un desfase que deja
+ * asomar el filo de las anteriores; la siguiente sube por encima y la
+ * anterior retrocede y se oscurece. Sin contenedores con scroll propio:
+ * el gesto siempre mueve la pagina.
  */
 function ServiceCards() {
   const { t } = useLanguage();
+  const listRef = useRef<HTMLOListElement>(null);
+  const shouldReduceMotion = useReducedMotion();
+  const total = menuItems.length;
+
+  /*
+    Un unico useScroll para las cinco, como en Proyectos. Con
+    "end start" el progreso recorre la lista entera, asi que la tarjeta
+    `i` queda tapada aproximadamente entre i/total e (i+1)/total.
+  */
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start start", "end start"],
+  });
 
   return (
     <div className="relative z-10 px-5 py-20 sm:px-8 sm:py-24 md:px-10 desktop:hidden">
@@ -68,53 +100,131 @@ function ServiceCards() {
           </FadeSwap>
         </FadeIn>
 
-        <ol className="mt-10 flex touch-manipulation flex-col gap-5 sm:gap-6">
-          {menuItems.map((item, index) => {
-            const copy = t.services.items[index];
-
-            return (
-              <li key={item.number}>
-                <FadeIn y={24} delay={0.05}>
-                  <article className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
-                    <div className="relative h-20 sm:h-32">
-                      <TechVisual
-                        id={item.diagram}
-                        density="compact"
-                        className="h-full"
-                      />
-                      {/* Funde el diagrama con el texto de debajo. */}
-                      <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-zinc-950 to-transparent"
-                      />
-                    </div>
-
-                    <div className="p-5 sm:p-6">
-                      <FadeSwap>
-                        <div className="flex items-baseline gap-3">
-                          <span className="shrink-0 font-mono text-sm text-tech-accent">
-                            {item.number}
-                          </span>
-                          <h3 className="text-balance text-xl font-medium tracking-tight text-white sm:text-2xl">
-                            {copy.name}
-                          </h3>
-                        </div>
-                        <p className="mt-2 font-mono text-[11px] uppercase leading-relaxed tracking-[0.18em] text-tech-accent sm:text-xs">
-                          {copy.tag}
-                        </p>
-                        <p className="mt-3 text-base leading-relaxed text-white/80">
-                          {copy.description}
-                        </p>
-                      </FadeSwap>
-                    </div>
-                  </article>
-                </FadeIn>
-              </li>
-            );
-          })}
+        <ol
+          ref={listRef}
+          className="mt-10 flex touch-manipulation flex-col gap-4 sm:gap-5"
+        >
+          {menuItems.map((item, index) => (
+            <ServiceCard
+              key={item.number}
+              item={item}
+              index={index}
+              total={total}
+              progress={scrollYProgress}
+              reduceMotion={Boolean(shouldReduceMotion)}
+            />
+          ))}
         </ol>
       </div>
     </div>
+  );
+}
+
+interface ServiceCardProps {
+  item: ServiceItem;
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+  reduceMotion: boolean;
+}
+
+function ServiceCard({
+  item,
+  index,
+  total,
+  progress,
+  reduceMotion,
+}: ServiceCardProps) {
+  const { t } = useLanguage();
+  const copy = t.services.items[index];
+  const itemRef = useRef<HTMLLIElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
+  const isLast = index === total - 1;
+
+  // Alto real para `.stack-sticky`: en un movil apaisado no cabe entera.
+  useCardHeight(itemRef, cardRef);
+
+  const scale = useTransform(
+    progress,
+    [index / total, 1],
+    [1, 1 - (total - 1 - index) * 0.02],
+  );
+  const dim = useTransform(
+    progress,
+    [index / total, (index + 1) / total],
+    [0, isLast ? 0 : 0.5],
+  );
+
+  const tags = copy.tag.split(" / ");
+
+  return (
+    <li
+      ref={itemRef}
+      style={{ "--stack-index": index } as CSSProperties}
+      // Con reduced-motion no se apila: cada tarjeta en su sitio.
+      className="stack-sticky motion-reduce:static"
+    >
+      <motion.article
+        ref={cardRef}
+        style={reduceMotion ? undefined : { scale, willChange: "transform" }}
+        className="relative origin-top overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-[0_-18px_44px_-26px_rgba(0,0,0,0.75)]"
+      >
+        {/* Filo de acento: es lo que asoma de cada tarjeta en la pila. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-8 top-0 z-10 h-px bg-gradient-to-r from-transparent via-tech-accent/70 to-transparent"
+        />
+
+        <div className="relative h-28 sm:h-36">
+          <TechVisual
+            id={item.diagram}
+            density="compact"
+            showBarOnMobile
+            className="h-full"
+          />
+          {/* Funde el diagrama con el texto de debajo. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-zinc-950 to-transparent"
+          />
+        </div>
+
+        <div className="relative px-5 pb-6 pt-4 sm:px-7 sm:pb-7">
+          <FadeSwap>
+            <p className="font-mono text-xs tracking-[0.2em] text-zinc-500">
+              <span className="text-tech-accent">{item.number}</span>
+              {" / "}
+              {String(total).padStart(2, "0")}
+            </p>
+            <h3 className="mt-2 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-white sm:text-2xl">
+              {copy.name}
+            </h3>
+            <ul className="mt-3 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="rounded-md border border-tech-accent/20 bg-tech-accent/[0.07] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-tech-accent sm:text-[11px]"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 text-[0.9375rem] leading-relaxed text-zinc-300 sm:text-base">
+              {copy.description}
+            </p>
+          </FadeSwap>
+        </div>
+
+        {/* Oscurece la tarjeta a medida que la siguiente la tapa. */}
+        {reduceMotion || isLast ? null : (
+          <motion.div
+            aria-hidden="true"
+            style={{ opacity: dim }}
+            className="pointer-events-none absolute inset-0 z-20 bg-black"
+          />
+        )}
+      </motion.article>
+    </li>
   );
 }
 

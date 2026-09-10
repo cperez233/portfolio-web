@@ -370,10 +370,11 @@ html.lenis body {
 
 @layer components {
   /*
-    Tarjetas de Proyectos fuera de escritorio: capas sin scroll atrapado.
+    Tarjetas apiladas fuera de escritorio (Proyectos y Servicios): capas
+    sin scroll atrapado.
 
     Cada tarjeta mide su alto natural y lo publica en --card-h (lo mide
-    un ResizeObserver en projects.tsx). Se fija en el menor de dos topes:
+    el hook useCardHeight). Se fija en el menor de dos topes:
     - bajo la navbar, con un desfase por tarjeta (--stack-index) para que
       asomen los bordes, si cabe entera en la pantalla;
     - por su borde inferior (100svh - alto - 1rem) si no cabe.
@@ -385,7 +386,7 @@ html.lenis body {
     Sin --card-h (antes de hidratar) el segundo tope no cuenta y la
     tarjeta se fija bajo la navbar, como en escritorio.
   */
-  .project-sticky {
+  .stack-sticky {
     position: sticky;
     top: min(
       calc(5.5rem + var(--stack-index, 0) * 0.875rem),

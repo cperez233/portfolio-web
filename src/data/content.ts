@@ -69,6 +69,8 @@ export interface Dictionary {
       metrics?: string[];
       /** Pies de las capturas, solo en proyectos con visual `gallery`. */
       showcase?: [string, string, string];
+      /** Insignia de estado del panel de la galeria. */
+      panelStatus?: string;
     }>;
   };
   footer: {
@@ -134,10 +136,10 @@ const en: Dictionary = {
     title: "Services",
     items: [
       {
-        name: "Full-Stack Web Applications",
-        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER",
+        name: "Full-Stack Web & Software Applications",
+        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER / PYTHON",
         description:
-          "Complete web platforms built from scratch: the database, the logic and the screens your team uses every day. Clean code and infrastructure ready to scale with the business.",
+          "Web platforms, custom applications and the software your operation runs on, built from scratch: the database, the logic and the screens your team uses every day. Clean code and infrastructure ready to scale with the business.",
       },
       {
         name: "Workflow Automation & Integration",
@@ -212,6 +214,7 @@ const en: Dictionary = {
         impact:
           "The same works for clients: demos and pitch videos anyone can follow, technical or not.",
         cta: "View Case",
+        panelStatus: "live",
         metrics: [
           "+2M Organic Impressions",
           "High-Retention Pacing",
@@ -293,7 +296,7 @@ const en: Dictionary = {
       status: "200 OK",
       nodes: {
         ui: { title: "Interface", detail: "React · Next.js" },
-        api: { title: "API", detail: "Laravel · Node.js" },
+        api: { title: "API", detail: "Laravel · Python" },
         database: { title: "Database", detail: "PostgreSQL" },
       },
     },
@@ -381,10 +384,10 @@ const es: Dictionary = {
     title: "Servicios",
     items: [
       {
-        name: "Aplicaciones web full-stack",
-        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER",
+        name: "Aplicaciones web y software full-stack",
+        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER / PYTHON",
         description:
-          "Plataformas web completas desde cero: la base de datos, la lógica y las pantallas que tu equipo usa a diario. Código limpio e infraestructura lista para escalar la operación.",
+          "Plataformas web, aplicaciones a medida y el software con el que opera tu negocio, desde cero: la base de datos, la lógica y las pantallas que tu equipo usa a diario. Código limpio e infraestructura lista para escalar la operación.",
       },
       {
         name: "Automatización e integración de flujos",
@@ -459,6 +462,7 @@ const es: Dictionary = {
         impact:
           "Lo mismo sirve para clientes: demos y videos que entiende cualquiera, sea técnico o no.",
         cta: "Ver Caso",
+        panelStatus: "en vivo",
         metrics: [
           "+2M impresiones orgánicas",
           "Ritmo de alta retención",
@@ -540,7 +544,7 @@ const es: Dictionary = {
       status: "200 OK",
       nodes: {
         ui: { title: "Interfaz", detail: "React · Next.js" },
-        api: { title: "API", detail: "Laravel · Node.js" },
+        api: { title: "API", detail: "Laravel · Python" },
         database: { title: "Base de datos", detail: "PostgreSQL" },
       },
     },

@@ -17,6 +17,12 @@ interface TechVisualProps {
    * ocupa la mitad inferior y el diagrama solo acompana.
    */
   density?: "compact" | "full";
+  /**
+   * En `compact` la barra de la ventana se oculta en movil por defecto.
+   * Las tarjetas de Servicios en movil la muestran: tienen alto propio
+   * para ella y es lo que las emparenta con el panel de escritorio.
+   */
+  showBarOnMobile?: boolean;
   className?: string;
 }
 
@@ -27,6 +33,7 @@ interface TechVisualProps {
 export function TechVisual({
   id,
   density = "full",
+  showBarOnMobile = false,
   className,
 }: TechVisualProps) {
   const spec = diagrams[id];
@@ -55,7 +62,7 @@ export function TechVisual({
       window={spec.window}
       status={copy.status}
       framed={!compact}
-      hideBarOnMobile={compact}
+      hideBarOnMobile={compact && !showBarOnMobile}
       decorative={compact}
       className={className}
     >

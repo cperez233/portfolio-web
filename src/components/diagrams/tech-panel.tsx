@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 interface TechPanelProps {
   /** Ruta de la barra de la ventana. */
   window: string;
-  /** Texto de la insignia de estado. */
-  status: string;
+  /** Texto de la insignia de estado. Sin el, no hay insignia. */
+  status?: string;
   /** Borde y radio propios. Sin marco, rellena al contenedor que lo aloja. */
   framed?: boolean;
   /**
@@ -59,13 +59,15 @@ export function TechPanel({
         <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-zinc-500">
           {window}
         </p>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-emerald-300">
-          <span
-            aria-hidden="true"
-            className="size-1.5 animate-pulse rounded-full bg-emerald-400"
-          />
-          {status}
-        </span>
+        {status ? (
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-emerald-300">
+            <span
+              aria-hidden="true"
+              className="size-1.5 animate-pulse rounded-full bg-emerald-400"
+            />
+            {status}
+          </span>
+        ) : null}
       </div>
 
       <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>

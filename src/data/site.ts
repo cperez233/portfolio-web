@@ -75,8 +75,11 @@ export const menuItems: ServiceItem[] = [
 
 export type ProjectVisual =
   | { kind: "diagram"; diagram: DiagramId }
-  /** Tres capturas reales, en /public/projects. */
-  | { kind: "gallery"; images: [string, string, string] };
+  /**
+   * Tres capturas reales, en /public/projects, dentro de la misma ventana
+   * oscura que los diagramas. `window` es la ruta de su barra.
+   */
+  | { kind: "gallery"; window: string; images: [string, string, string] };
 
 export interface Project {
   number: string;
@@ -122,6 +125,7 @@ export const projects: Project[] = [
     stack: ["TikTok", "Instagram", "Twitch", "OBS", "After Effects"],
     visual: {
       kind: "gallery",
+      window: "criscx1905 / content",
       images: [
         "/projects/content-social.jpg",
         "/projects/content-streaming.jpg",
