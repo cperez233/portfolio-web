@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -22,18 +22,23 @@ import { FadeSwap } from "@/components/ui/FadeSwap";
 import { cn } from "@/lib/utils";
 
 /**
- * Tarjetas pegajosas que se apilan al hacer scroll, en todos los
- * viewports.
+ * Tarjetas que se apilan al hacer scroll: la siguiente sube y tapa a la
+ * anterior, que retrocede en escala.
  *
  * Un unico useScroll sobre el contenedor alimenta las tres: medir cada
  * tarjeta por separado no es fiable una vez esta pegada al viewport.
  *
- * En movil la tarjeta se fija mas abajo (`top-24`, para dejar sitio a la
- * navbar flotante) y con una altura contenida (`74svh` en vez del
- * `86svh` de escritorio): su contenido completo (contexto, solucion,
- * impacto y las tres muestras) no cabe siempre en ese alto, asi que el
- * cuerpo de la tarjeta se vuelve scrolleable por su cuenta
- * (`overflow-y-auto`) en vez de recortarse.
+ * Dos formas de fijar la tarjeta, el mismo gesto de capas:
+ * - Escritorio (variante `desktop`): alto fijo de 86svh, pegada arriba y
+ *   con 24px de desfase por tarjeta para que asomen los bordes.
+ * - Movil y tablet: alto natural y sin scroll propio. La tarjeta se lee
+ *   entera con el scroll de la pagina y se fija cuando su borde inferior
+ *   llega al del viewport (`.project-sticky` en globals.css); entonces la
+ *   siguiente sube por encima.
+ *
+ * Antes, en movil, la tarjeta tenia alto fijo y `overflow-y-auto`: el
+ * dedo desplazaba la tarjeta por dentro en vez de la pagina, y el scroll
+ * parecia atascado salvo tocando los margenes.
  */
 export function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -97,15 +102,39 @@ function ProjectCard({
 }: ProjectCardProps) {
   const { t } = useLanguage();
   const copy = t.projects.items[index];
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLElement>(null);
 
   const targetScale = 1 - (total - 1 - index) * 0.03;
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
 
+  /*
+    Alto real de la tarjeta, para que el CSS decida donde fijarla: si no
+    cabe en el viewport, se fija por su borde inferior. ResizeObserver y
+    no una medida al montar: el alto cambia con el idioma y con el ancho.
+    `offsetHeight` es el alto de layout, sin la escala del transform.
+  */
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const article = articleRef.current;
+    if (!wrapper || !article) return;
+
+    const observer = new ResizeObserver(() => {
+      wrapper.style.setProperty("--card-h", `${article.offsetHeight}px`);
+    });
+    observer.observe(article);
+    return () => observer.disconnect();
+  }, []);
+
   const card = (
     <article
+      ref={articleRef}
       className={cn(
-        "flex h-full w-full flex-col gap-5 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8",
-        "overflow-y-auto scrollbar-hide md:overflow-hidden",
+        "flex w-full flex-col gap-5 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8",
+        // Fuera de escritorio la tarjeta tapa a la anterior con su alto
+        // entero: la sombra hacia arriba es la que hace leer esa capa.
+        "shadow-[0_-16px_40px_-24px_rgba(0,0,0,0.55)]",
+        "desktop:h-full desktop:overflow-hidden desktop:shadow-none",
       )}
     >
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -201,12 +230,13 @@ function ProjectCard({
 
   return (
     <div
-      className="project-stack sticky top-24 h-[74svh] md:h-[86svh]"
-      style={{ paddingTop: `${index * 24}px` }}
+      ref={wrapperRef}
+      style={{ "--stack-index": index } as CSSProperties}
+      className="project-stack project-sticky mb-6 last:mb-0 desktop:top-24 desktop:mb-0 desktop:h-[86svh] desktop:pt-[calc(var(--stack-index)*24px)]"
     >
       <motion.div
         style={{ scale, willChange: "transform" }}
-        className="h-full origin-top"
+        className="origin-top desktop:h-full"
       >
         {card}
       </motion.div>
@@ -217,8 +247,8 @@ function ProjectCard({
 /**
  * Diagrama tecnico o galeria de capturas, segun el proyecto.
  *
- * En movil va a su altura natural (la tarjeta se desplaza por dentro);
- * desde `md` ocupa el alto que deja libre la tarjeta fijada.
+ * Fuera de escritorio va a su altura natural; en escritorio ocupa el alto
+ * que deja libre la tarjeta fijada.
  */
 function ProjectVisual({
   project,
@@ -233,7 +263,7 @@ function ProjectVisual({
     return (
       <TechVisual
         id={visual.diagram}
-        className="shrink-0 md:min-h-0 md:flex-1"
+        className="shrink-0 desktop:min-h-0 desktop:flex-1"
       />
     );
   }
@@ -250,16 +280,28 @@ function ProjectVisual({
         del par de miniaturas (un hijo flex sin alto propio) media 0px
         de alto y la muestra grande quedaba encima de las otras dos en
         vez de debajo. El grid de 5 columnas solo hace falta desde `sm:`.
+
+        Fuera de escritorio la tarjeta no tiene alto impuesto, asi que las
+        muestras llevan alto propio: repartirse el sobrante con `flex-1`
+        solo funciona dentro de la tarjeta fija de escritorio.
       */}
-      <div className="flex flex-col gap-3 sm:grid sm:min-h-0 sm:flex-1 sm:grid-cols-5">
-        <div className="flex min-h-0 flex-col gap-3 sm:col-span-2">
-          <ShowcaseTile src={first} label={labels[0]} className="min-h-20 flex-1" />
-          <ShowcaseTile src={second} label={labels[1]} className="min-h-20 flex-1" />
+      <div className="flex flex-col gap-3 sm:grid sm:grid-cols-5 desktop:min-h-0 desktop:flex-1">
+        <div className="flex flex-col gap-3 sm:col-span-2 desktop:min-h-0">
+          <ShowcaseTile
+            src={first}
+            label={labels[0]}
+            className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
+          />
+          <ShowcaseTile
+            src={second}
+            label={labels[1]}
+            className="h-40 sm:h-44 desktop:h-auto desktop:min-h-20 desktop:flex-1"
+          />
         </div>
         <ShowcaseTile
           src={third}
           label={labels[2]}
-          className="h-40 sm:h-auto sm:min-h-0 sm:col-span-3"
+          className="h-40 sm:col-span-3 sm:h-auto desktop:min-h-0"
         />
       </div>
     </>

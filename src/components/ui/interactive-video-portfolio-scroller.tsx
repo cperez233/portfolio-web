@@ -7,19 +7,130 @@ import { menuItems } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { smoothScrollTo } from "@/lib/smooth-scroll";
 import { BackgroundOrbs } from "./background-orbs";
-import { SectionEdge } from "./section-transition";
+import { FadeIn } from "./FadeIn";
 import { FadeSwap } from "./FadeSwap";
+import { SectionEdge } from "./section-transition";
 import { cn } from "@/lib/utils";
 
 /**
- * Scroller de servicios con scroll-lock aparente.
+ * Seccion de Servicios: dos presentaciones del mismo contenido.
+ *
+ * - Escritorio (variante `desktop`: ancho lg y puntero fino): lista con
+ *   panel de detalle y scroll-lock aparente, pensado para rueda y
+ *   trackpad.
+ * - Movil y tablet, incluido un iPad en horizontal: tarjetas en orden de
+ *   lectura, con el scroll 100% nativo.
+ *
+ * El scroll-lock se atascaba en pantallas tactiles: el tramo fijado mide
+ * cinco pantallas, y su panel con `overflow-y-auto` se quedaba el gesto
+ * del dedo en cuanto desbordaba, asi que la pagina parecia congelada.
+ * Ademas el detalle quedaba arriba y los titulos abajo, justo al reves
+ * de como se lee en un movil.
+ *
+ * La eleccion es CSS y no JS: el HTML del servidor ya trae las dos, sin
+ * salto de layout al hidratar, y la que no toca va en `display: none`.
+ */
+export default function InteractiveVideoScroller() {
+  return (
+    <section
+      id="services"
+      className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
+    >
+      <SectionEdge />
+      <BackgroundOrbs variant="middle" />
+
+      <ServiceCards />
+      <DesktopScroller />
+    </section>
+  );
+}
+
+/**
+ * Movil y tablet: una tarjeta por servicio, con numero, titulo, tags y
+ * descripcion seguidos. Sin sticky, sin contenedores con scroll propio y
+ * sin medir el scroll: cada tarjeta solo entra con FadeIn, que anima
+ * opacidad y transform una vez al aparecer.
+ */
+function ServiceCards() {
+  const { t } = useLanguage();
+
+  return (
+    <div className="relative z-10 px-5 py-20 sm:px-8 sm:py-24 md:px-10 desktop:hidden">
+      <div className="mx-auto w-full max-w-3xl">
+        <FadeIn>
+          <FadeSwap>
+            <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
+              {t.services.eyebrow}
+            </p>
+            <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
+              {t.services.title}
+            </h2>
+          </FadeSwap>
+        </FadeIn>
+
+        <ol className="mt-10 flex touch-manipulation flex-col gap-5 sm:gap-6">
+          {menuItems.map((item, index) => {
+            const copy = t.services.items[index];
+
+            return (
+              <li key={item.number}>
+                <FadeIn y={24} delay={0.05}>
+                  <article className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+                    <div className="relative h-20 sm:h-32">
+                      <TechVisual
+                        id={item.diagram}
+                        density="compact"
+                        className="h-full"
+                      />
+                      {/* Funde el diagrama con el texto de debajo. */}
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-zinc-950 to-transparent"
+                      />
+                    </div>
+
+                    <div className="p-5 sm:p-6">
+                      <FadeSwap>
+                        <div className="flex items-baseline gap-3">
+                          <span className="shrink-0 font-mono text-sm text-tech-accent">
+                            {item.number}
+                          </span>
+                          <h3 className="text-balance text-xl font-medium tracking-tight text-white sm:text-2xl">
+                            {copy.name}
+                          </h3>
+                        </div>
+                        <p className="mt-2 font-mono text-[11px] uppercase leading-relaxed tracking-[0.18em] text-tech-accent sm:text-xs">
+                          {copy.tag}
+                        </p>
+                        <p className="mt-3 text-base leading-relaxed text-white/80">
+                          {copy.description}
+                        </p>
+                      </FadeSwap>
+                    </div>
+                  </article>
+                </FadeIn>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Escritorio: scroller con scroll-lock aparente.
  *
  * El contenedor mide una pantalla por servicio y el panel interior va
  * `sticky`: la seccion parece quedarse quieta mientras el progreso del
  * scroll cambia el servicio activo. El scroll nativo nunca se
  * intercepta, asi que el usuario siempre puede salir.
+ *
+ * Fuera de escritorio este bloque va en `display: none`: el
+ * IntersectionObserver nunca lo ve entrar, asi que el bucle de medicion
+ * no llega a arrancar y el coste en movil es cero.
  */
-export default function InteractiveVideoScroller() {
+function DesktopScroller() {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -108,45 +219,38 @@ export default function InteractiveVideoScroller() {
   const active = menuItems[activeIndex] ?? menuItems[0];
   const activeCopy = t.services.items[activeIndex] ?? t.services.items[0];
 
-  /*
-    El scroll-lock mide una pantalla por servicio. El panel interior es
-    `overflow-y-auto` como red de seguridad: en un movil apaisado de
-    844x390 o un portatil bajo de 820x700 el contenido puede superar la
-    altura disponible, y sin esto se recortaba en vez de dejarse leer.
-  */
-  const scroller = (
+  return (
     <div
       ref={containerRef}
       style={{ height: `${total * 100}svh` }}
-      className="relative z-10"
+      className="relative z-10 hidden desktop:block"
     >
-      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-5 py-10 sm:px-8 sm:py-12 md:px-10 lg:py-16">
+      {/*
+        `overflow-y-auto` como red de seguridad en ventanas bajas (un
+        portatil de 700px de alto). Con raton no atrapa nada: Lenis
+        gestiona la rueda sobre la ventana, no sobre este panel.
+      */}
+      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-10 py-16">
         <div className="mx-auto w-full max-w-6xl">
-          <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8 lg:mb-12">
+          <div className="mb-12 flex items-end justify-between gap-4">
             <FadeSwap>
               <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
                 {t.services.eyebrow}
               </p>
-              <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
+              <h2 className="text-6xl font-semibold uppercase tracking-tight text-ink">
                 {t.services.title}
               </h2>
             </FadeSwap>
 
-            <p className="hidden font-mono text-sm uppercase tracking-wider text-ink-subtle sm:block">
+            <p className="font-mono text-sm uppercase tracking-wider text-ink-subtle">
               {String(activeIndex + 1).padStart(2, "0")} /{" "}
               {String(total).padStart(2, "0")}
             </p>
           </div>
 
-          <div className="grid gap-6 sm:gap-8 lg:grid-cols-2 lg:gap-14">
-            {/*
-              Panel de medios: diagrama arriba, texto del servicio abajo.
-              En columna y no superpuestos: el texto (tag, nombre y
-              descripcion) mide casi todo el panel en un movil, y encima de
-              un diagrama tapaba justo las fichas que tenia que acompanar.
-              Siempre oscuro, como el propio diagrama.
-            */}
-            <div className="services-media relative order-1 flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 sm:aspect-[4/3] lg:order-2 lg:aspect-[5/4]">
+          <div className="grid grid-cols-2 gap-14">
+            {/* Panel de detalle: diagrama arriba, texto del servicio abajo. */}
+            <div className="relative order-2 flex aspect-[5/4] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
               <div className="relative min-h-16 flex-1">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -170,7 +274,6 @@ export default function InteractiveVideoScroller() {
                   </motion.div>
                 </AnimatePresence>
 
-
                 {/* Funde el diagrama con el bloque de texto de debajo. */}
                 <div
                   aria-hidden="true"
@@ -178,12 +281,12 @@ export default function InteractiveVideoScroller() {
                 />
               </div>
 
-              <div className="relative shrink-0 p-4 sm:p-6 lg:p-8">
+              <div className="relative shrink-0 p-8">
                 <FadeSwap>
                   <p className="font-mono text-xs uppercase tracking-[0.2em] text-tech-accent">
                     {activeCopy.tag}
                   </p>
-                  <p className="mt-2 text-xl font-medium tracking-tight text-white sm:text-3xl">
+                  <p className="mt-2 text-3xl font-medium tracking-tight text-white">
                     {activeCopy.name}
                   </p>
                   <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
@@ -191,11 +294,10 @@ export default function InteractiveVideoScroller() {
                   </p>
                 </FadeSwap>
               </div>
-
             </div>
 
             {/* Lista de servicios */}
-            <ul className="order-2 flex flex-col lg:order-1">
+            <ul className="order-1 flex flex-col">
               {menuItems.map((item, index) => {
                 const isActive = index === activeIndex;
                 const copy = t.services.items[index];
@@ -207,7 +309,7 @@ export default function InteractiveVideoScroller() {
                       onClick={() => goToIndex(index)}
                       aria-current={isActive ? "true" : undefined}
                       className={cn(
-                        "flex w-full items-baseline gap-4 border-t border-line py-3 text-left transition-colors duration-300 ease-[var(--ease-premium)] sm:gap-6 sm:py-4",
+                        "flex w-full items-baseline gap-6 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)]",
                         index === menuItems.length - 1 &&
                           "border-b border-line",
                       )}
@@ -224,7 +326,7 @@ export default function InteractiveVideoScroller() {
                       <span className="min-w-0 flex-1">
                         <span
                           className={cn(
-                            "block text-balance text-lg tracking-tight transition-colors duration-300 sm:text-2xl",
+                            "block text-balance text-2xl tracking-tight transition-colors duration-300",
                             isActive
                               ? "font-medium text-ink"
                               : "text-ink-subtle",
@@ -232,14 +334,9 @@ export default function InteractiveVideoScroller() {
                         >
                           {copy.name}
                         </span>
-                        {/*
-                          Oculto en movil: son cinco lineas que no
-                          caben en una pantalla, y el tag del servicio
-                          activo ya se lee en el panel de medios.
-                        */}
                         <span
                           className={cn(
-                            "mt-1.5 hidden font-mono text-xs uppercase tracking-wider transition-colors duration-300 sm:block",
+                            "mt-1.5 block font-mono text-xs uppercase tracking-wider transition-colors duration-300",
                             isActive
                               ? "text-accent-ink"
                               : "text-ink-subtle/60",
@@ -257,17 +354,5 @@ export default function InteractiveVideoScroller() {
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <section
-      id="services"
-      className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
-    >
-      <SectionEdge />
-      <BackgroundOrbs variant="middle" />
-
-      {scroller}
-    </section>
   );
 }

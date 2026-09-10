@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/*
+  Escritorio de verdad: ancho lg Y un puntero que no sea tactil. Un iPad
+  en horizontal mide 1024px pero es tactil, y ahi el scroll-lock de
+  Servicios se atascaba: para esta variante cuenta como movil.
+
+  `not (pointer: coarse)` y no `(pointer: fine)`: sin dispositivo
+  apuntador (navegacion solo con teclado, navegadores sin raton) el
+  navegador informa `pointer: none`, y eso tambien es escritorio.
+*/
+@custom-variant desktop (@media (width >= 64rem) and (not (pointer: coarse)));
+
 /* ------------------------------------------------------------------
    Tokens. Los valores por defecto son el TEMA CLARO; `html.dark` los
    reescribe mas abajo. Como las utilidades de Tailwind v4 compilan a
@@ -232,28 +243,6 @@ html.lenis body {
 }
 
 @layer components {
-  /*
-    Tope de altura del panel de medios de Servicios mientras la seccion
-    va en una sola columna.
-
-    La proporcion fija lo ata al ancho, y en tableta vertical un 4/3 a
-    todo lo ancho se llevaba 505px de los 1024 de pantalla: la lista ya
-    no cabia dentro del scroll-lock y se salia 93px por abajo. A partir
-    de `lg` el panel comparte fila con la lista, deja de ser el que manda
-    en la altura, y el tope sobra.
-
-    Por debajo de `sm` tampoco hay tope: ahi el panel no tiene proporcion
-    fija, mide lo que su contenido, y con descripciones de dos oraciones
-    el tope cortaba la ultima linea (hasta 83px en un movil de 390x844).
-  */
-  @media (width >= 40rem) and (width < 64rem) {
-    .services-media {
-      max-height: 34svh;
-    }
-  }
-}
-
-@layer components {
   /* Rejilla tenue de fondo de los paneles tecnicos. */
   .tech-grid {
     background-image:
@@ -342,13 +331,14 @@ html.lenis body {
   sigue en columna; plegado a una fila, sus tres nodos median 70px y los
   nombres se cortaban unos encima de otros.
 
-  Solo en modo apilado (`.project-stack`) y solo desde `md`: con
-  `container-type: size` el contenido deja de dar alto al contenedor, y
-  en las tarjetas de altura natural (movil, reduced-motion) el diagrama
-  se quedaria en cero. Fuera de @layer a proposito: tiene que ganar a las
-  utilidades `flex-col` de Tailwind, que viven en su capa.
+  Solo en el apilado de escritorio, que es el unico de alto fijo (la
+  misma condicion que la variante `desktop`): con `container-type: size`
+  el contenido deja de dar alto al contenedor, y en las tarjetas de alto
+  natural (movil, tablet, reduced-motion) el diagrama se quedaria en
+  cero. Fuera de @layer a proposito: tiene que ganar a las utilidades
+  `flex-col` de Tailwind, que viven en su capa.
 */
-@media (width >= 48rem) {
+@media (width >= 64rem) and (not (pointer: coarse)) {
   .project-stack .tech-stage {
     container-type: size;
   }
@@ -375,5 +365,31 @@ html.lenis body {
 
   .flow-detail {
     display: none;
+  }
+}
+
+@layer components {
+  /*
+    Tarjetas de Proyectos fuera de escritorio: capas sin scroll atrapado.
+
+    Cada tarjeta mide su alto natural y lo publica en --card-h (lo mide
+    un ResizeObserver en projects.tsx). Se fija en el menor de dos topes:
+    - bajo la navbar, con un desfase por tarjeta (--stack-index) para que
+      asomen los bordes, si cabe entera en la pantalla;
+    - por su borde inferior (100svh - alto - 1rem) si no cabe.
+    Asi una tarjeta mas alta que la pantalla se lee entera con el scroll
+    de la pagina y solo se fija al llegar a su final; entonces la
+    siguiente sube por encima. En escritorio la variante `desktop` la
+    devuelve al alto fijo de siempre.
+
+    Sin --card-h (antes de hidratar) el segundo tope no cuenta y la
+    tarjeta se fija bajo la navbar, como en escritorio.
+  */
+  .project-sticky {
+    position: sticky;
+    top: min(
+      calc(5.5rem + var(--stack-index, 0) * 0.875rem),
+      calc(100svh - var(--card-h, 0px) - 1rem)
+    );
   }
 }

@@ -135,7 +135,7 @@ const en: Dictionary = {
     items: [
       {
         name: "Full-Stack Web Applications",
-        tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
+        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER",
         description:
           "Complete web platforms built from scratch: the database, the logic and the screens your team uses every day. Clean code and infrastructure ready to scale with the business.",
       },
@@ -292,7 +292,7 @@ const en: Dictionary = {
     "svc-fullstack": {
       status: "200 OK",
       nodes: {
-        ui: { title: "Interface", detail: "React · Blade" },
+        ui: { title: "Interface", detail: "React · Next.js" },
         api: { title: "API", detail: "Laravel · Node.js" },
         database: { title: "Database", detail: "PostgreSQL" },
       },
@@ -382,7 +382,7 @@ const es: Dictionary = {
     items: [
       {
         name: "Aplicaciones web full-stack",
-        tag: "LARAVEL / REACT / DOCKER / POSTGRESQL",
+        tag: "LARAVEL / REACT / NEXT.JS / POSTGRESQL / DOCKER",
         description:
           "Plataformas web completas desde cero: la base de datos, la lógica y las pantallas que tu equipo usa a diario. Código limpio e infraestructura lista para escalar la operación.",
       },
@@ -539,7 +539,7 @@ const es: Dictionary = {
     "svc-fullstack": {
       status: "200 OK",
       nodes: {
-        ui: { title: "Interfaz", detail: "React · Blade" },
+        ui: { title: "Interfaz", detail: "React · Next.js" },
         api: { title: "API", detail: "Laravel · Node.js" },
         database: { title: "Base de datos", detail: "PostgreSQL" },
       },
