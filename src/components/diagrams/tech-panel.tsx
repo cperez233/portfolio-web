@@ -22,9 +22,8 @@ interface TechPanelProps {
 /**
  * Carcasa de ventana de editor para diagramas y terminales.
  *
- * Es oscura en los dos temas a proposito, como una captura de un IDE:
- * los colores son la escala zinc literal y el acento `tech-accent`, no
- * los tokens del tema, que en claro darian texto oscuro sobre oscuro.
+ * Sigue al tema con los tokens `tech-*` de globals.css: en oscuro es la
+ * escala zinc de un editor oscuro; en claro, la de un editor claro.
  */
 export function TechPanel({
   window,
@@ -39,31 +38,31 @@ export function TechPanel({
     <div
       aria-hidden={decorative || undefined}
       className={cn(
-        "tech-grid relative flex w-full flex-col overflow-hidden bg-zinc-950 text-zinc-100",
+        "tech-grid relative flex w-full flex-col overflow-hidden bg-tech-bg text-tech-ink transition-[background-color,border-color,color,box-shadow] duration-500",
         framed &&
-          "rounded-2xl border border-zinc-800 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.6)]",
+          "rounded-2xl border border-tech-line shadow-[var(--tech-shadow)]",
         className,
       )}
     >
       <div
         className={cn(
-          "flex shrink-0 items-center gap-3 border-b border-zinc-800 bg-zinc-900/80 px-4 py-2.5",
+          "flex shrink-0 items-center gap-3 border-b border-tech-line bg-tech-bar px-4 py-2.5 transition-[background-color,border-color,color,box-shadow] duration-500",
           hideBarOnMobile && "hidden sm:flex",
         )}
       >
         <span aria-hidden="true" className="flex shrink-0 gap-1.5">
-          <span className="size-2.5 rounded-full bg-zinc-700" />
-          <span className="size-2.5 rounded-full bg-zinc-700" />
-          <span className="size-2.5 rounded-full bg-zinc-700" />
+          <span className="size-2.5 rounded-full bg-tech-dot" />
+          <span className="size-2.5 rounded-full bg-tech-dot" />
+          <span className="size-2.5 rounded-full bg-tech-dot" />
         </span>
-        <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-zinc-500">
+        <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-tech-ink-subtle">
           {window}
         </p>
         {status ? (
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-emerald-300">
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-tech-status">
             <span
               aria-hidden="true"
-              className="size-1.5 animate-pulse rounded-full bg-emerald-400"
+              className="size-1.5 animate-pulse rounded-full bg-tech-ok"
             />
             {status}
           </span>

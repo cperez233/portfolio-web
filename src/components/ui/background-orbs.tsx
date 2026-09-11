@@ -42,7 +42,9 @@ interface BackgroundOrbsProps {
 }
 
 /**
- * Capa escenica de fondo: esferas radiales vino, muy difuminadas.
+ * Capa escenica de fondo: esferas radiales vino, muy difuminadas. Color,
+ * opacidad y desvanecido en los bordes viven en `.bg-orb` y `.orb-field`
+ * (globals.css), para que sigan al tema.
  *
  * Es puramente decorativa (aria-hidden, pointer-events-none) y vive
  * DETRAS del contenido: la seccion que la aloja debe ser `relative` y
@@ -62,14 +64,14 @@ export function BackgroundOrbs({
     <div
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 z-0 overflow-hidden",
+        "orb-field pointer-events-none absolute inset-0 z-0 overflow-hidden",
         className,
       )}
     >
       {layouts[variant].map((orb) => (
         <motion.span
           key={orb.id}
-          className="absolute rounded-full opacity-20 blur-3xl"
+          className="bg-orb absolute rounded-full blur-3xl"
           style={{
             left: `${orb.x}%`,
             top: `${orb.y}%`,
@@ -77,8 +79,6 @@ export function BackgroundOrbs({
             height: orb.size,
             marginLeft: -orb.size / 2,
             marginTop: -orb.size / 2,
-            background:
-              "radial-gradient(circle, #652A31 0%, rgba(101, 42, 49, 0.15) 50%, transparent 75%)",
             willChange: shouldReduceMotion ? undefined : "transform",
           }}
           animate={shouldReduceMotion ? undefined : { y: [-15, 15, -15] }}

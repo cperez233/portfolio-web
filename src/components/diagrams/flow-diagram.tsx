@@ -78,7 +78,7 @@ export function FlowDiagram({
               // El filo izquierdo agrupa el abanico como un solo destino;
               // `flow-fan` lo compacta si la tarjeta es baja.
               column.length > 1 &&
-                "flow-fan md:border-l md:border-zinc-800 md:pl-3",
+                "flow-fan md:border-l md:border-tech-line md:pl-3",
             )}
           >
             {column.map((node) => (
@@ -97,17 +97,17 @@ function FullNode({ node, copy }: { node: DiagramNode; copy: DiagramCopy }) {
   return (
     <motion.div
       variants={revealItem}
-      className="flow-node flex min-w-0 items-start gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900/90 px-3 py-2.5"
+      className="flow-node flex min-w-0 items-start gap-2.5 rounded-xl border border-tech-line bg-tech-node px-3 py-2.5 transition-[background-color,border-color,color,box-shadow] duration-500"
     >
       <span className="flow-node-icon inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-tech-accent/25 bg-tech-accent/10 text-tech-accent">
         <DiagramIconGlyph icon={node.icon} className="size-3.5" />
       </span>
       <span className="min-w-0">
-        <span className="block text-sm font-medium leading-tight text-zinc-100">
+        <span className="block text-sm font-medium leading-tight text-tech-ink">
           {text?.title ?? node.id}
         </span>
         {text?.detail ? (
-          <span className="flow-detail mt-1 block text-xs leading-snug text-zinc-400">
+          <span className="flow-detail mt-1 block text-xs leading-snug text-tech-ink-muted">
             {text.detail}
           </span>
         ) : null}
@@ -128,18 +128,18 @@ function CompactNode({
   return (
     <motion.div
       variants={revealItem}
-      className="flex min-w-0 items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/90 p-1.5 sm:pr-2.5 lg:items-start lg:py-2"
+      className="flex min-w-0 items-center gap-1.5 rounded-lg border border-tech-line bg-tech-node p-1.5 sm:pr-2.5 lg:items-start lg:py-2 transition-[background-color,border-color,color,box-shadow] duration-500"
     >
       <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-tech-accent/10 text-tech-accent">
         <DiagramIconGlyph icon={node.icon} className="size-3.5" />
       </span>
       {/* En movil solo el icono: el nombre ya esta en el texto de abajo. */}
       <span className="hidden min-w-0 sm:block">
-        <span className="block truncate text-[11px] font-medium leading-tight text-zinc-200 lg:text-xs">
+        <span className="block truncate text-[11px] font-medium leading-tight text-tech-ink lg:text-xs">
           {text?.title ?? node.id}
         </span>
         {text?.detail ? (
-          <span className="mt-0.5 hidden truncate text-[10px] leading-tight text-zinc-500 lg:block">
+          <span className="mt-0.5 hidden truncate text-[10px] leading-tight text-tech-ink-subtle lg:block">
             {text.detail}
           </span>
         ) : null}
@@ -166,7 +166,7 @@ function Connector({
   return (
     <div className="flex shrink-0 items-center gap-2 py-1 pl-[25px] md:w-16 md:flex-col md:items-stretch md:gap-1 md:px-1.5 md:py-0 lg:w-24">
       {label ? (
-        <span className="order-last font-mono text-[10px] leading-tight text-zinc-500 md:order-first md:text-center">
+        <span className="order-last font-mono text-[10px] leading-tight text-tech-ink-subtle md:order-first md:text-center">
           {label}
         </span>
       ) : null}
@@ -183,8 +183,8 @@ function Connector({
             bidirectional && "is-bidirectional",
           )}
         />
-        <VerticalArrow className="size-3 text-zinc-500 md:hidden" />
-        <HorizontalArrow className="hidden size-3 shrink-0 text-zinc-500 md:block" />
+        <VerticalArrow className="size-3 text-tech-ink-subtle md:hidden" />
+        <HorizontalArrow className="hidden size-3 shrink-0 text-tech-ink-subtle md:block" />
       </span>
     </div>
   );

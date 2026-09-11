@@ -18,7 +18,7 @@ interface FadeSwapProps {
  * colapsa y no hay salto de layout mientras se hace el relevo.
  */
 export function FadeSwap({ children, className }: FadeSwapProps) {
-  const { language } = useLanguage();
+  const { language, crossfade } = useLanguage();
   const shouldReduceMotion = useReducedMotion();
 
   if (shouldReduceMotion) {
@@ -29,7 +29,9 @@ export function FadeSwap({ children, className }: FadeSwapProps) {
     <div className={cn("grid grid-cols-1 grid-rows-1", className)}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
-          key={language}
+          // Clave fija hasta que el usuario cambia de idioma: el ajuste al
+          // idioma detectado al hidratar actualiza el contenido en el sitio.
+          key={crossfade ? language : "initial"}
           className="col-start-1 row-start-1"
           initial={{ opacity: 0, y: 4, filter: "blur(3px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}

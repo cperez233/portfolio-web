@@ -57,12 +57,32 @@
   --color-name: #8c3b45;
 
   /*
-    Acento de los paneles tecnicos (diagramas y terminal). Los paneles son
-    oscuros en los dos temas, como una captura de un editor, asi que su
-    acento es fijo: el blush de `accent-ink` en oscuro (7.3:1 sobre
-    zinc-950). El `accent-ink` del tema claro, #652a31, daria 1.9:1 ahi.
+    Paneles tecnicos (diagramas, terminal, tarjetas de servicio y galeria):
+    una ventana de editor que sigue al tema. En claro, un editor claro
+    (zinc 100-200 con tinta zinc-900); `html.dark` los devuelve a la escala
+    zinc oscura de siempre. Antes eran literales zinc-950 y en el tema
+    claro quedaban como bloques negros sobre la pagina.
+
+    Los colores del terminal van un paso mas oscuros en claro (-700) y mas
+    claros en oscuro (-300/-400): el mismo tono, legible en cada fondo.
+    El acento en claro es el vino fuerte (#8c3b45, 7:1 sobre zinc-100).
   */
-  --color-tech-accent: #c98d95;
+  --color-tech-bg: #f7f7f8;
+  --color-tech-bar: #efeff1;
+  --color-tech-node: #ffffff;
+  --color-tech-line: #e4e4e7;
+  --color-tech-dot: #d4d4d8;
+  --color-tech-ink: #18181b;
+  --color-tech-ink-soft: #3f3f46;
+  --color-tech-ink-muted: #52525b;
+  --color-tech-ink-subtle: #6b6b73;
+  --color-tech-term: rgba(9, 9, 11, 0.035);
+  --color-tech-accent: #8c3b45;
+  --color-tech-ok: #047857;
+  --color-tech-warn: #b45309;
+  --color-tech-error: #be123c;
+  --color-tech-info: #0369a1;
+  --color-tech-status: #047857;
 
   /* Tipografia */
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
@@ -97,6 +117,49 @@ html.dark {
   /* Blush legible sobre negro: 5.51:1 y conserva la identidad vino. */
   --color-name: #c46d79;
   --color-accent-dim: rgba(140, 59, 69, 0.18);
+
+  /* Paneles tecnicos: la escala zinc del editor oscuro de siempre. */
+  --color-tech-bg: #09090b;
+  --color-tech-bar: rgba(24, 24, 27, 0.8);
+  --color-tech-node: rgba(24, 24, 27, 0.9);
+  --color-tech-line: #27272a;
+  --color-tech-dot: #3f3f46;
+  --color-tech-ink: #f4f4f5;
+  --color-tech-ink-soft: #d4d4d8;
+  --color-tech-ink-muted: #a1a1aa;
+  --color-tech-ink-subtle: #71717a;
+  --color-tech-term: rgba(0, 0, 0, 0.4);
+  --color-tech-accent: #c98d95;
+  --color-tech-ok: #34d399;
+  --color-tech-warn: #fcd34d;
+  --color-tech-error: #fb7185;
+  --color-tech-info: #7dd3fc;
+  --color-tech-status: #6ee7b7;
+
+  --tech-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.6);
+  --tech-card-shadow: 0 28px 60px -34px rgba(0, 0, 0, 0.85);
+  --stack-shadow: 0 -16px 40px -24px rgba(0, 0, 0, 0.55);
+  --tech-grid-line: rgba(255, 255, 255, 0.035);
+  --orb-core: #652a31;
+  --orb-mid: rgba(101, 42, 49, 0.15);
+  --orb-opacity: 0.2;
+}
+
+/*
+  Sombras, rejilla y orbes por tema (valores del tema claro; html.dark los
+  reescribe arriba). Las sombras oscuras pensadas para fondo negro dejaban
+  manchas sucias sobre el claro: aqui son difusas y con tinte pizarra. Todas
+  con `spread` negativo igual o mayor que el radio, para que no sobresalgan
+  por los lados y ningun `overflow-x-clip` las corte.
+*/
+:root {
+  --tech-shadow: 0 20px 44px -28px rgba(15, 23, 42, 0.22);
+  --tech-card-shadow: 0 22px 44px -30px rgba(15, 23, 42, 0.26);
+  --stack-shadow: 0 -12px 30px -22px rgba(15, 23, 42, 0.18);
+  --tech-grid-line: rgba(9, 9, 11, 0.045);
+  --orb-core: rgba(214, 120, 133, 0.5);
+  --orb-mid: rgba(214, 120, 133, 0.1);
+  --orb-opacity: 0.3;
 }
 
 @layer base {
@@ -246,8 +309,8 @@ html.lenis body {
   /* Rejilla tenue de fondo de los paneles tecnicos. */
   .tech-grid {
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      linear-gradient(var(--tech-grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--tech-grid-line) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
@@ -529,5 +592,43 @@ html.lenis body {
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
       inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+
+@layer components {
+  /*
+    Orbes de fondo (BackgroundOrbs). El vino fijo #652a31 desenfocado
+    dejaba manchas marron-grisaceas sobre el tema claro; en claro ahora son
+    un rubor suave. Y el campo se desvanece arriba y abajo: el contenedor
+    recorta con overflow-hidden (sin eso los orbes arrastrarian scroll
+    horizontal) y ese recorte partia el brillo en seco en el borde de cada
+    seccion.
+  */
+  .orb-field {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 12%,
+      #000 88%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 12%,
+      #000 88%,
+      transparent
+    );
+  }
+
+  .bg-orb {
+    background: radial-gradient(
+      circle,
+      var(--orb-core) 0%,
+      var(--orb-mid) 50%,
+      transparent 75%
+    );
+    opacity: var(--orb-opacity);
+    transition: opacity 0.5s var(--ease-premium);
   }
 }

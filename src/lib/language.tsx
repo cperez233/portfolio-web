@@ -9,34 +9,65 @@ import {
   useSyncExternalStore,
 } from "react";
 import { dictionaries, type Dictionary, type Language } from "@/data/content";
+import {
+  DETECTED_LANGUAGE_COOKIE,
+  LANGUAGE_COOKIE,
+  isLanguage,
+} from "@/lib/language-detection";
 
-const STORAGE_KEY = "portafolio-language";
+/** Un ano: la eleccion manual es una preferencia duradera. */
+const MANUAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /*
   Store minimo fuera de React, leido con useSyncExternalStore.
 
-  localStorage no existe en el servidor, asi que leerlo durante el render
-  romperia la hidratacion. useSyncExternalStore resuelve justo eso:
-  `getServerSnapshot` fija "en" para el HTML del servidor y la primera
-  hidratacion, y solo despues React pasa a `getSnapshot`. Sin efectos que
-  llamen a setState, sin aviso de hidratacion.
+  localStorage y las cookies no se leen durante el render del servidor,
+  asi que leerlos ahi romperia la hidratacion. useSyncExternalStore
+  resuelve justo eso: `getServerSnapshot` fija "en" para el HTML del
+  servidor y la primera hidratacion, y solo despues React pasa a
+  `getSnapshot`. Sin efectos que llamen a setState, sin aviso de
+  hidratacion.
 */
 let currentLanguage: Language | null = null;
 let listeners: Array<() => void> = [];
+/*
+  Si el ultimo cambio lo hizo el usuario con el toggle. El primero, al
+  hidratar, pasa del "en" del HTML estatico al idioma detectado: ese no
+  debe animarse (ver `crossfade`).
+*/
+let userSwitched = false;
 
-function readStoredLanguage(): Language {
+function readCookie(name: string): string | null {
+  const match = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+}
+
+/*
+  Prioridad (ver lib/language-detection.ts): eleccion manual, idioma
+  detectado por el proxy, idioma del navegador, ingles. localStorage se
+  sigue leyendo como eleccion manual: es donde se guardaba antes de que
+  existiera la cookie.
+*/
+function resolveLanguage(): Language {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "es" || stored === "en" ? stored : "en";
+    const manual =
+      readCookie(LANGUAGE_COOKIE) ?? window.localStorage.getItem(LANGUAGE_COOKIE);
+    if (isLanguage(manual)) return manual;
+
+    const detected = readCookie(DETECTED_LANGUAGE_COOKIE);
+    if (isLanguage(detected)) return detected;
   } catch {
-    // Modo privado o cookies bloqueadas: el idioma por defecto sirve igual.
-    return "en";
+    // Modo privado o almacenamiento bloqueado: se sigue con el navegador.
   }
+
+  return navigator.language?.toLowerCase().startsWith("es") ? "es" : "en";
 }
 
 function getSnapshot(): Language {
   if (currentLanguage === null) {
-    currentLanguage = readStoredLanguage();
+    currentLanguage = resolveLanguage();
   }
   return currentLanguage;
 }
@@ -52,10 +83,16 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
+/**
+ * Eleccion manual del toggle: se guarda en cookie (la ve el proxy, que
+ * entonces deja de detectar) y en localStorage.
+ */
 function writeLanguage(next: Language) {
   currentLanguage = next;
+  userSwitched = true;
   try {
-    window.localStorage.setItem(STORAGE_KEY, next);
+    document.cookie = `${LANGUAGE_COOKIE}=${next}; Path=/; Max-Age=${MANUAL_COOKIE_MAX_AGE}; SameSite=Lax`;
+    window.localStorage.setItem(LANGUAGE_COOKIE, next);
   } catch {
     // La preferencia no sobrevive a la recarga, pero la sesion funciona.
   }
@@ -68,6 +105,13 @@ interface LanguageContextValue {
   toggleLanguage: () => void;
   /** Diccionario ya resuelto para el idioma activo. */
   t: Dictionary;
+  /**
+   * Si el cambio de idioma debe animarse. Solo tras usar el toggle. El
+   * ajuste inicial al idioma detectado se aplica en el sitio: con fundido,
+   * FadeSwap mantenia unos segundos el bloque anterior, y el enlace de
+   * WhatsApp del hero seguia en ingles sobre una pagina ya en espanol.
+   */
+  crossfade: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -100,6 +144,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       setLanguage,
       toggleLanguage,
       t: dictionaries[language],
+      crossfade: userSwitched,
     }),
     [language, setLanguage, toggleLanguage],
   );

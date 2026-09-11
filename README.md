@@ -39,6 +39,7 @@ npm run lint    # eslint
 
 ```
 src/
+├─ proxy.ts          detects the entry language into a cookie
 ├─ app/
 │  ├─ layout.tsx      fonts, metadata (SEO + Open Graph), providers, nav
 │  ├─ page.tsx        section composition only
@@ -56,6 +57,7 @@ src/
 │  └─ site.ts         URLs, images, proper nouns (no translation)
 └─ lib/
    ├─ language.tsx    language provider
+   ├─ language-detection.ts  entry-language rules, shared with proxy.ts
    ├─ theme.ts        theme store (+ theme-storage.ts for the key)
    ├─ smooth-scroll.ts  Lenis access for programmatic jumps
    └─ utils.ts        cn() helper
@@ -107,7 +109,8 @@ the deep wine measures 1.83:1, so text uses a lighter tint instead.
 
 There is no stock photography. Services and the PairSync / document
 extraction projects are illustrated with diagrams drawn in code
-(`components/diagrams/`), always dark like an editor capture.
+(`components/diagrams/`), styled as an editor window that follows the
+theme through the `tech-*` tokens in `globals.css`.
 
 `public/projects/` holds screenshots; only the content-creation project
 displays them today. The document extraction shots are redacted: the

@@ -38,8 +38,9 @@ import { cn } from "@/lib/utils";
  *   siguiente sube por encima.
  *
  * Las tres comparten estructura: cabecera (categoria, titulo, tagline y
- * stack), problema / solucion / impacto, y una ventana oscura con el
- * visual del proyecto, sea un diagrama o una galeria de capturas.
+ * stack), problema / solucion / impacto, y una ventana de editor (que
+ * sigue al tema) con el visual del proyecto, sea un diagrama o una
+ * galeria de capturas.
  */
 export function ProjectsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,7 +120,7 @@ function ProjectCard({
         "flex w-full flex-col gap-5 rounded-[32px] border border-line-strong bg-surface p-5 sm:rounded-[40px] sm:p-8",
         // Fuera de escritorio la tarjeta tapa a la anterior con su alto
         // entero: la sombra hacia arriba es la que hace leer esa capa.
-        "shadow-[0_-16px_40px_-24px_rgba(0,0,0,0.55)]",
+        "shadow-[var(--stack-shadow)]",
         "desktop:h-full desktop:overflow-hidden desktop:shadow-none",
       )}
     >
@@ -325,7 +326,7 @@ function ShowcaseTile({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900",
+        "group relative overflow-hidden rounded-xl border border-tech-line bg-tech-node",
         className,
       )}
     >

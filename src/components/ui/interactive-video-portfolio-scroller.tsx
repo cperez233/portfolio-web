@@ -163,7 +163,7 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
                 willChange: "transform",
               }
         }
-        className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 shadow-[0_28px_60px_-34px_rgba(0,0,0,0.85)]"
+        className="relative overflow-hidden rounded-3xl border border-tech-line bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500"
       >
         {/* Filo de acento: se enciende con la tarjeta en el centro. */}
         <motion.span
@@ -188,18 +188,18 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
           {/* Funde el diagrama con el texto de debajo. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-zinc-950 to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-tech-bg to-transparent"
           />
         </div>
 
         <div className="relative px-5 pb-6 pt-4 sm:px-7 sm:pb-7">
           <FadeSwap>
-            <p className="font-mono text-xs tracking-[0.2em] text-zinc-500">
+            <p className="font-mono text-xs tracking-[0.2em] text-tech-ink-subtle">
               <span className="text-tech-accent">{item.number}</span>
               {" / "}
               {String(total).padStart(2, "0")}
             </p>
-            <h3 className="mt-2 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-white sm:text-2xl">
+            <h3 className="mt-2 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-tech-ink sm:text-2xl">
               {copy.name}
             </h3>
             <ul className="mt-3 flex flex-wrap gap-1.5">
@@ -212,18 +212,22 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-[0.9375rem] leading-relaxed text-zinc-300 sm:text-base">
+            <p className="mt-4 text-[0.9375rem] leading-relaxed text-tech-ink-soft sm:text-base">
               {copy.description}
             </p>
           </FadeSwap>
         </div>
 
-        {/* Sombra de entrada y salida; en el centro desaparece. */}
+        {/*
+          Sombra de entrada y salida; en el centro desaparece. Del color del
+          lienzo y no negra: en el tema claro el negro dejaba la tarjeta
+          sucia, y en el oscuro el lienzo ya es casi negro.
+        */}
         {reduceMotion ? null : (
           <motion.div
             aria-hidden="true"
             style={{ opacity: shade }}
-            className="pointer-events-none absolute inset-0 z-20 bg-black"
+            className="pointer-events-none absolute inset-0 z-20 bg-canvas"
           />
         )}
       </motion.article>
@@ -363,7 +367,7 @@ function DesktopScroller() {
 
           <div className="grid grid-cols-2 gap-14">
             {/* Panel de detalle: diagrama arriba, texto del servicio abajo. */}
-            <div className="relative order-2 flex aspect-[5/4] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+            <div className="relative order-2 flex aspect-[5/4] flex-col overflow-hidden rounded-2xl border border-tech-line bg-tech-bg transition-[background-color,border-color,color,box-shadow] duration-500">
               <div className="relative min-h-16 flex-1">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
@@ -390,7 +394,7 @@ function DesktopScroller() {
                 {/* Funde el diagrama con el bloque de texto de debajo. */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-zinc-950 to-transparent"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-tech-bg to-transparent"
                 />
               </div>
 
@@ -399,10 +403,10 @@ function DesktopScroller() {
                   <p className="font-mono text-xs uppercase tracking-[0.2em] text-tech-accent">
                     {activeCopy.tag}
                   </p>
-                  <p className="mt-2 text-3xl font-medium tracking-tight text-white">
+                  <p className="mt-2 text-3xl font-medium tracking-tight text-tech-ink">
                     {activeCopy.name}
                   </p>
-                  <p className="mt-3 max-w-md text-base leading-relaxed text-white/80">
+                  <p className="mt-3 max-w-md text-base leading-relaxed text-tech-ink-soft">
                     {activeCopy.description}
                   </p>
                 </FadeSwap>

@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 import { revealItem } from "./motion";
 
 const TONES: Record<LogTone, { glyph: string; className: string }> = {
-  ok: { glyph: "✓", className: "text-emerald-400" },
-  warn: { glyph: "!", className: "text-amber-300" },
-  error: { glyph: "✗", className: "text-rose-400" },
-  info: { glyph: "→", className: "text-sky-300" },
+  ok: { glyph: "✓", className: "text-tech-ok" },
+  warn: { glyph: "!", className: "text-tech-warn" },
+  error: { glyph: "✗", className: "text-tech-error" },
+  info: { glyph: "→", className: "text-tech-info" },
 };
 
 type ResolvedLine =
@@ -49,7 +49,7 @@ export function TerminalLog({
   return (
     <ol
       className={cn(
-        "flex flex-col gap-0.5 overflow-hidden rounded-xl border border-zinc-800 bg-black/40 p-3 font-mono text-[11px] leading-normal sm:p-4 sm:text-xs",
+        "flex flex-col gap-0.5 overflow-hidden rounded-xl border border-tech-line bg-tech-term p-3 font-mono text-[11px] leading-normal sm:p-4 sm:text-xs",
         className,
       )}
     >
@@ -64,7 +64,7 @@ export function TerminalLog({
               <span aria-hidden="true" className="select-none text-tech-accent">
                 $
               </span>
-              <span className="min-w-0 break-all text-zinc-100">{line.text}</span>
+              <span className="min-w-0 break-all text-tech-ink">{line.text}</span>
             </>
           ) : (
             <>
@@ -74,7 +74,7 @@ export function TerminalLog({
               >
                 {TONES[line.tone].glyph}
               </span>
-              <span className="min-w-0 text-zinc-300">{line.text}</span>
+              <span className="min-w-0 text-tech-ink-soft">{line.text}</span>
             </>
           )}
         </motion.li>
@@ -83,7 +83,7 @@ export function TerminalLog({
       {showCaret ? (
         <li aria-hidden="true" className="flex items-center gap-2">
           <span className="select-none text-tech-accent">$</span>
-          <span className="caret-blink inline-block h-3.5 w-2 bg-zinc-300" />
+          <span className="caret-blink inline-block h-3.5 w-2 bg-tech-ink-soft" />
         </li>
       ) : null}
     </ol>
