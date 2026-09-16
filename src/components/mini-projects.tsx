@@ -145,13 +145,16 @@ function SiteCard({ project, caption, focusable = false }: SiteCardProps) {
       className="group block w-[80vw] max-w-80 shrink-0 sm:w-80"
     >
       {/*
-        will-change-transform: sin promover la capa a GPU de antemano,
-        Chrome/Edge en Windows puede parpadear un frame en el borde
-        redondeado justo al arrancar el `-translate-y-1` del hover
-        (overflow-hidden + border-radius + transform recien iniciado es
-        el combo clasico que dispara el glitch).
+        will-change-[translate], no will-change-transform: Tailwind v4
+        anima `-translate-y-1` con la propiedad `translate` (CSS
+        Transforms Level 2), no con `transform`. Son propiedades
+        distintas, asi que `will-change-transform` no promovia nada y
+        Chrome/Edge en Windows seguia creando la capa GPU recien al
+        arrancar el hover: el combo overflow-hidden + border-radius +
+        una propiedad de transformacion recien creada es lo que dispara
+        el parpadeo en el borde redondeado.
       */}
-      <div className="overflow-hidden rounded-2xl border border-line-strong bg-surface transition-transform duration-300 ease-premium will-change-transform group-hover:-translate-y-1">
+      <div className="overflow-hidden rounded-2xl border border-line-strong bg-surface transition-transform duration-300 ease-premium will-change-[translate] group-hover:-translate-y-1">
         <div className="flex items-center gap-3 border-b border-line bg-surface-2 px-4 py-2.5">
           <span className="flex shrink-0 gap-1.5">
             <span className="size-2 rounded-full bg-line-strong" />
