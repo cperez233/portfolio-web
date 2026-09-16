@@ -1,13 +1,6 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { miniProjects, type MiniProject } from "@/data/site";
 import { useLanguage } from "@/lib/language";
@@ -20,7 +13,7 @@ import {
 } from "@/components/ui/section-transition";
 
 /**
- * Mini proyectos: una tira de sitios publicados justo debajo del hero.
+ * Trabajo reciente: una tira de sitios publicados justo debajo del hero.
  *
  * Sustituye a la banda de texto. Lo que entra primero por los ojos de
  * quien contrata es trabajo terminado y en linea, no una lista de
@@ -33,32 +26,22 @@ import {
  * - Hasta md: carrusel que se arrastra con el dedo y engancha tarjeta a
  *   tarjeta. En 390px solo cabe una tarjeta y media, y con la tira en
  *   movimiento ninguna quedaba entera: los nombres se partian a media
- *   palabra ("...hatsApp").
- * - Desde md: la tira que se desplaza con el scroll. Es solo para
- *   puntero: esta repetida tres veces y cruza el borde de la pantalla,
- *   asi que con teclado el foco caeria en tarjetas invisibles.
+ *   palabra.
+ * - Desde md: la tira deriva sola en bucle (.marquee-drift). Antes se
+ *   movia solo con el scroll, y quien se quedaba quieto veia cuatro
+ *   sitios sin saber que habia mas; ahora desfilan los cinco. Se detiene
+ *   bajo el raton para leer y pulsar. Es solo para puntero: esta repetida
+ *   tres veces y cruza el borde de la pantalla, asi que con teclado el
+ *   foco caeria en tarjetas invisibles.
  *
  * Los enlaces de debajo sirven a teclado y lector de pantalla cuando
  * manda la tira, y de indice para todos en cualquier ancho.
  */
 export function MiniProjectsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const shouldReduceMotion = useReducedMotion();
   const { t } = useLanguage();
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const x = useTransform(
-    scrollYProgress,
-    [0, 1],
-    shouldReduceMotion ? [0, 0] : [160, -360],
-  );
 
   return (
     <section
-      ref={sectionRef}
       id="sites"
       aria-labelledby="mini-projects-title"
       className="layer-top relative z-10 overflow-x-clip rounded-t-[32px] bg-canvas py-20 transition-colors duration-500 sm:rounded-t-[48px] sm:py-28"
@@ -84,11 +67,6 @@ export function MiniProjectsSection() {
           </FadeSwap>
         </FadeIn>
 
-        {/*
-          Celular: carrusel nativo. El scroll horizontal del navegador ya
-          trae inercia y arrastre; data-lenis-prevent evita que Lenis se
-          meta de por medio.
-        */}
         <ul
           data-lenis-prevent
           className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
@@ -108,26 +86,16 @@ export function MiniProjectsSection() {
           aria-hidden="true"
           className="marquee-fade mt-12 hidden overflow-x-clip sm:mt-16 md:block"
         >
-          {/*
-            El -1/3 deja la copia central pegada al borde izquierdo: asi
-            hay tarjetas a los dos lados y el desplazamiento nunca
-            descubre un hueco, vaya hacia donde vaya.
-          */}
-          <div className="w-max -translate-x-1/3">
-            <motion.div
-              style={{ x }}
-              className="flex w-max gap-4 will-change-transform sm:gap-6"
-            >
-              {[0, 1, 2].map((copy) =>
-                miniProjects.map((project, index) => (
-                  <SiteCard
-                    key={`${copy}-${project.key}`}
-                    project={project}
-                    caption={t.miniProjects.items[index]}
-                  />
-                )),
-              )}
-            </motion.div>
+          <div className="marquee-drift flex w-max gap-4 sm:gap-6">
+            {[0, 1, 2].map((copy) =>
+              miniProjects.map((project, index) => (
+                <SiteCard
+                  key={`${copy}-${project.key}`}
+                  project={project}
+                  caption={t.miniProjects.items[index]}
+                />
+              )),
+            )}
           </div>
         </div>
 

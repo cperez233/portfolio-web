@@ -632,3 +632,37 @@ html.lenis body {
     transition: opacity 0.5s var(--ease-premium);
   }
 }
+
+/*
+  Deriva continua de la tira de mini proyectos. Antes solo se movia con
+  el scroll: quien se quedaba quieto veia cuatro sitios y no sabia que
+  habia mas. El recorrido es exactamente un tercio del ancho porque la
+  fila lleva el contenido repetido tres veces: al llegar al final empalma
+  con el mismo fotograma y el bucle no tiene costura.
+*/
+@keyframes marquee-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-33.3333%, 0, 0);
+  }
+}
+
+@layer components {
+  .marquee-drift {
+    animation: marquee-drift 44s linear infinite;
+    will-change: transform;
+  }
+
+  /* Se detiene bajo el raton: da tiempo a leer la tarjeta y pulsarla. */
+  .marquee-drift:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-drift {
+      animation: none;
+    }
+  }
+}

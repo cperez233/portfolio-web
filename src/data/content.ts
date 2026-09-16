@@ -337,7 +337,7 @@ const en: Dictionary = {
     },
   },
   miniProjects: {
-    eyebrow: "Mini projects",
+    eyebrow: "Recent work",
     title: "Websites already live",
     hint: "Tap any of them to visit it.",
     newTab: "(opens in a new tab)",
@@ -590,7 +590,7 @@ const es: Dictionary = {
     },
   },
   miniProjects: {
-    eyebrow: "Mini proyectos",
+    eyebrow: "Trabajo reciente",
     title: "Páginas web ya publicadas",
     hint: "Toca cualquiera para visitarla.",
     newTab: "(se abre en otra pestaña)",
