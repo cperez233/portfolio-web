@@ -206,28 +206,55 @@ export const footerGroups: FooterGroup[] = [
   },
 ];
 
+export interface MiniProject {
+  key: string;
+  name: string;
+  /** Lo que sale en la barra del navegador simulada. */
+  domain: string;
+  href: string;
+  image: string;
+}
+
 /**
- * Tecnologias de la fila inferior del marquee. Nombres propios: no se
- * traducen, por eso viven aqui y no en el diccionario.
+ * Sitios de la tira de mini proyectos. La linea descriptiva de cada uno
+ * se traduce: vive en content.ts, en este mismo orden.
  */
-export const marqueeTechnologies: string[] = [
-  'Laravel',
-  'React',
-  'Next.js',
-  'TypeScript',
-  'Node.js',
-  'Python',
-  'PostgreSQL',
-  'Docker',
-  'n8n',
-  'LangChain',
-  'Claude API',
-  'Azure Doc Intelligence',
-  'OCR',
-  'WebSockets',
-  'Linux',
-  'OBS',
-  'After Effects',
+export const miniProjects: MiniProject[] = [
+  {
+    key: "hotel-logistico",
+    name: "Hotel Logístico",
+    domain: "hotellogistico.com",
+    href: "https://hotellogistico.com",
+    image: "/sites/hotel-logistico.jpg",
+  },
+  {
+    key: "leons",
+    name: "Leons Footwear",
+    domain: "calzadoleons.com",
+    href: "https://calzadoleons.com",
+    image: "/sites/leons.jpg",
+  },
+  {
+    key: "rincon-del-bebe",
+    name: "El Rincón del Bebé",
+    domain: "elrincondelbebebga.com",
+    href: "https://elrincondelbebebga.com/",
+    image: "/sites/rincon-del-bebe.jpg",
+  },
+  {
+    key: "louloz",
+    name: "Louloz",
+    domain: "louloz.com",
+    href: "https://louloz.com",
+    image: "/sites/louloz.jpg",
+  },
+  {
+    key: "groomers-house",
+    name: "The Groomer's House",
+    domain: "the-groomers-house.vercel.app",
+    href: "https://the-groomers-house.vercel.app/",
+    image: "/sites/groomers-house.jpg",
+  },
 ];
 
 export const portrait = { local: "/perfil.png" } as const;

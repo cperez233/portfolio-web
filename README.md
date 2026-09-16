@@ -47,7 +47,7 @@ src/
 │  └─ globals.css     design tokens (@theme) + theme overrides
 ├─ components/
 │  ├─ about.tsx       editorial blocks + highlight grid
-│  ├─ marquee-section.tsx   scroll-driven text band
+│  ├─ mini-projects.tsx     live sites: swipe on phones, drifts on desktop
 │  ├─ projects.tsx    sticky stacking case-study cards
 │  ├─ diagrams/       code-drawn architecture / pipeline / terminal panels
 │  └─ ui/             primitives and the larger composed pieces
@@ -87,7 +87,7 @@ A few decisions here are load-bearing and easy to undo by accident.
 element the containing block for its descendants, which breaks
 `position: sticky` inside it. The services scroller and the project
 cards both rely on sticky, so `SectionTransition` is applied to the
-marquee and about sections only.
+mini-projects and about sections only.
 
 **Programmatic scrolling must go through Lenis.** Lenis rewrites the
 scroll position every frame, so a plain `window.scrollTo` is reverted on
@@ -116,6 +116,9 @@ theme through the `tech-*` tokens in `globals.css`.
 displays them today. The document extraction shots are redacted: the
 original captures contained real names and national ID numbers, and the
 identifying columns are blurred before publication.
+
+`public/sites/` holds the mini-project screenshots: one 16:10 JPEG per
+published site, captured at 1440x900 and resized to 1200x750.
 
 The hero links a CV from `public/cv-cristian-perez.pdf`. The link only
 renders when that file exists at build time, so it never points at a 404.

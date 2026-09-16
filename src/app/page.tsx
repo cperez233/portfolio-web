@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { AboutSection } from "@/components/about";
-import { MarqueeSection } from "@/components/marquee-section";
+import { MiniProjectsSection } from "@/components/mini-projects";
 import { ProjectsSection } from "@/components/projects";
 import Footer from "@/components/ui/footer-section";
 import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
@@ -28,7 +28,7 @@ export default function Home() {
   return (
     <main id="content" className="flex-1 overflow-x-clip">
       <PortfolioHero cvHref={resolveCvHref()} />
-      <MarqueeSection />
+      <MiniProjectsSection />
       <AboutSection />
       <InteractiveVideoScroller />
       <ProjectsSection />

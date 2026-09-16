@@ -86,9 +86,16 @@ export interface Dictionary {
   languageToggle: { label: string };
   /** Mensaje que se abre ya escrito en WhatsApp. */
   whatsappMessage: string;
-  /** Frases de la fila de texto del marquee. */
-  marqueePhrases: string[];
   diagrams: Record<DiagramId, DiagramCopy>;
+  miniProjects: {
+    eyebrow: string;
+    title: string;
+    hint: string;
+    /** Aviso para lector de pantalla en los enlaces externos. */
+    newTab: string;
+    /** Una linea por sitio, en el orden de `miniProjects`. */
+    items: string[];
+  };
 }
 
 const en: Dictionary = {
@@ -253,14 +260,6 @@ const en: Dictionary = {
   languageToggle: { label: "Change language" },
   whatsappMessage:
     "Hi Cristian, I saw your portfolio and I would like to talk about a project.",
-  marqueePhrases: [
-    "Systems that ship",
-    "Automation that removes manual work",
-    "Documents turned into searchable data",
-    "Security checked from day one",
-    "Video that explains what you sell",
-    "Built for small teams",
-  ],
   diagrams: {
     pairsync: {
       status: "running",
@@ -336,6 +335,19 @@ const en: Dictionary = {
         publish: { title: "Publish", detail: "Vertical + widescreen" },
       },
     },
+  },
+  miniProjects: {
+    eyebrow: "Mini projects",
+    title: "Websites already live",
+    hint: "Tap any of them to visit it.",
+    newTab: "(opens in a new tab)",
+    items: [
+      "Hotel in Santa Marta · bookings over WhatsApp",
+      "Footwear factory · wholesale catalogue",
+      "Baby store · nationwide delivery",
+      "Online shoe store",
+      "Dog grooming · appointments over WhatsApp",
+    ],
   },
 };
 
@@ -501,14 +513,6 @@ const es: Dictionary = {
   languageToggle: { label: "Cambiar idioma" },
   whatsappMessage:
     "Hola Cristian, vi tu portafolio y me gustaría hablar de un proyecto.",
-  marqueePhrases: [
-    "Sistemas que salen a producción",
-    "Automatización que quita trabajo manual",
-    "Documentos convertidos en datos",
-    "Seguridad revisada desde el primer día",
-    "Video que explica lo que vendes",
-    "Hecho para equipos pequeños",
-  ],
   diagrams: {
     pairsync: {
       status: "activo",
@@ -584,6 +588,19 @@ const es: Dictionary = {
         publish: { title: "Publicación", detail: "Vertical + horizontal" },
       },
     },
+  },
+  miniProjects: {
+    eyebrow: "Mini proyectos",
+    title: "Páginas web ya publicadas",
+    hint: "Toca cualquiera para visitarla.",
+    newTab: "(se abre en otra pestaña)",
+    items: [
+      "Hotel en Santa Marta · reservas por WhatsApp",
+      "Fábrica de calzado · catálogo mayorista",
+      "Tienda de bebés · envíos a todo el país",
+      "Tienda online de calzado",
+      "Peluquería canina · citas por WhatsApp",
+    ],
   },
 };
 
