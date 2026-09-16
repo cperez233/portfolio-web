@@ -255,6 +255,13 @@ export const miniProjects: MiniProject[] = [
     href: "https://the-groomers-house.vercel.app/",
     image: "/sites/groomers-house.jpg",
   },
+  {
+    key: "m10drinks",
+    name: "M10 Drinks",
+    domain: "m10drinksversionfinal.netlify.app",
+    href: "https://m10drinksversionfinal.netlify.app/",
+    image: "/sites/m10drinks.jpg",
+  },
 ];
 
 export const portrait = { local: "/perfil.png" } as const;

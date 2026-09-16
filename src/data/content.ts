@@ -347,6 +347,7 @@ const en: Dictionary = {
       "Baby store · nationwide delivery",
       "Online shoe store",
       "Dog grooming · appointments over WhatsApp",
+      "Liquor store · 24/7 delivery in Floridablanca",
     ],
   },
 };
@@ -600,6 +601,7 @@ const es: Dictionary = {
       "Tienda de bebés · envíos a todo el país",
       "Tienda online de calzado",
       "Peluquería canina · citas por WhatsApp",
+      "Licorera · domicilio 24/7 en Floridablanca",
     ],
   },
 };
