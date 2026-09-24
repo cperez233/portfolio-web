@@ -1,24 +1,25 @@
 import type { Language } from "@/data/content";
 
 /**
- * Deteccion del idioma de entrada. Modulo SIN "use client": lo usan
- * tanto `proxy.ts` (servidor) como el store de idioma (cliente).
+ * Idiomas por URL y deteccion del idioma de entrada. Modulo SIN
+ * "use client": lo usan tanto `proxy.ts` (servidor) como el store de
+ * idioma y el toggle (cliente).
  *
- * Orden de prioridad, de mayor a menor:
- * 1. La eleccion manual del toggle (cookie `portafolio-language`, y la
- *    misma clave en localStorage para quien eligio antes de que existiera
- *    la cookie). Si alguien eligio, no se le vuelve a adivinar.
- * 2. Lo que detecto el proxy con Accept-Language y el pais de Vercel
- *    (cookie `portafolio-language-detected`).
- * 3. El idioma del navegador, por si el proxy no corrio.
- * 4. Ingles.
+ * Quien entra en "/" sin haber elegido idioma y pide espanol (por
+ * Accept-Language o por venir de un pais hispanohablante) va a "/es".
+ * La eleccion manual del toggle (cookie `portafolio-language`) manda
+ * sobre la deteccion. "/es" nunca se redirige: es la URL que indexa
+ * Google para la version en espanol.
  */
 
-/** Preferencia manual del toggle. Misma clave que en localStorage. */
-export const LANGUAGE_COOKIE = "portafolio-language";
+/** URL de cada version. Sin barra final en /es: asi la sirve Next. */
+export const LANGUAGE_PATHS: Record<Language, string> = {
+  en: "/",
+  es: "/es",
+};
 
-/** Idioma que dedujo el proxy de las cabeceras de la peticion. */
-export const DETECTED_LANGUAGE_COOKIE = "portafolio-language-detected";
+/** Preferencia manual del toggle. */
+export const LANGUAGE_COOKIE = "portafolio-language";
 
 /** Paises hispanohablantes (ISO 3166-1 alfa-2, como x-vercel-ip-country). */
 const SPANISH_SPEAKING_COUNTRIES = new Set([

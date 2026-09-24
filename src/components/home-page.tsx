@@ -19,12 +19,14 @@ function resolveCvHref(): string | null {
 }
 
 /**
- * La pagina solo compone secciones. Cero markup de detalle.
+ * La pagina solo compone secciones. Cero markup de detalle. La usan las
+ * dos versiones, app/(en)/page.tsx y app/(es)/es/page.tsx: el idioma lo
+ * pone el LanguageProvider de cada layout.
  *
  * Los orbes ambientales ya no son tiras entre secciones: cada seccion
  * aloja su propia capa <BackgroundOrbs /> por detras del contenido.
  */
-export default function Home() {
+export function HomePage() {
   return (
     <main id="content" className="flex-1 overflow-x-clip">
       <PortfolioHero cvHref={resolveCvHref()} />

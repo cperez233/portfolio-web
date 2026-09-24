@@ -1,11 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Fira_Code, Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { dictionaries, type Language } from "@/data/content";
 import { LanguageProvider } from "@/lib/language";
+import { LANGUAGE_PATHS } from "@/lib/language-detection";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { FloatingNav } from "@/components/ui/floating-nav";
+import { JsonLd } from "@/components/json-ld";
 import { THEME_STORAGE_KEY } from "@/lib/theme-storage";
 import { site } from "@/data/site";
-import "./globals.css";
+import { siteUrl } from "@/lib/site-url";
+import "@/app/globals.css";
 
 /**
  * Dos familias y no mas: grotesca sobria para lectura, mono para tags,
@@ -24,53 +29,64 @@ const firaCode = Fira_Code({
   subsets: ["latin"],
 });
 
-const siteTitle = `${site.name} — ${site.role}`;
-const siteDescription =
-  "Software that runs your business, and video that sells it. Full-stack development, AI pipelines, and cybersecurity.";
-
 /*
+  Title y description viven en content.ts (`meta`), uno por idioma: dicen
+  que se contrata y donde, no solo el cargo, porque es lo que se lee en
+  el resultado de Google.
+
   metadataBase convierte /og-image.png en una URL absoluta, que es lo que
-  exigen WhatsApp, LinkedIn y Discord para la vista previa. En Vercel sale
-  del dominio de produccion del proyecto (variable que Vercel inyecta en
-  el build); en local, de localhost.
+  exigen WhatsApp, LinkedIn y Discord para la vista previa. Ver
+  lib/site-url.ts.
 */
-const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
 
 /** Generada por app/og-image.png/route.tsx. */
-const ogImage = {
-  url: "/og-image.png",
-  width: 1200,
-  height: 630,
-  alt: siteTitle,
+const ogImage = { url: "/og-image.png", width: 1200, height: 630 };
+
+/**
+ * hreflang: cada version enlaza a las dos, incluida ella misma. "/" es
+ * tambien x-default porque es la puerta que reparte por idioma (proxy.ts).
+ */
+const languageAlternates = {
+  en: LANGUAGE_PATHS.en,
+  "es-CO": LANGUAGE_PATHS.es,
+  "x-default": LANGUAGE_PATHS.en,
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: siteTitle,
-    template: `%s — ${site.name}`,
-  },
-  description: siteDescription,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: "/",
-    siteName: site.name,
-    title: siteTitle,
-    description: siteDescription,
-    locale: "en_US",
-    alternateLocale: ["es_CO"],
-    images: [ogImage],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteTitle,
-    description: siteDescription,
-    images: [ogImage.url],
-  },
-};
+export function buildMetadata(language: Language): Metadata {
+  const { title, description, ogLocale } = dictionaries[language].meta;
+  const other: Language = language === "en" ? "es" : "en";
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: { default: title, template: `%s | ${site.name}` },
+    description,
+    alternates: {
+      canonical: LANGUAGE_PATHS[language],
+      languages: languageAlternates,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { "max-image-preview": "large", "max-snippet": -1 },
+    },
+    openGraph: {
+      type: "website",
+      url: LANGUAGE_PATHS[language],
+      siteName: site.name,
+      title,
+      description,
+      locale: ogLocale,
+      alternateLocale: [dictionaries[other].meta.ogLocale],
+      images: [{ ...ogImage, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage.url],
+    },
+  };
+}
 
 export const viewport: Viewport = {
   /*
@@ -98,7 +114,25 @@ const themeScript = `try{if(localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
 )})==="light"){document.documentElement.classList.remove("dark")}}catch(e){}`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+/** Texto del enlace de salto, que va fuera del LanguageProvider. */
+const skipLabel: Record<Language, string> = {
+  en: "Skip to content",
+  es: "Saltar al contenido",
+};
+
+/**
+ * <html> y <body> comunes a las dos versiones. Hay dos layouts raiz,
+ * app/(en)/layout.tsx y app/(es)/es/layout.tsx, porque `lang` tiene que
+ * salir del servidor ya correcto en cada URL y un layout raiz no conoce
+ * la ruta. Los dos solo llaman a este componente.
+ */
+export function RootShell({
+  language,
+  children,
+}: {
+  language: Language;
+  children: React.ReactNode;
+}) {
   return (
     // `dark` se sirve desde el servidor: si lo anadiera un efecto en
     // cliente, la primera pintura seria clara y habria destello.
@@ -107,10 +141,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // cambiado la clase antes de que React hidrate: la discrepancia es
     // intencionada y solo afecta a este nodo.
     <html
-      lang="en"
+      lang={language}
       suppressHydrationWarning
       className={`dark ${geistSans.variable} ${firaCode.variable} h-full antialiased`}
     >
+      {/* La regla asume que <head> solo aparece en app/layout.tsx; este
+          componente ES el layout raiz, compartido por los dos idiomas. */}
+      {/* eslint-disable-next-line @next/next/no-head-element */}
       <head>
         {/*
           Un <script> suelto y no next/script: `beforeInteractive` encola
@@ -119,6 +156,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           que esto viene a evitar. Asi se ejecuta al parsear el HTML.
         */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <JsonLd language={language} />
       </head>
       {/* overflow-x-clip en la raiz, no overflow-hidden: clip no crea un
           contenedor de scroll, asi que el sticky de las secciones sigue
@@ -128,13 +166,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-100 focus:rounded-full focus:bg-accent focus:px-5 focus:py-3 focus:text-sm focus:font-medium focus:text-canvas"
         >
-          Skip to content
+          {skipLabel[language]}
         </a>
         <SmoothScroll />
-        <LanguageProvider>
+        <LanguageProvider initialLanguage={language}>
           <FloatingNav />
           {children}
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );

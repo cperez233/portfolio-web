@@ -23,6 +23,12 @@ export interface DiagramCopy {
 }
 
 export interface Dictionary {
+  /**
+   * Title y description de la version de este idioma. Los usa el
+   * servidor (metadata de cada layout) y el toggle, que al cambiar de
+   * idioma sin recargar actualiza tambien document.title.
+   */
+  meta: { title: string; description: string; ogLocale: string };
   nav: { about: string; services: string; projects: string; contact: string };
   hero: {
     tagline: string;
@@ -93,12 +99,20 @@ export interface Dictionary {
     hint: string;
     /** Aviso para lector de pantalla en los enlaces externos. */
     newTab: string;
+    /** Inicio del alt de cada captura: "<imageAlt> <nombre del sitio>". */
+    imageAlt: string;
     /** Una linea por sitio, en el orden de `miniProjects`. */
     items: string[];
   };
 }
 
 const en: Dictionary = {
+  meta: {
+    title: "Cristian Pérez | Full-Stack Developer & Automation, Colombia",
+    description:
+      "Freelance full-stack developer in Bucaramanga, Colombia. Web apps, workflow automation and AI document extraction for small teams, plus video that sells them.",
+    ogLocale: "en_US",
+  },
   nav: {
     about: "About",
     services: "Services",
@@ -185,7 +199,7 @@ const en: Dictionary = {
     repoCta: "View on GitHub",
     items: [
       {
-        name: "PairSync — Real-Time AI Pair Programming Platform",
+        name: "PairSync: Real-Time AI Pair Programming Platform",
         category: "Full-Stack + AI",
         tagline:
           "Collaborative coding rooms with an AI tutor and grades synced to Moodle.",
@@ -341,6 +355,7 @@ const en: Dictionary = {
     title: "Websites already live",
     hint: "Tap any of them to visit it.",
     newTab: "(opens in a new tab)",
+    imageAlt: "Website built for",
     items: [
       "Hotel in Santa Marta · bookings over WhatsApp",
       "Footwear factory · wholesale catalogue",
@@ -353,6 +368,12 @@ const en: Dictionary = {
 };
 
 const es: Dictionary = {
+  meta: {
+    title: "Páginas web y software en Bucaramanga | Cristian Pérez",
+    description:
+      "Desarrollo páginas web, software a la medida y automatizaciones para negocios en Bucaramanga y toda Colombia. Mira sitios ya publicados y cotiza por WhatsApp.",
+    ogLocale: "es_CO",
+  },
   nav: {
     about: "Sobre mí",
     services: "Servicios",
@@ -439,7 +460,7 @@ const es: Dictionary = {
     repoCta: "Ver en GitHub",
     items: [
       {
-        name: "PairSync — Plataforma de pair programming con IA en tiempo real",
+        name: "PairSync: Plataforma de pair programming con IA en tiempo real",
         category: "Desarrollo Full-Stack + IA",
         tagline:
           "Salas de código colaborativas con tutor de IA y notas sincronizadas con Moodle.",
@@ -595,6 +616,7 @@ const es: Dictionary = {
     title: "Páginas web ya publicadas",
     hint: "Toca cualquiera para visitarla.",
     newTab: "(se abre en otra pestaña)",
+    imageAlt: "Página web de",
     items: [
       "Hotel en Santa Marta · reservas por WhatsApp",
       "Fábrica de calzado · catálogo mayorista",

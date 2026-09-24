@@ -1,98 +1,53 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown, ArrowUpRight, Download, Mail } from "lucide-react";
 import { hero, portrait, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
-import { buildWhatsappUrl } from "@/lib/contact";
+import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 
 interface BlurTextProps {
   text: string;
+  /** Retardo entre letras, en ms. */
   delay?: number;
-  animateBy?: "words" | "letters";
-  direction?: "top" | "bottom";
   className?: string;
-  style?: React.CSSProperties;
 }
 
-const BlurText: React.FC<BlurTextProps> = ({
-  text,
-  delay = 50,
-  animateBy = "words",
-  direction = "top",
-  className = "",
-  style,
-}) => {
-  const [inView, setInView] = useState(false);
-  const ref = useRef<HTMLParagraphElement>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setInView(true);
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(element);
-    return () => observer.unobserve(element);
-  }, []);
-
-  const segments = useMemo(() => {
-    return animateBy === "words" ? text.split(" ") : text.split("");
-  }, [text, animateBy]);
-
-  // Sin `flex-wrap` fijo: quien llama decide si la linea puede romper.
-  // El nombre monumental necesita `flex-nowrap` para no partirse.
+/**
+ * Nombre revelado letra a letra con la animacion CSS .hero-letter (ver
+ * globals.css): arranca en el primer pintado, sin esperar a React.
+ */
+function BlurText({ text, delay = 50, className = "" }: BlurTextProps) {
+  // <span> y no <p>: el nombre va dentro del <h1> del hero, y un <p> no
+  // puede ir dentro de un encabezado.
   return (
-    <p ref={ref} className={`inline-flex ${className}`} style={style}>
-      {segments.map((segment, i) => (
+    <span className={`inline-flex ${className}`}>
+      {text.split("").map((letter, i) => (
         <span
           key={i}
-          style={{
-            display: "inline-block",
-            filter: inView ? "blur(0px)" : "blur(10px)",
-            opacity: inView ? 1 : 0,
-            transform: inView
-              ? "translateY(0)"
-              : `translateY(${direction === "top" ? "-20px" : "20px"})`,
-            transition: `all 0.5s ease-out ${i * delay}ms`,
-          }}
+          className="hero-letter"
+          style={{ animationDelay: `${i * delay}ms` }}
         >
-          {segment}
-          {animateBy === "words" && i < segments.length - 1 ? " " : ""}
+          {letter}
         </span>
       ))}
-    </p>
+    </span>
   );
-};
+}
 
 /*
   El nombre se revela letra a letra: "CRISTIAN" son 8 letras a 90ms de
-  retardo mas 500ms de transicion, asi que termina cerca de 1.13s. El
-  copy arranca en 1.0s para encadenar sin dejar un hueco muerto.
+  retardo mas 500ms de animacion, asi que termina cerca de 1.13s. El
+  copy arranca en 1.0s, cada pieza 80ms despues de la anterior, para
+  encadenar sin dejar un hueco muerto.
 */
-const copyContainerVariants = {
-  hidden: {},
-  visible: { transition: { delayChildren: 1, staggerChildren: 0.08 } },
-};
-
-const copyItemVariants = {
-  hidden: { opacity: 0, y: 16, filter: "blur(6px)" },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
+function riseDelay(index: number): React.CSSProperties {
+  return { animationDelay: `${1000 + index * 80}ms` };
+}
 
 const linkPillClass =
   "inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-surface-2/60 px-4 text-sm text-ink-muted transition-colors duration-300 hover:border-accent hover:text-accent-ink";
@@ -103,7 +58,7 @@ interface PortfolioHeroProps {
 }
 
 export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
@@ -164,20 +119,25 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
       {/* Nombre monumental con el retrato ovalado centrado entre lineas */}
       <div className="relative my-auto w-full text-center">
-        <BlurText
-          text={hero.firstName}
-          animateBy="letters"
-          delay={90}
-          direction="top"
-          className={nameClassName}
-        />
-        <BlurText
-          text={hero.lastName}
-          animateBy="letters"
-          delay={90}
-          direction="top"
-          className={nameClassName}
-        />
+        {/*
+          El nombre es el <h1> de la pagina: sin el, el HTML no tenia
+          ningun encabezado principal. aria-label porque las letras van en
+          spans sueltos y algun lector de pantalla las deletrearia; el
+          espacio entre las dos lineas es para quien lee el texto plano
+          (buscadores), que si no veria "CRISTIANPEREZ".
+        */}
+        <h1 aria-label={site.name}>
+          <BlurText
+            text={hero.firstName}
+              delay={90}
+              className={nameClassName}
+          />{" "}
+          <BlurText
+            text={hero.lastName}
+              delay={90}
+              className={nameClassName}
+          />
+        </h1>
 
         {/*
           z-10 a proposito: el retrato es un medallon incrustado sobre el
@@ -193,7 +153,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           <div className="relative h-[100px] w-[60px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[170px] sm:w-[100px] md:h-[195px] md:w-[115px] lg:h-[225px] lg:w-[135px]">
             <Image
               src={portrait.local}
-              alt="Cristian Perez"
+              alt={site.name}
               fill
               priority
               sizes="(min-width: 1024px) 135px, (min-width: 768px) 115px, (min-width: 640px) 100px, 89px"
@@ -204,29 +164,26 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       </div>
 
       {/* Narrativa: entra escalonada al terminar el nombre */}
-      <motion.div
-        variants={copyContainerVariants}
-        initial={shouldReduceMotion ? "visible" : "hidden"}
-        animate="visible"
+      <div
         className="z-20 mx-auto flex w-full max-w-2xl flex-col items-center gap-2 text-center sm:gap-3"
       >
-        <motion.div variants={copyItemVariants} className="w-full">
+        <div className="hero-rise w-full" style={riseDelay(0)}>
           <FadeSwap>
             <p className="text-xl font-medium tracking-tight text-ink sm:text-2xl md:text-3xl">
               {t.hero.tagline}
             </p>
           </FadeSwap>
-        </motion.div>
+        </div>
 
-        <motion.div variants={copyItemVariants} className="w-full">
+        <div className="hero-rise w-full" style={riseDelay(1)}>
           <FadeSwap>
             <p className="mx-auto max-w-xl px-2 text-base leading-relaxed text-ink-muted sm:text-lg">
               {t.hero.description}
             </p>
           </FadeSwap>
-        </motion.div>
+        </div>
 
-        <motion.div variants={copyItemVariants}>
+        <div className="hero-rise" style={riseDelay(2)}>
           {/*
             FadeSwap envuelve `children` en su propio div de crossfade
             (`col-start-1 row-start-1`, sin flex): el `flex gap-*` tiene
@@ -235,11 +192,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           */}
           <FadeSwap className="pt-1">
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"
-                />
+              {/* Sin punto verde que late: la frase ya dice que esta
+                  disponible, y el indicador "en vivo" es de los tics mas
+                  gastados de las plantillas. */}
+              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
                 {t.hero.badgeAvailability}
               </span>
               <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
@@ -247,15 +203,13 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               </span>
             </div>
           </FadeSwap>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={copyItemVariants}
-          className="flex flex-col items-center gap-3 pt-2 sm:flex-row"
-        >
+        <div className="hero-rise flex flex-col items-center gap-3 pt-2 sm:flex-row" style={riseDelay(3)}>
           <FadeSwap>
             <a
               href={buildWhatsappUrl(t.whatsappMessage)}
+              onClick={() => trackWhatsappClick("hero", language)}
               target="_blank"
               rel="noopener noreferrer"
               className="accent-fill inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
@@ -273,7 +227,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               {t.hero.ctaSecondary}
             </a>
           </FadeSwap>
-        </motion.div>
+        </div>
 
         {/*
           Enlaces directos para quien evalua el perfil: codigo, CV y
@@ -281,7 +235,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           una tercera fila de botones de 48px empujaba el hero por debajo
           del pliegue en un movil.
         */}
-        <motion.div variants={copyItemVariants}>
+        <div className="hero-rise" style={riseDelay(4)}>
           <FadeSwap>
             <ul className="flex flex-wrap items-center justify-center gap-2">
               <li>
@@ -311,19 +265,19 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               </li>
             </ul>
           </FadeSwap>
-        </motion.div>
+        </div>
 
         {/* Oculto en pantallas cortas: a 360x640 empujaba el contenido
             43px por debajo del pliegue. */}
-        <motion.a
-          variants={copyItemVariants}
+        <a
           href="#about"
-          className="mt-2 hidden text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
+          style={riseDelay(5)}
+          className="hero-rise mt-2 hidden text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
           aria-label={t.hero.scrollLabel}
         >
           <ChevronDown className="h-6 w-6 animate-bounce" />
-        </motion.a>
-      </motion.div>
+        </a>
+      </div>
       </motion.div>
       </div>
     </div>

@@ -12,7 +12,7 @@ import {
 import { ArrowUpRight } from "lucide-react";
 import { projects, type Project } from "@/data/site";
 import { useLanguage } from "@/lib/language";
-import { buildWhatsappUrl } from "@/lib/contact";
+import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { useCardHeight } from "@/lib/use-card-height";
 import { TechPanel, TechVisual } from "@/components/diagrams";
 import { BackgroundOrbs } from "@/components/ui/background-orbs";
@@ -102,7 +102,7 @@ function ProjectCard({
   progress,
   reduceMotion,
 }: ProjectCardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const copy = t.projects.items[index];
   const wrapperRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLElement>(null);
@@ -158,6 +158,11 @@ function ProjectCard({
           {/* Con repositorio, el CTA lleva al codigo; sin el, a WhatsApp. */}
           <a
             href={project.repoUrl ?? buildWhatsappUrl(t.whatsappMessage)}
+            onClick={
+              project.repoUrl
+                ? undefined
+                : () => trackWhatsappClick(`project-${project.number}`, language)
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong px-6 text-sm uppercase tracking-wider text-ink transition-colors duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink"

@@ -666,3 +666,51 @@ html.lenis body {
     }
   }
 }
+
+/*
+  Entrada del hero en CSS y no con estado de React. Antes cada letra del
+  nombre esperaba a un IntersectionObserver y el copy a Framer Motion, asi
+  que el HTML del servidor llegaba con todo el hero a opacity 0 y nada se
+  veia hasta hidratar: en un celular lento eran segundos de pantalla vacia
+  con solo el retrato, y el LCP se iba con ellos. Una animacion CSS corre
+  desde el primer pintado. El retardo de cada pieza va en linea
+  (animation-delay), el resto es comun.
+*/
+@keyframes hero-letter-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(16px);
+  }
+}
+
+@layer components {
+  .hero-letter {
+    display: inline-block;
+    animation: hero-letter-in 0.5s ease-out both;
+  }
+
+  .hero-rise {
+    animation: hero-rise 0.55s var(--ease-premium) both;
+  }
+
+  /*
+    `none` y no solo duracion minima: la regla global de reduced motion
+    deja el animation-delay intacto, y con `both` el texto seguiria
+    oculto hasta 1.5s.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-letter,
+    .hero-rise {
+      animation: none;
+    }
+  }
+}

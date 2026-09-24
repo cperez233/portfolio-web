@@ -34,8 +34,8 @@ import {
  *   tres veces y cruza el borde de la pantalla, asi que con teclado el
  *   foco caeria en tarjetas invisibles.
  *
- * Los enlaces de debajo sirven a teclado y lector de pantalla cuando
- * manda la tira, y de indice para todos en cualquier ancho.
+ * Desde md, teclado y lector de pantalla usan una lista de enlaces oculta
+ * que solo se ve cuando recibe el foco.
  */
 export function MiniProjectsSection() {
   const { t } = useLanguage();
@@ -76,6 +76,7 @@ export function MiniProjectsSection() {
               <SiteCard
                 project={project}
                 caption={t.miniProjects.items[index]}
+                imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
                 focusable
               />
             </li>
@@ -93,20 +94,29 @@ export function MiniProjectsSection() {
                   key={`${copy}-${project.key}`}
                   project={project}
                   caption={t.miniProjects.items[index]}
+                  imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
                 />
               )),
             )}
           </div>
         </div>
 
-        <ul className="mx-auto mt-10 flex w-full max-w-6xl flex-wrap justify-center gap-2.5 px-5 sm:mt-12 sm:px-8 md:px-10">
+        {/*
+          Sin pildoras visibles: repetian los enlaces de las tarjetas y
+          solo metian ruido. Pero la tira de escritorio va con aria-hidden
+          (esta triplicada y cruza el borde de la pantalla), asi que esta
+          lista es el unico camino para teclado y lector de pantalla desde
+          md. Queda oculta y aparece solo cuando el foco entra en ella. En
+          celular no hace falta: el carrusel ya es navegable.
+        */}
+        <ul className="sr-only max-md:hidden focus-within:not-sr-only focus-within:mx-auto focus-within:mt-10 focus-within:flex focus-within:w-full focus-within:max-w-6xl focus-within:flex-wrap focus-within:justify-center focus-within:gap-2.5 focus-within:px-10">
           {miniProjects.map((project) => (
             <li key={project.key}>
               <a
                 href={project.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-ink transition-colors duration-200 hover:border-accent-ink hover:text-accent-ink"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong bg-surface-2 px-4 text-sm font-medium text-ink"
               >
                 {project.name}
                 <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -123,6 +133,8 @@ export function MiniProjectsSection() {
 interface SiteCardProps {
   project: MiniProject;
   caption: string;
+  /** Alt de la captura: buscadores de imagenes y quien no la ve. */
+  imageAlt: string;
   /** Solo en el carrusel: en la tira el foco caeria fuera de pantalla. */
   focusable?: boolean;
 }
@@ -132,7 +144,12 @@ interface SiteCardProps {
  * dominio es lo que hace que se lea como "pagina real" y no como
  * ilustracion.
  */
-function SiteCard({ project, caption, focusable = false }: SiteCardProps) {
+function SiteCard({
+  project,
+  caption,
+  imageAlt,
+  focusable = false,
+}: SiteCardProps) {
   return (
     <a
       href={project.href}
@@ -169,7 +186,7 @@ function SiteCard({ project, caption, focusable = false }: SiteCardProps) {
         <div className="relative aspect-[16/10] overflow-hidden">
           <Image
             src={project.image}
-            alt=""
+            alt={imageAlt}
             fill
             // eager: la tira se mueve de lado, y con lazy las tarjetas
             // que entran desde fuera aparecerian vacias un instante. Son

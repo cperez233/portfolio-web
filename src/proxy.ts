@@ -1,47 +1,43 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
-  DETECTED_LANGUAGE_COOKIE,
   LANGUAGE_COOKIE,
+  LANGUAGE_PATHS,
   detectLanguage,
+  isLanguage,
 } from "@/lib/language-detection";
 
 /**
  * Idioma de entrada (Next 16: `proxy.ts`, antes `middleware.ts`).
  *
- * La pagina es estatica y cambia de idioma en el cliente, asi que aqui no
- * se redirige ni se reescribe nada: solo se deja en una cookie el idioma
- * que piden las cabeceras (Accept-Language y el pais que anade Vercel en
- * x-vercel-ip-country). El store de idioma la lee al hidratar. El pais
- * solo existe en el servidor, de ahi que haga falta este paso.
+ * Solo actua sobre "/", que es la version en ingles y a la vez el
+ * x-default de hreflang: la puerta de entrada que reparte por idioma.
+ * Si el usuario eligio espanol con el toggle, o no eligio y las cabeceras
+ * piden espanol (Accept-Language, o el pais que anade Vercel en
+ * x-vercel-ip-country), se le manda a "/es".
  *
- * Si el usuario ya eligio idioma con el toggle, esa cookie manda y no se
- * detecta nada.
+ * "/es" no pasa por aqui: un enlace a la version en espanol siempre la
+ * sirve tal cual. Googlebot rastrea sin Accept-Language y desde EE. UU.,
+ * asi que ve "/" en ingles y llega a "/es" por hreflang y el sitemap.
  */
 export function proxy(request: NextRequest) {
-  if (request.cookies.has(LANGUAGE_COOKIE)) return NextResponse.next();
+  const manual = request.cookies.get(LANGUAGE_COOKIE)?.value;
 
-  const detected = detectLanguage({
-    acceptLanguage: request.headers.get("accept-language"),
-    country: request.headers.get("x-vercel-ip-country"),
-  });
+  const language = isLanguage(manual)
+    ? manual
+    : detectLanguage({
+        acceptLanguage: request.headers.get("accept-language"),
+        country: request.headers.get("x-vercel-ip-country"),
+      });
 
-  const response = NextResponse.next();
-  if (request.cookies.get(DETECTED_LANGUAGE_COOKIE)?.value !== detected) {
-    response.cookies.set(DETECTED_LANGUAGE_COOKIE, detected, {
-      path: "/",
-      sameSite: "lax",
-      // Se renueva en cada visita sin eleccion manual; un mes basta.
-      maxAge: 60 * 60 * 24 * 30,
-    });
-  }
-  return response;
+  if (language === "en") return NextResponse.next();
+
+  const url = request.nextUrl.clone();
+  url.pathname = LANGUAGE_PATHS.es;
+  // 307: temporal a proposito. Depende de quien visita, y un 308 lo
+  // cachearia el navegador para siempre.
+  return NextResponse.redirect(url, 307);
 }
 
-/*
-  Solo paginas: fuera los estaticos de Next, la optimizacion de imagenes
-  y cualquier ruta con extension (imagenes de /public, el CV en PDF, la
-  imagen Open Graph).
-*/
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|.*\\.[^/]+$).*)"],
+  matcher: ["/"],
 };

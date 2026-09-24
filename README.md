@@ -6,7 +6,7 @@ than for the people who build it.
 
 Bilingual (EN / ES), dark and light themes, scroll-driven motion.
 
-**Live:** https://portafolio-seven-zeta-27.vercel.app
+**Live:** https://www.cristianperez.me (English) · https://www.cristianperez.me/es (Spanish)
 
 ---
 
@@ -39,13 +39,17 @@ npm run lint    # eslint
 
 ```
 src/
-├─ proxy.ts          detects the entry language into a cookie
+├─ proxy.ts          sends Spanish-speaking visitors from / to /es
 ├─ app/
-│  ├─ layout.tsx      fonts, metadata (SEO + Open Graph), providers, nav
-│  ├─ page.tsx        section composition only
+│  ├─ (en)/           root layout + page for / (English)
+│  ├─ (es)/es/        root layout + page for /es (Spanish)
+│  ├─ robots.ts, sitemap.ts   both URLs, with hreflang alternates
 │  ├─ og-image.png/   route that renders the 1200x630 share card
 │  └─ globals.css     design tokens (@theme) + theme overrides
 ├─ components/
+│  ├─ root-shell.tsx  <html>/<body>, fonts, metadata per language, analytics
+│  ├─ home-page.tsx   section composition, shared by both languages
+│  ├─ json-ld.tsx     Person / WebSite / ProfilePage structured data
 │  ├─ about.tsx       editorial blocks + highlight grid
 │  ├─ mini-projects.tsx     live sites: swipe on phones, drifts on desktop
 │  ├─ projects.tsx    sticky stacking case-study cards
@@ -56,8 +60,9 @@ src/
 │  ├─ diagrams.ts     diagram structure: nodes, columns, commands
 │  └─ site.ts         URLs, images, proper nouns (no translation)
 └─ lib/
-   ├─ language.tsx    language provider
-   ├─ language-detection.ts  entry-language rules, shared with proxy.ts
+   ├─ language.tsx    language provider (initial language comes from the URL)
+   ├─ language-detection.ts  URL per language + entry-language rules
+   ├─ site-url.ts     absolute site URL for metadata, sitemap and JSON-LD
    ├─ theme.ts        theme store (+ theme-storage.ts for the key)
    ├─ smooth-scroll.ts  Lenis access for programmatic jumps
    └─ utils.ts        cn() helper
@@ -68,6 +73,24 @@ reader sees in their own language lives in the dictionary; anything that
 is a proper noun, a URL or an asset path stays language-independent.
 Diagrams follow the same split: `diagrams.ts` holds the structure and the
 terminal commands, `content.ts` the node labels and log output.
+
+## Languages and SEO
+
+Each language has its own server-rendered URL: `/` is English and `/es`
+is Spanish, with `hreflang` in the `<head>` and in the sitemap. Two root
+layouts (route groups `(en)` and `(es)`) exist only so `<html lang>` is
+correct from the server; both render `RootShell`.
+
+The toggle is a real link to the other version. With JavaScript it swaps
+the language in place (crossfade, scroll kept) and rewrites the URL with
+`history.replaceState`. `proxy.ts` only runs on `/`: visitors whose
+browser or country asks for Spanish, or who picked Spanish before, are
+redirected to `/es`. `/es` is never redirected, so it can be indexed and
+shared. Title and description per language live in `content.ts`
+(`meta`).
+
+WhatsApp clicks are sent to Vercel Analytics as `whatsapp_click` (custom
+events need a Pro plan; page views work on Hobby).
 
 ## Theming
 
