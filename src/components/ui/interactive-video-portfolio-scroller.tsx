@@ -4,21 +4,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
+  useMotionValue,
   useReducedMotion,
   useScroll,
+  useSpring,
   useTransform,
+  type Variants,
 } from "framer-motion";
 import { TechVisual } from "@/components/diagrams";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { DESKTOP_QUERY } from "@/lib/breakpoints";
 import { useLanguage } from "@/lib/language";
-import { smoothScrollTo } from "@/lib/smooth-scroll";
+import { jumpScrollTo, smoothScrollTo } from "@/lib/smooth-scroll";
 import { useMediaQuery } from "@/lib/use-media-query";
-import { BackgroundOrbs } from "./background-orbs";
 import { FadeIn } from "./FadeIn";
 import { FadeSwap } from "./FadeSwap";
 import { SectionEdge } from "./section-transition";
 import { cn } from "@/lib/utils";
+import { RevealWords } from "@/components/ui/reveal-words";
 
 /**
  * Seccion de Servicios: dos presentaciones del mismo contenido.
@@ -47,7 +50,6 @@ export default function InteractiveVideoScroller() {
       className="layer-top relative z-20 overflow-x-clip rounded-t-[32px] bg-surface transition-colors duration-500 sm:rounded-t-[48px]"
     >
       <SectionEdge />
-      <BackgroundOrbs variant="middle" />
 
       {isDesktop ? null : <ServiceCards />}
       <DesktopScroller />
@@ -69,22 +71,67 @@ function ServiceCards() {
   const { t } = useLanguage();
   const shouldReduceMotion = useReducedMotion();
   const total = menuItems.length;
+  const listRef = useRef<HTMLOListElement>(null);
+  /*
+    Tarjeta que cruza el centro de la pantalla y si la lista esta a la
+    vista. Alimentan el indice flotante: en celular la seccion mide varias
+    pantallas y sin el no se sabe cuantos servicios quedan.
+  */
+  const [current, setCurrent] = useState(0);
+  const [listVisible, setListVisible] = useState(false);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    const cards = Array.from(list.children) as HTMLElement[];
+    const cardObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setCurrent(cards.indexOf(entry.target as HTMLElement));
+          }
+        }
+      },
+      // Franja fina en el centro: solo una tarjeta la cruza a la vez.
+      { rootMargin: "-50% 0px -50% 0px" },
+    );
+    cards.forEach((card) => cardObserver.observe(card));
+
+    /*
+      El indice aparece con la primera tarjeta ya en pantalla y se va
+      antes de que acabe la ultima, para no tapar el cierre de la seccion.
+    */
+    const listObserver = new IntersectionObserver(
+      ([entry]) => setListVisible(entry.isIntersecting),
+      { rootMargin: "-35% 0px -35% 0px" },
+    );
+    listObserver.observe(list);
+
+    return () => {
+      cardObserver.disconnect();
+      listObserver.disconnect();
+    };
+  }, []);
 
   return (
     <div className="relative z-10 px-5 py-20 sm:px-8 sm:py-24 md:px-10 desktop:hidden">
       <div className="mx-auto w-full max-w-3xl">
         <FadeIn>
           <FadeSwap>
-            <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
+            <p className="mb-4 text-sm font-medium text-accent-ink">
               {t.services.eyebrow}
             </p>
             <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
-              {t.services.title}
+              <RevealWords text={t.services.title} />
             </h2>
           </FadeSwap>
         </FadeIn>
 
-        <ol className="mt-10 flex touch-manipulation flex-col gap-5 sm:gap-6">
+        <ol
+          ref={listRef}
+          className="mt-10 flex touch-manipulation flex-col gap-5 sm:gap-6"
+        >
           {menuItems.map((item, index) => (
             <ServiceCard
               key={item.number}
@@ -96,7 +143,89 @@ function ServiceCards() {
           ))}
         </ol>
       </div>
+
+      <ServiceIndex
+        current={current}
+        total={total}
+        name={t.services.items[current]?.name ?? ""}
+        visible={listVisible}
+        reduceMotion={Boolean(shouldReduceMotion)}
+      />
     </div>
+  );
+}
+
+interface ServiceIndexProps {
+  current: number;
+  total: number;
+  name: string;
+  visible: boolean;
+  reduceMotion: boolean;
+}
+
+/**
+ * Indice flotante de Servicios en celular: la version de bolsillo de la
+ * lista de escritorio. Numero, nombre del servicio que se esta leyendo y
+ * una marca por servicio que se llena al avanzar.
+ *
+ * Decorativo (aria-hidden): cada tarjeta ya lleva su "02 / 06" en el
+ * texto. Sin eventos de puntero, para que nunca se quede con un toque
+ * pensado para la tarjeta de debajo.
+ */
+function ServiceIndex({ current, total, name, visible, reduceMotion }: ServiceIndexProps) {
+  return (
+    <AnimatePresence>
+      {visible ? (
+        <motion.div
+          aria-hidden="true"
+          initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-5 desktop:hidden"
+        >
+          <div className="flex w-full max-w-sm items-center gap-3 rounded-full border border-tech-line bg-tech-bg/95 py-2.5 pl-4 pr-5 shadow-[var(--tech-card-shadow)] transition-colors duration-500">
+            <span className="shrink-0 font-mono text-xs tabular-nums text-tech-ink-subtle">
+              <span className="text-tech-accent">
+                {String(current + 1).padStart(2, "0")}
+              </span>
+              /{String(total).padStart(2, "0")}
+            </span>
+
+            <span className="relative min-w-0 flex-1 overflow-hidden">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span
+                  key={name}
+                  initial={reduceMotion ? false : { y: "100%", opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={reduceMotion ? undefined : { y: "-100%", opacity: 0 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="block truncate text-sm font-medium text-tech-ink"
+                >
+                  {name}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+
+            <span className="flex shrink-0 gap-1">
+              {Array.from({ length: total }, (_, index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    "h-1 rounded-full transition-all duration-500 ease-[var(--ease-premium)]",
+                    index === current
+                      ? "w-4 bg-tech-accent"
+                      : index < current
+                        ? "w-1 bg-tech-accent/50"
+                        : "w-1 bg-tech-ink-subtle/40",
+                  )}
+                />
+              ))}
+            </span>
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
@@ -178,7 +307,7 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
           className="pointer-events-none absolute inset-0 z-10 rounded-3xl ring-1 ring-inset ring-tech-accent/25"
         />
 
-        <div className="relative h-28 sm:h-36">
+        <div className="relative h-32 sm:h-36">
           <TechVisual
             id={item.diagram}
             density="compact"
@@ -194,7 +323,7 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
 
         <div className="relative px-5 pb-6 pt-4 sm:px-7 sm:pb-7">
           <FadeSwap>
-            <p className="font-mono text-xs tracking-[0.2em] text-tech-ink-subtle">
+            <p className="text-sm tabular-nums text-tech-ink-subtle">
               <span className="text-tech-accent">{item.number}</span>
               {" / "}
               {String(total).padStart(2, "0")}
@@ -202,16 +331,35 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
             <h3 className="mt-2 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-tech-ink sm:text-2xl">
               {copy.name}
             </h3>
-            <ul className="mt-3 flex flex-wrap gap-1.5">
+            {/* Tags que entran uno tras otro al llegar la tarjeta. */}
+            <motion.ul
+              className="mt-3 flex flex-wrap gap-1.5"
+              initial={reduceMotion ? false : "hidden"}
+              whileInView="show"
+              viewport={{ once: true, margin: "-15% 0px" }}
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.06, delayChildren: 0.15 } },
+              }}
+            >
               {tags.map((tag) => (
-                <li
+                <motion.li
                   key={tag}
-                  className="rounded-md border border-tech-accent/20 bg-tech-accent/[0.07] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-tech-accent sm:text-[11px]"
+                  variants={{
+                    hidden: { opacity: 0, y: 8, scale: 0.9 },
+                    show: {
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                      transition: { type: "spring", stiffness: 380, damping: 24 },
+                    },
+                  }}
+                  className="rounded-full border border-tech-accent/20 bg-tech-accent/[0.07] px-2.5 py-0.5 text-xs text-tech-accent"
                 >
                   {tag}
-                </li>
+                </motion.li>
               ))}
-            </ul>
+            </motion.ul>
             <p className="mt-4 text-[0.9375rem] leading-relaxed text-tech-ink-soft sm:text-base">
               {copy.description}
             </p>
@@ -235,6 +383,32 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
   );
 }
 
+/*
+  Relevo del texto del panel al cambiar de servicio: el bloque entrante
+  sube por piezas (etiqueta, titulo, descripcion), como el "content
+  swap" de la skill de diseno.
+*/
+/**
+ * Tras el ultimo giro de rueda, el hover sigue ignorado este tiempo: lo
+ * que tarda en asentarse la inercia de Lenis (lerp 0.085).
+ */
+const SCROLL_QUIET_MS = 700;
+
+const panelTextVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+};
+
+const panelLineVariants: Variants = {
+  hidden: { opacity: 0, y: 14, filter: "blur(4px)" },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 /**
  * Escritorio: scroller con scroll-lock aparente.
  *
@@ -251,9 +425,133 @@ function DesktopScroller() {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  /*
+    Servicio bajo el raton. Manda sobre el que marca el scroll: se puede
+    recorrer la lista pasando el cursor sin tener que bajar la pagina
+    entera, y al salir de la lista vuelve el del scroll.
+  */
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const shouldReduceMotion = useReducedMotion();
+  /*
+    Avance dentro del servicio activo, de 0 a 1: llena la linea de la
+    fila activa y deja ver cuanto falta para pasar al siguiente. Motion
+    value y no estado: cambia en cada frame y no debe re-renderizar.
+  */
+  const segmentProgress = useMotionValue(0);
+  const segmentFill = useSpring(segmentProgress, {
+    stiffness: 180,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   const total = menuItems.length;
+
+  /*
+    La rueda devuelve el mando al scroll. Con el panel fijado la lista no
+    se mueve bajo el cursor, asi que si el raton reposaba sobre una fila
+    el hover la mantenia elegida y el servicio no cambiaba al bajar: la
+    seccion parecia atascada.
+
+    Soltar el hover no basta: mientras la pagina se desplaza, Chrome
+    lanza `mousemove` sinteticos bajo un raton quieto para recalcular el
+    hover. Cada uno volvia a elegir la fila y el panel parpadeaba entre
+    el servicio del scroll y el del cursor.
+
+    Y con un raton de verdad la mano lo mueve unos pixeles entre giro y
+    giro de la rueda: movimientos reales, pero que no buscan otra fila.
+    Por eso el hover se ignora del todo mientras se hace scroll (hasta
+    SCROLL_QUIET_MS despues del ultimo giro) y, pasado ese tiempo, solo
+    vuelve si el raton se aleja del punto donde estaba.
+  */
+  const pointerRef = useRef<{ x: number; y: number } | null>(null);
+  const scrollLockRef = useRef<{ x: number; y: number } | null>(null);
+  const lastScrollInputRef = useRef(0);
+
+  // Copia del hover para el listener de la rueda, que se registra una vez.
+  const hoveredRef = useRef<number | null>(null);
+  useEffect(() => {
+    hoveredRef.current = hoveredIndex;
+  }, [hoveredIndex]);
+
+  /**
+   * Posicion en el documento de un punto del tramo de un servicio:
+   * `fraction` 0 es su inicio y 1 su final.
+   */
+  const segmentTop = useCallback(
+    (index: number, fraction: number) => {
+      const element = containerRef.current;
+      if (!element) return null;
+      const scrollable = element.offsetHeight - window.innerHeight;
+      /*
+        Posicion en el documento via rect + scrollY, no `offsetTop`: el
+        offsetParent de este contenedor es la <section> `relative`, asi
+        que offsetTop valia casi 0 y el salto caia al principio de la
+        pagina en lugar de al tramo del servicio.
+      */
+      const documentTop = element.getBoundingClientRect().top + window.scrollY;
+      return documentTop + (scrollable * (index + fraction)) / total;
+    },
+    [total],
+  );
+
+  useEffect(() => {
+    const onWheel = (event: WheelEvent) => {
+      lastScrollInputRef.current = performance.now();
+      scrollLockRef.current = { x: event.clientX, y: event.clientY };
+
+      /*
+        El scroll sigue desde el servicio bajo el cursor. Con el raton en
+        la ultima fila, girar la rueda no vuelve al servicio que marcaba
+        el scroll: el scroll salta (sin animacion) al tramo de esa fila y
+        avanza desde ahi. Al inicio del tramo si se baja y al final si se
+        sube, para que el siguiente giro pase al servicio de al lado.
+
+        Solo con la seccion fijada: ahi el salto no se ve, solo cambia el
+        progreso. Fuera de ella moveria la pagina entera.
+      */
+      const hovered = hoveredRef.current;
+      const element = containerRef.current;
+      if (hovered !== null && element) {
+        const rect = element.getBoundingClientRect();
+        const pinned = rect.top <= 1 && rect.bottom >= window.innerHeight - 1;
+        const target = segmentTop(hovered, event.deltaY > 0 ? 0.02 : 0.98);
+        if (pinned && target !== null) {
+          jumpScrollTo(target);
+          setActiveIndex(hovered);
+        }
+      }
+
+      hoveredRef.current = null;
+      setHoveredIndex(null);
+    };
+    const onKeyDown = () => {
+      lastScrollInputRef.current = performance.now();
+      scrollLockRef.current = pointerRef.current ?? { x: -1, y: -1 };
+      setHoveredIndex(null);
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [segmentTop]);
+
+  /** Hover de una fila, salvo que el movimiento sea sintetico. */
+  const hoverRow = useCallback((index: number, event: React.MouseEvent) => {
+    const point = { x: event.clientX, y: event.clientY };
+    pointerRef.current = point;
+    // Mientras dura el scroll (y la inercia de Lenis) manda la rueda.
+    if (performance.now() - lastScrollInputRef.current < SCROLL_QUIET_MS) return;
+    const lock = scrollLockRef.current;
+    if (lock) {
+      // Margen: la mano que suelta la rueda arrastra un poco el raton.
+      const moved = Math.abs(point.x - lock.x) + Math.abs(point.y - lock.y);
+      if (moved < 12) return;
+      scrollLockRef.current = null;
+    }
+    setHoveredIndex(index);
+  }, []);
 
   /*
     El indice se mide por frame mientras la seccion esta a la vista, en
@@ -281,7 +579,9 @@ function DesktopScroller() {
       if (scrollable <= 0) return;
 
       const progress = Math.min(Math.max(-rect.top / scrollable, 0), 0.999);
-      setActiveIndex(Math.floor(progress * total));
+      const position = progress * total;
+      setActiveIndex(Math.floor(position));
+      segmentProgress.set(position - Math.floor(position));
     };
 
     const loop = () => {
@@ -310,36 +610,44 @@ function DesktopScroller() {
       cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, [total]);
+  }, [total, segmentProgress]);
 
   /** Salta al tramo de scroll de un servicio concreto. */
   const goToIndex = useCallback(
     (index: number) => {
-      const element = containerRef.current;
-      if (!element) return;
-
-      const scrollable = element.offsetHeight - window.innerHeight;
-      /*
-        Posicion en el documento via rect + scrollY, no `offsetTop`: el
-        offsetParent de este contenedor es la <section> `relative`, asi
-        que offsetTop valia casi 0 y el salto caia al principio de la
-        pagina en lugar de al tramo del servicio.
-      */
-      const documentTop = element.getBoundingClientRect().top + window.scrollY;
-      const top = documentTop + (scrollable * (index + 0.5)) / total;
+      const top = segmentTop(index, 0.5);
       // Via Lenis: un window.scrollTo se deshace en el frame siguiente.
-      smoothScrollTo(top);
+      if (top !== null) smoothScrollTo(top);
     },
-    [total],
+    [segmentTop],
   );
 
-  const active = menuItems[activeIndex] ?? menuItems[0];
-  const activeCopy = t.services.items[activeIndex] ?? t.services.items[0];
+  const shownIndex = hoveredIndex ?? activeIndex;
+  const active = menuItems[shownIndex] ?? menuItems[0];
+  const activeCopy = t.services.items[shownIndex] ?? t.services.items[0];
+
+  /*
+    Entrada de la seccion: la lista llega fila a fila desde la izquierda
+    y el panel sube desde abajo, una sola vez al aparecer. Luego manda el
+    scroll (o el hover).
+  */
+  const enter = shouldReduceMotion
+    ? {}
+    : {
+        initial: "hidden" as const,
+        whileInView: "show" as const,
+        viewport: { once: true, amount: 0.35 },
+      };
 
   return (
     <div
       ref={containerRef}
-      style={{ height: `${total * 100}svh` }}
+      /*
+        60svh por servicio (antes 100): la seccion queda fijada la mitad
+        de tiempo. Con el hover para saltar entre servicios ya no hace
+        falta tanto recorrido, y el flujo de la pagina no se frena.
+      */
+      style={{ height: `${total * 60}svh` }}
       className="relative z-10 hidden desktop:block"
     >
       {/*
@@ -347,29 +655,53 @@ function DesktopScroller() {
         portatil de 700px de alto). Con raton no atrapa nada: Lenis
         gestiona la rueda sobre la ventana, no sobre este panel.
       */}
-      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-10 py-16">
+      <div className="sticky top-0 flex h-svh flex-col justify-center overflow-y-auto px-10 py-12">
         <div className="mx-auto w-full max-w-6xl">
-          <div className="mb-12 flex items-end justify-between gap-4">
+          <div className="mb-10 flex items-end justify-between gap-4">
             <FadeSwap>
-              <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
+              <p className="mb-4 text-sm font-medium text-accent-ink">
                 {t.services.eyebrow}
               </p>
               <h2 className="text-6xl font-semibold uppercase tracking-tight text-ink">
-                {t.services.title}
+                <RevealWords text={t.services.title} />
               </h2>
             </FadeSwap>
 
-            <p className="font-mono text-sm uppercase tracking-wider text-ink-subtle">
-              {String(activeIndex + 1).padStart(2, "0")} /{" "}
+            <p className="text-sm tabular-nums text-ink-subtle">
+              {String(shownIndex + 1).padStart(2, "0")} /{" "}
               {String(total).padStart(2, "0")}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-14">
+          <motion.div
+            className="grid grid-cols-2 gap-14"
+            {...enter}
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.07 } },
+            }}
+          >
             {/* Panel de detalle: diagrama arriba, texto del servicio abajo. */}
-            <div className="relative order-2 flex aspect-[5/4] flex-col overflow-hidden rounded-2xl border border-tech-line bg-tech-bg transition-[background-color,border-color,color,box-shadow] duration-500">
+            {/*
+              Cuadrado por debajo de xl: entre 1024 y 1280px la columna es
+              estrecha y a 5/4 el texto de los servicios largos se salia
+              por abajo del panel.
+            */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 60, scale: 0.96 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
+                },
+              }}
+              className="relative order-2 flex aspect-square flex-col overflow-hidden xl:aspect-[5/4] rounded-2xl border border-tech-line bg-tech-bg transition-[background-color,border-color,color,box-shadow] duration-500">
               <div className="relative min-h-16 flex-1">
-                <AnimatePresence mode="wait" initial={false}>
+                {/* Sin modo "wait": el hover cambia rapido de servicio y
+                    los diagramas se funden encima en vez de hacer cola. */}
+                <AnimatePresence initial={false}>
                   <motion.div
                     key={active.number}
                     className="absolute inset-0"
@@ -398,62 +730,131 @@ function DesktopScroller() {
                 />
               </div>
 
-              <div className="relative shrink-0 p-8">
-                <FadeSwap>
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-tech-accent">
+              <div className="relative shrink-0 p-6 xl:p-8">
+                {/*
+                  Solo entrada, sin salida: la key remonta el bloque y las
+                  piezas suben escalonadas. Con AnimatePresence en modo
+                  "wait", pasar rapido por tres servicios dejaba el texto
+                  trabado en el primero. La key incluye el titulo para que
+                  el cambio de idioma tambien releve.
+                */}
+                <motion.div
+                  key={`${active.number}-${activeCopy.name}`}
+                  variants={shouldReduceMotion ? undefined : panelTextVariants}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <motion.p
+                    variants={shouldReduceMotion ? undefined : panelLineVariants}
+                    className="text-sm text-tech-accent"
+                  >
                     {activeCopy.tag}
-                  </p>
-                  <p className="mt-2 text-3xl font-medium tracking-tight text-tech-ink">
+                  </motion.p>
+                  <motion.p
+                    variants={shouldReduceMotion ? undefined : panelLineVariants}
+                    className="mt-2 text-2xl font-medium tracking-tight text-tech-ink xl:text-3xl"
+                  >
                     {activeCopy.name}
-                  </p>
-                  <p className="mt-3 max-w-md text-base leading-relaxed text-tech-ink-soft">
+                  </motion.p>
+                  <motion.p
+                    variants={shouldReduceMotion ? undefined : panelLineVariants}
+                    className="mt-3 max-w-md text-base leading-relaxed text-tech-ink-soft"
+                  >
                     {activeCopy.description}
-                  </p>
-                </FadeSwap>
+                  </motion.p>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Lista de servicios */}
-            <ul className="order-1 flex flex-col">
+            <motion.ul
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.08 } },
+              }}
+              className="order-1 flex flex-col"
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
               {menuItems.map((item, index) => {
-                const isActive = index === activeIndex;
+                const isActive = index === shownIndex;
                 const copy = t.services.items[index];
 
                 return (
-                  <li key={item.number}>
+                  <motion.li
+                    key={item.number}
+                    variants={{
+                      hidden: { opacity: 0, x: -32 },
+                      show: {
+                        opacity: 1,
+                        x: 0,
+                        transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+                      },
+                    }}
+                  >
                     <button
                       type="button"
+                      // Mover el raton y el foco eligen el servicio; el clic
+                      // lleva el scroll hasta su tramo. onMouseMove y no
+                      // onMouseEnter: tras girar la rueda, basta mover el
+                      // raton sobre la misma fila para recuperar el hover.
+                      onMouseMove={(event) => hoverRow(index, event)}
+                      onFocus={() => setHoveredIndex(index)}
+                      onBlur={() => setHoveredIndex(null)}
                       onClick={() => goToIndex(index)}
                       aria-current={isActive ? "true" : undefined}
                       className={cn(
-                        "flex w-full items-baseline gap-6 border-t border-line py-4 text-left transition-colors duration-300 ease-[var(--ease-premium)]",
+                        "group relative flex w-full items-baseline border-t border-line py-3.5 text-left transition-colors duration-300 ease-[var(--ease-premium)]",
                         index === menuItems.length - 1 &&
                           "border-b border-line",
                       )}
                     >
-                      <span
-                        className={cn(
-                          "shrink-0 font-mono text-sm transition-colors duration-300",
-                          isActive ? "text-accent-ink" : "text-ink-subtle",
-                        )}
-                      >
-                        {item.number}
-                      </span>
+                      {/*
+                        Marcador de la fila activa: una barra de acento que
+                        se desliza de fila en fila (layoutId) al bajar.
+                      */}
+                      {isActive ? (
+                        <motion.span
+                          layoutId="service-marker"
+                          aria-hidden="true"
+                          className="absolute -left-4 top-4 bottom-4 w-0.5 rounded-full bg-accent-ink"
+                          transition={
+                            shouldReduceMotion
+                              ? { duration: 0 }
+                              : { type: "spring", stiffness: 380, damping: 34 }
+                          }
+                        />
+                      ) : null}
 
-                      <span className="min-w-0 flex-1">
+                      {/* Avance dentro del servicio activo, sobre el filete.
+                          Solo cuando manda el scroll: con hover no hay
+                          avance que mostrar. */}
+                      {isActive && hoveredIndex === null && !shouldReduceMotion ? (
+                        <motion.span
+                          aria-hidden="true"
+                          style={{ scaleX: segmentFill }}
+                          className="absolute inset-x-0 -top-px h-px origin-left bg-accent-ink/70"
+                        />
+                      ) : null}
+
+                      {/* La fila activa avanza un poco: se lee como elegida. */}
+                      <motion.span
+                        className="min-w-0 flex-1"
+                        animate={{ x: isActive && !shouldReduceMotion ? 12 : 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                      >
                         <span
                           className={cn(
                             "block text-balance text-2xl tracking-tight transition-colors duration-300",
                             isActive
                               ? "font-medium text-ink"
-                              : "text-ink-subtle",
+                              : "text-ink-subtle group-hover:text-ink-muted",
                           )}
                         >
                           {copy.name}
                         </span>
                         <span
                           className={cn(
-                            "mt-1.5 block font-mono text-xs uppercase tracking-wider transition-colors duration-300",
+                            "mt-1.5 block text-sm transition-colors duration-300",
                             isActive
                               ? "text-accent-ink"
                               : "text-ink-subtle/60",
@@ -461,13 +862,13 @@ function DesktopScroller() {
                         >
                           {copy.tag}
                         </span>
-                      </span>
+                      </motion.span>
                     </button>
-                  </li>
+                  </motion.li>
                 );
               })}
-            </ul>
-          </div>
+            </motion.ul>
+          </motion.div>
         </div>
       </div>
     </div>

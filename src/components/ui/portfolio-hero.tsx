@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
+import { Magnetic } from "@/components/ui/magnetic";
 
 interface BlurTextProps {
   text: string;
@@ -147,16 +148,17 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           miden font-size*1.6 de alto (97px a 320px, 130px a 428px); un
           ovalo de 150px (el tamano de sm/md/lg) se sale de ese hueco y
           tapa el interior de "CRISTIAN"/"PEREZ" en cualquier telefono
-          real. 100px si cabe con margen en todo el rango 320-490px.
+          real. 100px si cabia; ahora todos los tamanos van un 14% mas
+          chicos para que el medallon tape menos el nombre.
         */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <div className="relative h-[100px] w-[60px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[170px] sm:w-[100px] md:h-[195px] md:w-[115px] lg:h-[225px] lg:w-[135px]">
+          <div className="relative h-[86px] w-[52px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[86px] md:h-[168px] md:w-[99px] lg:h-[194px] lg:w-[116px]">
             <Image
               src={portrait.local}
               alt={site.name}
               fill
               priority
-              sizes="(min-width: 1024px) 135px, (min-width: 768px) 115px, (min-width: 640px) 100px, 89px"
+              sizes="(min-width: 1024px) 116px, (min-width: 768px) 99px, (min-width: 640px) 86px, 52px"
               className="object-cover"
             />
           </div>
@@ -195,10 +197,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               {/* Sin punto verde que late: la frase ya dice que esta
                   disponible, y el indicador "en vivo" es de los tics mas
                   gastados de las plantillas. */}
-              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
+              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 text-sm text-ink-muted">
                 {t.hero.badgeAvailability}
               </span>
-              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 font-mono text-sm text-ink-muted">
+              <span className="rounded-full border border-line-strong bg-surface-2 px-3.5 py-1.5 text-sm text-ink-muted">
                 {t.hero.badgeLocation}
               </span>
             </div>
@@ -207,25 +209,32 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
         <div className="hero-rise flex flex-col items-center gap-3 pt-2 sm:flex-row" style={riseDelay(3)}>
           <FadeSwap>
+            <Magnetic>
             <a
               href={buildWhatsappUrl(t.whatsappMessage)}
               onClick={() => trackWhatsappClick("hero", language)}
               target="_blank"
               rel="noopener noreferrer"
-              className="accent-fill inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
+              className="accent-fill group inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
             >
               {t.hero.ctaPrimary}
-              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowUpRight
+                className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-premium)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
             </a>
+            </Magnetic>
           </FadeSwap>
 
           <FadeSwap>
+            <Magnetic strength={0.2}>
             <a
               href={hero.secondaryCtaHref}
               className="inline-flex min-h-12 items-center gap-2 rounded-full border border-line-strong px-7 text-base font-medium tracking-wide text-ink transition-colors duration-300 hover:border-accent hover:text-accent-ink"
             >
               {t.hero.ctaSecondary}
             </a>
+            </Magnetic>
           </FadeSwap>
         </div>
 

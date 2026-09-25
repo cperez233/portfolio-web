@@ -46,7 +46,7 @@ export function LanguageToggle() {
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "relative z-10 inline-flex h-9 min-w-11 items-center justify-center rounded-full px-3",
-              "font-mono text-xs uppercase tracking-wider transition-colors duration-200",
+              "text-xs font-semibold uppercase transition-colors duration-200",
               isActive ? "text-white" : "text-ink-subtle hover:text-ink",
             )}
           >

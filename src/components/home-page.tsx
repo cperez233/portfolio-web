@@ -23,8 +23,8 @@ function resolveCvHref(): string | null {
  * dos versiones, app/(en)/page.tsx y app/(es)/es/page.tsx: el idioma lo
  * pone el LanguageProvider de cada layout.
  *
- * Los orbes ambientales ya no son tiras entre secciones: cada seccion
- * aloja su propia capa <BackgroundOrbs /> por detras del contenido.
+ * Los orbes ambientales solo quedan en Trabajo reciente, justo bajo el
+ * hero: repetidos en cada seccion eran manchas de luz sin motivo.
  */
 export function HomePage() {
   return (

@@ -11,6 +11,7 @@ import {
   SectionEdge,
   SectionTransition,
 } from "@/components/ui/section-transition";
+import { RevealWords } from "@/components/ui/reveal-words";
 
 /**
  * Trabajo reciente: una tira de sitios publicados justo debajo del hero.
@@ -52,14 +53,14 @@ export function MiniProjectsSection() {
       <SectionTransition className="relative z-10">
         <FadeIn className="mx-auto w-full max-w-6xl px-5 sm:px-8 md:px-10">
           <FadeSwap>
-            <p className="mb-4 font-mono text-sm uppercase tracking-[0.28em] text-accent-ink">
+            <p className="mb-4 text-sm font-medium text-accent-ink">
               {t.miniProjects.eyebrow}
             </p>
             <h2
               id="mini-projects-title"
               className="max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl"
             >
-              {t.miniProjects.title}
+              <RevealWords text={t.miniProjects.title} />
             </h2>
             <p className="mt-4 text-lead text-ink-muted">
               {t.miniProjects.hint}

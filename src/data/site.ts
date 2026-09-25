@@ -61,85 +61,97 @@ export interface ServiceItem {
 }
 
 /**
- * Cinco servicios. Nombre, tag y descripcion viven en content.ts: el
- * tag de los servicios 04 y 05 son frases descriptivas, no nombres
+ * Seis servicios. Nombre, tag y descripcion viven en content.ts: el
+ * tag de los servicios 02, 05 y 06 son frases descriptivas, no nombres
  * propios, asi que tambien se traducen.
  */
 export const menuItems: ServiceItem[] = [
   { number: "01", diagram: "svc-fullstack" },
-  { number: "02", diagram: "svc-automation" },
-  { number: "03", diagram: "svc-docai" },
-  { number: "04", diagram: "svc-audit" },
-  { number: "05", diagram: "svc-media" },
+  { number: "02", diagram: "svc-seo" },
+  { number: "03", diagram: "svc-automation" },
+  { number: "04", diagram: "svc-docai" },
+  { number: "05", diagram: "svc-audit" },
+  { number: "06", diagram: "svc-media" },
 ];
 
-export type ProjectVisual =
-  | { kind: "diagram"; diagram: DiagramId }
-  /**
-   * Tres capturas reales, en /public/projects, dentro de la misma ventana
-   * oscura que los diagramas. `window` es la ruta de su barra.
-   */
-  | { kind: "gallery"; window: string; images: [string, string, string] };
+export interface CaseShot {
+  src: string;
+  width: number;
+  height: number;
+}
 
-export interface Project {
-  number: string;
-  /** Nombres propios de tecnologias: no se traducen. */
-  stack: string[];
-  visual: ProjectVisual;
-  /** Repositorio publico. Sin el, el CTA de la tarjeta lleva a WhatsApp. */
+/**
+ * Un caso de Proyectos. Todo el texto vive en content.ts; aqui solo lo
+ * que no se traduce.
+ */
+export interface CaseStudy {
+  key: string;
+  /**
+   * Capturas para celular: la mayoria de visitas llegan desde uno, asi
+   * que si el proyecto tiene version movil se ensena esa, en vertical.
+   * Sin ellas, el celular usa las de escritorio.
+   */
+  mobileShots?: CaseShot[];
+  /** Capturas para escritorio, en horizontal. */
+  shots: CaseShot[];
+  /**
+   * Cifra del resultado. Solo cuando es real: el caso que no tiene una
+   * cuenta su resultado en texto.
+   */
+  stat?: string;
+  /** Sitio publicado. */
+  liveUrl?: string;
+  /** Repositorio publico: enlace discreto para quien sea tecnico. */
   repoUrl?: string;
 }
 
-export const projects: Project[] = [
+const desktopShot = (src: string): CaseShot => ({ src, width: 1600, height: 1000 });
+const phoneShot = (src: string): CaseShot => ({ src, width: 780, height: 1688 });
+
+export const cases: CaseStudy[] = [
   {
-    number: "01",
-    // El stack que declara el propio repositorio: Laravel 12 con Blade y
-    // JS plano en el cliente, agente LangGraph para el tutor de IA,
-    // Moodle por su API REST y SQLite como base de datos por defecto.
-    stack: [
-      "Laravel 12",
-      "Blade + JS",
-      "Tailwind CSS",
-      "LangGraph",
-      "Moodle REST API",
-      "SQLite",
-      "Docker",
+    key: "msq",
+    mobileShots: [
+      phoneShot("/projects/msq-mobile-hero.jpg"),
+      phoneShot("/projects/msq-mobile-fleet.jpg"),
     ],
-    visual: { kind: "diagram", diagram: "pairsync" },
-    repoUrl: "https://github.com/cperez233/PairProgramming",
+    shots: [
+      desktopShot("/projects/msq-desktop-hero.jpg"),
+      desktopShot("/projects/msq-desktop-fleet.jpg"),
+      desktopShot("/projects/msq-desktop-included.jpg"),
+    ],
+    liveUrl: "https://carros-2.vercel.app/",
   },
   {
-    number: "02",
-    stack: [
-      "Python",
-      "Azure Document Intelligence",
-      "OCR",
-      "PyMuPDF",
-      "openpyxl",
+    key: "fcv",
+    stat: "746",
+    shots: [
+      { src: "/projects/actas-buscador.jpg", width: 1317, height: 647 },
+      { src: "/projects/actas-pipeline.jpg", width: 1317, height: 691 },
+      { src: "/projects/actas-excel.jpg", width: 1317, height: 651 },
     ],
-    visual: { kind: "diagram", diagram: "fcv" },
     repoUrl: "https://github.com/cperez233/digitalizacion-actas-fcv",
   },
   {
-    number: "03",
-    stack: ["TikTok", "Instagram", "Twitch", "OBS", "After Effects"],
-    visual: {
-      kind: "gallery",
-      window: "criscx1905 / content",
-      images: [
-        "/projects/content-social.jpg",
-        "/projects/content-streaming.jpg",
-        "/projects/content-editing.jpg",
-      ],
-    },
+    key: "content",
+    stat: "32K+",
+    shots: [
+      { src: "/projects/content-social.jpg", width: 2000, height: 1248 },
+      { src: "/projects/content-editing.jpg", width: 2000, height: 1250 },
+      { src: "/projects/content-streaming.jpg", width: 2000, height: 1248 },
+    ],
   },
 ];
 
-export type FooterGroupKey =
-  | "navigation"
-  | "professional"
-  | "community"
-  | "contact";
+/**
+ * Proyecto tecnico que ya no va como caso: a quien contrata no le cuenta
+ * nada, pero a un perfil tecnico si. Queda como enlace al pie.
+ */
+export const moreWork = {
+  repoUrl: "https://github.com/cperez233/PairProgramming",
+} as const;
+
+export type FooterGroupKey = "navigation" | "social" | "contact";
 
 export interface FooterLink {
   /** Clave de traduccion, o `label` fijo para nombres propios. */
@@ -164,8 +176,10 @@ export const footerGroups: FooterGroup[] = [
       { labelKey: "projects", href: "#projects" },
     ],
   },
+  /* Una sola columna de redes. Linktree se fue: repetia TikTok e
+     Instagram, que ya estan aqui. */
   {
-    key: "professional",
+    key: "social",
     links: [
       {
         label: "LinkedIn",
@@ -173,12 +187,6 @@ export const footerGroups: FooterGroup[] = [
         external: true,
       },
       { label: "GitHub", href: site.githubUrl, external: true },
-    ],
-  },
-  {
-    key: "community",
-    links: [
-      { label: "Linktree", href: "https://linktr.ee/crxscx", external: true },
       {
         label: "TikTok",
         href: "https://www.tiktok.com/@criscx1905",

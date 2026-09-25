@@ -59,11 +59,9 @@ export function TechPanel({
           {window}
         </p>
         {status ? (
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-tech-status">
-            <span
-              aria-hidden="true"
-              className="size-1.5 animate-pulse rounded-full bg-tech-ok"
-            />
+          // Sin punto que late: el estado se lee en el texto. Mono porque
+          // imita la salida de una herramienta, como la barra de la ventana.
+          <span className="shrink-0 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-tech-status">
             {status}
           </span>
         ) : null}

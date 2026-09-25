@@ -33,9 +33,8 @@ export type DiagramIcon =
   | "shield";
 
 export type DiagramId =
-  | "pairsync"
-  | "fcv"
   | "svc-fullstack"
+  | "svc-seo"
   | "svc-automation"
   | "svc-docai"
   | "svc-audit"
@@ -67,49 +66,6 @@ export interface DiagramSpec {
 }
 
 export const diagrams: Record<DiagramId, DiagramSpec> = {
-  /*
-    PairSync tal y como esta en el repo: Blade + JS en el cliente (sin
-    React), sincronizacion por polling cada 2s, tutor de IA via un agente
-    LangGraph con respuesta en streaming, notas empujadas a Moodle por su
-    API REST y estado en SQLite.
-  */
-  pairsync: {
-    window: "PairProgramming / architecture",
-    flow: {
-      columns: [
-        [{ id: "client", icon: "monitor" }],
-        [{ id: "laravel", icon: "server" }],
-        [
-          { id: "langgraph", icon: "bot" },
-          { id: "moodle", icon: "graduation" },
-          { id: "database", icon: "database" },
-        ],
-      ],
-      bidirectional: true,
-    },
-  },
-
-  fcv: {
-    window: "digitalizacion-actas-fcv / pipeline",
-    flow: {
-      columns: [
-        [{ id: "scans", icon: "scan" }],
-        [{ id: "azure", icon: "ocr" }],
-        [{ id: "python", icon: "code" }],
-        [{ id: "index", icon: "search" }],
-      ],
-    },
-    terminal: [
-      { kind: "command", text: "python dividir_pdfs.py" },
-      { kind: "output", tone: "ok" },
-      { kind: "command", text: "python procesar_actas.py" },
-      { kind: "output", tone: "ok" },
-      { kind: "output", tone: "warn" },
-      { kind: "command", text: "python actualizar_buscador_desde_excel.py" },
-      { kind: "output", tone: "ok" },
-    ],
-  },
-
   "svc-fullstack": {
     window: "app / architecture",
     flow: {
@@ -119,6 +75,24 @@ export const diagrams: Record<DiagramId, DiagramSpec> = {
         [{ id: "database", icon: "database" }],
       ],
       bidirectional: true,
+    },
+  },
+
+  /*
+    Un sitio, sus datos estructurados y los dos sitios donde se busca hoy:
+    el buscador y las respuestas de la IA (abanico en la ultima columna).
+  */
+  "svc-seo": {
+    window: "seo / search-console",
+    flow: {
+      columns: [
+        [{ id: "site", icon: "monitor" }],
+        [{ id: "schema", icon: "code" }],
+        [
+          { id: "google", icon: "search" },
+          { id: "ai", icon: "bot" },
+        ],
+      ],
     },
   },
 

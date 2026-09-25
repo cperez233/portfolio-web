@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  type Variants,
+} from "framer-motion";
+import { Menu, Moon, Sun } from "lucide-react";
 import { navLinks } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { useTheme } from "@/lib/theme";
@@ -10,36 +17,95 @@ import { LanguageToggle } from "./LanguageToggle";
 import { cn } from "@/lib/utils";
 
 /*
-  Mismo --ease-premium (cubic-bezier(0.22,1,0.36,1)) que ya usa el resto
-  del sitio (portfolio-hero.tsx, projects.tsx), para que el gesto del
-  icono no desentone del resto de las transiciones.
+  Pildora que se recoge en un circulo al bajar y se despliega al subir
+  (patron "floating collapse pill" de la skill de diseno, adaptado del
+  AnimatedNavFramer). Mientras se lee, la navegacion ocupa 48px en lugar
+  de toda la barra; un gesto hacia arriba o un toque la devuelven.
 */
-const hamburgerTransition = { duration: 0.3, ease: [0.22, 1, 0.36, 1] as const };
+
+/** Cuanto hay que subir desde donde se recogio para que se despliegue. */
+const EXPAND_SCROLL_THRESHOLD = 80;
+/** Por encima de esto nunca se recoge: en el hero la pildora va entera. */
+const COLLAPSE_AFTER = 150;
+
+const containerVariants: Variants = {
+  expanded: {
+    width: "auto",
+    transition: {
+      type: "spring",
+      damping: 20,
+      stiffness: 300,
+      staggerChildren: 0.06,
+      delayChildren: 0.12,
+    },
+  },
+  collapsed: {
+    width: "3rem",
+    transition: {
+      type: "spring",
+      damping: 20,
+      stiffness: 300,
+      when: "afterChildren",
+      staggerChildren: 0.04,
+      staggerDirection: -1,
+    },
+  },
+};
+
+const logoVariants: Variants = {
+  expanded: {
+    opacity: 1,
+    x: 0,
+    rotate: 0,
+    transition: { type: "spring", damping: 15 },
+  },
+  collapsed: {
+    opacity: 0,
+    x: -25,
+    rotate: -180,
+    transition: { duration: 0.25 },
+  },
+};
+
+const itemVariants: Variants = {
+  expanded: {
+    opacity: 1,
+    x: 0,
+    scale: 1,
+    transition: { type: "spring", damping: 15 },
+  },
+  collapsed: {
+    opacity: 0,
+    x: -20,
+    scale: 0.95,
+    transition: { duration: 0.18 },
+  },
+};
+
+const collapsedIconVariants: Variants = {
+  expanded: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  collapsed: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", damping: 15, stiffness: 300, delay: 0.15 },
+  },
+};
 
 /*
-  Panel movil: cae desde la pildora y se repliega hacia ella. Solo
-  opacidad y transform: animar `filter` en el propio panel anularia su
-  backdrop-filter (el vidrio) en algunos navegadores.
-
-  Entrada y salida tienen curvas distintas a proposito. La entrada usa
-  la ease-out del sitio, que frena al llegar. Con esa misma curva la
-  salida hacia casi todo el cambio en los primeros 60ms y el panel se
-  apagaba de golpe, sin llegar a verse cerrar. Por eso la salida es
-  ease-in-out, la opacidad va 80ms por detras del movimiento (se ve la
-  forma recogerse antes de desaparecer) y los enlaces se van en orden
-  inverso, de abajo arriba.
+  Panel del menu en celular: cae desde la pildora y se repliega hacia
+  ella. Solo opacidad y transform; animar `filter` anularia el
+  backdrop-filter del vidrio en algunos navegadores.
 */
-const panelVariants = {
+const panelVariants: Variants = {
   closed: {
     opacity: 0,
     y: -10,
     scale: 0.94,
-    // Deja de capturar toques en cuanto empieza a cerrarse, no al final.
-    pointerEvents: "none" as const,
+    pointerEvents: "none",
     transition: {
       duration: 0.3,
-      ease: [0.4, 0, 0.2, 1] as const,
-      opacity: { duration: 0.22, delay: 0.08, ease: "easeIn" as const },
+      ease: [0.4, 0, 0.2, 1],
+      opacity: { duration: 0.22, delay: 0.08, ease: "easeIn" },
       staggerChildren: 0.035,
       staggerDirection: -1,
     },
@@ -48,91 +114,75 @@ const panelVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
-    pointerEvents: "auto" as const,
+    pointerEvents: "auto",
     transition: {
       duration: 0.34,
-      ease: [0.22, 1, 0.36, 1] as const,
+      ease: [0.22, 1, 0.36, 1],
       staggerChildren: 0.045,
       delayChildren: 0.06,
     },
   },
 };
 
-const panelItemVariants = {
-  closed: {
-    opacity: 0,
-    y: -6,
-    transition: { duration: 0.16, ease: "easeIn" as const },
-  },
+const panelItemVariants: Variants = {
+  closed: { opacity: 0, y: -6, transition: { duration: 0.16, ease: "easeIn" } },
   open: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
   },
 };
 
-const hamburgerLineVariants = {
-  top: {
-    closed: { rotate: 0, y: -6 },
-    open: { rotate: 45, y: 0 },
-  },
-  middle: {
-    closed: { opacity: 1 },
-    open: { opacity: 0 },
-  },
-  bottom: {
-    closed: { rotate: 0, y: 6 },
-    open: { rotate: -45, y: 0 },
-  },
-};
-
-/**
- * Pildora flotante persistente. Vive en el layout, no dentro del hero,
- * para que acompane a toda la pagina.
- *
- * Bajo `md` los enlaces se pliegan en un panel desplegable: cuatro
- * enlaces mas los dos controles no caben en 360px sin desbordar.
- */
 export function FloatingNav() {
   const { t } = useLanguage();
   // La verdad del tema vive en la clase de <html>; el store solo la lee
   // y la escribe, de modo que el icono no puede desincronizarse.
   const { isDark, toggleTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isExpanded, setExpanded] = useState(true);
+  const [isMenuOpen, setMenuOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  /*
-    Arriba del todo la pildora casi se funde con el hero; en cuanto la
-    pagina se mueve gana fondo y sombra para separarse del contenido que
-    pasa por debajo. setState con el mismo booleano no re-renderiza, asi
-    que el listener solo cuesta algo al cruzar el umbral.
-  */
-  useEffect(() => {
-    const update = () => setIsScrolled(window.scrollY > 24);
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
-  }, []);
+  const { scrollY } = useScroll();
+  const lastScrollY = useRef(0);
+  const scrollPositionOnCollapse = useRef(0);
 
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = lastScrollY.current;
+    lastScrollY.current = latest;
+
+    // Con el menu abierto no se recoge: se cerraria bajo el dedo.
+    if (isMenuOpen) return;
+
+    if (isExpanded && latest > previous && latest > COLLAPSE_AFTER) {
+      setExpanded(false);
+      scrollPositionOnCollapse.current = latest;
+    } else if (
+      !isExpanded &&
+      latest < previous &&
+      (scrollPositionOnCollapse.current - latest > EXPAND_SCROLL_THRESHOLD ||
+        latest < COLLAPSE_AFTER)
+    ) {
+      setExpanded(true);
+    }
+  });
+
+  // Cierra el menu movil al tocar fuera o con Escape.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isMenuOpen) return;
 
     const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        panelRef.current &&
-        toggleRef.current &&
-        !panelRef.current.contains(event.target as Node) &&
-        !toggleRef.current.contains(event.target as Node)
+        !panelRef.current?.contains(target) &&
+        !menuButtonRef.current?.contains(target)
       ) {
-        setIsOpen(false);
+        setMenuOpen(false);
       }
     };
-
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") setMenuOpen(false);
     };
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -141,114 +191,150 @@ export function FloatingNav() {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleKey);
     };
-  }, [isOpen]);
+  }, [isMenuOpen]);
 
-  /*
-    Reflejo que sigue al raton por la pildora: solo con raton, en tactil
-    se queda en su sitio. Al salir, la variable vuelve a su valor inicial
-    (@property en globals.css) y el reflejo se desliza de vuelta.
-  */
-  const handleGlassPointerMove = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse") return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    event.currentTarget.style.setProperty("--glass-x", `${Math.round(x)}%`);
-  };
-
-  const handleGlassPointerLeave = (event: PointerEvent<HTMLElement>) => {
-    event.currentTarget.style.removeProperty("--glass-x");
-  };
-
-  // whitespace-nowrap: sin el, "Sobre mí" se partia en dos lineas y la
-  // pildora crecia en alto.
-  const linkClass =
-    "inline-flex min-h-9 items-center whitespace-nowrap rounded-full px-2.5 text-base text-ink-muted transition-colors duration-200 ease-[var(--ease-premium)] hover:text-ink";
+  const state = isExpanded ? "expanded" : "collapsed";
 
   return (
-    <div className="fixed left-1/2 top-4 z-50 w-[calc(100%-1.5rem)] max-w-fit -translate-x-1/2">
-      <nav
+    <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 sm:top-5">
+      <motion.nav
         aria-label={t.nav.about}
-        data-scrolled={isScrolled}
-        onPointerMove={handleGlassPointerMove}
-        onPointerLeave={handleGlassPointerLeave}
-        className={cn(
-          /*
-            Liquid glass: fondo, desenfoque con saturacion, canto de luz y
-            sombras viven en `.liquid-glass` (globals.css), que lee el
-            tema y `data-scrolled`. Aqui solo queda la forma.
-          */
-          "liquid-glass flex items-center gap-3 rounded-full px-4 py-2 sm:gap-6 sm:px-6 sm:py-2.5",
-        )}
+        initial={shouldReduceMotion ? false : { y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", damping: 18, stiffness: 250 }}
       >
-        {/* Enlaces en linea a partir de md */}
-        <ul className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            <li key={link.key}>
-              <a href={link.href} className={linkClass}>
-                {t.nav[link.key]}
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        {/* Version compacta por debajo de md */}
-        <motion.button
-          ref={toggleRef}
-          type="button"
-          onClick={() => setIsOpen((value) => !value)}
-          whileTap={{ scale: 0.92 }}
-          aria-expanded={isOpen}
-          aria-controls="floating-nav-panel"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          className="relative inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
-        >
-          <motion.span
-            aria-hidden="true"
-            className="absolute h-0.5 w-5 rounded-full bg-current"
-            variants={hamburgerLineVariants.top}
-            animate={isOpen ? "open" : "closed"}
-            transition={hamburgerTransition}
-          />
-          <motion.span
-            aria-hidden="true"
-            className="absolute h-0.5 w-5 rounded-full bg-current"
-            variants={hamburgerLineVariants.middle}
-            animate={isOpen ? "open" : "closed"}
-            transition={hamburgerTransition}
-          />
-          <motion.span
-            aria-hidden="true"
-            className="absolute h-0.5 w-5 rounded-full bg-current"
-            variants={hamburgerLineVariants.bottom}
-            animate={isOpen ? "open" : "closed"}
-            transition={hamburgerTransition}
-          />
-        </motion.button>
-
-        <span
-          aria-hidden="true"
-          className="h-5 w-px shrink-0 bg-line-strong"
-        />
-
-        <LanguageToggle />
-
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="glass-chip inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
-          aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
-          aria-pressed={isDark}
-        >
-          {isDark ? (
-            <Sun className="size-4" aria-hidden="true" />
-          ) : (
-            <Moon className="size-4" aria-hidden="true" />
+        <motion.div
+          data-scrolled="true"
+          variants={containerVariants}
+          initial={false}
+          animate={state}
+          whileHover={!isExpanded ? { scale: 1.08 } : undefined}
+          whileTap={!isExpanded ? { scale: 0.95 } : undefined}
+          onClick={() => {
+            if (!isExpanded) setExpanded(true);
+          }}
+          // Si el foco de teclado entra con la pildora recogida, se abre:
+          // nadie tiene que adivinar que hay enlaces dentro del circulo.
+          onFocusCapture={() => setExpanded(true)}
+          className={cn(
+            "liquid-glass relative flex h-12 items-center overflow-hidden rounded-full",
+            !isExpanded && "cursor-pointer justify-center",
           )}
-        </button>
-      </nav>
+        >
+          {/* Monograma: las iniciales, en el color del nombre del hero. */}
+          <motion.a
+            href="#"
+            variants={logoVariants}
+            tabIndex={isExpanded ? undefined : -1}
+            aria-label={t.footer.links.home}
+            className="flex shrink-0 items-center pl-4 pr-1 text-lg font-black tracking-tighter text-name transition-colors duration-500"
+          >
+            CP
+          </motion.a>
+
+          <div
+            className={cn(
+              "flex items-center gap-1 pr-2 sm:gap-2",
+              !isExpanded && "pointer-events-none",
+            )}
+            // inert y no aria-hidden: saca del orden de tabulacion tambien
+            // los enlaces del selector de idioma mientras esta recogida.
+            inert={!isExpanded}
+          >
+            {/* Enlaces en linea desde md */}
+            <ul className="hidden items-center md:flex">
+              {navLinks.map((link) => (
+                <motion.li key={link.key} variants={itemVariants}>
+                  <a
+                    href={link.href}
+                    tabIndex={isExpanded ? undefined : -1}
+                    className="group relative inline-flex h-9 items-center whitespace-nowrap rounded-full px-3 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
+                  >
+                    {t.nav[link.key]}
+                    {/* Subrayado que se dibuja desde el centro. */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-3 bottom-1.5 h-px origin-center scale-x-0 bg-accent-ink transition-transform duration-300 ease-[var(--ease-premium)] group-hover:scale-x-100"
+                    />
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+
+            {/* Menu desplegable por debajo de md */}
+            <motion.button
+              ref={menuButtonRef}
+              variants={itemVariants}
+              type="button"
+              tabIndex={isExpanded ? undefined : -1}
+              onClick={(event) => {
+                event.stopPropagation();
+                setMenuOpen((value) => !value);
+              }}
+              aria-expanded={isMenuOpen}
+              aria-controls="floating-nav-panel"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </motion.button>
+
+            <motion.span
+              variants={itemVariants}
+              aria-hidden="true"
+              className="mx-1 h-5 w-px shrink-0 bg-line-strong"
+            />
+
+            <motion.div variants={itemVariants} className="flex items-center">
+              <LanguageToggle />
+            </motion.div>
+
+            <motion.button
+              variants={itemVariants}
+              type="button"
+              tabIndex={isExpanded ? undefined : -1}
+              onClick={toggleTheme}
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
+              aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+              aria-pressed={isDark}
+            >
+              {isDark ? (
+                <Sun className="size-4" aria-hidden="true" />
+              ) : (
+                <Moon className="size-4" aria-hidden="true" />
+              )}
+            </motion.button>
+          </div>
+
+          {/*
+            Estado recogido: un boton de verdad encima del circulo, para
+            teclado y lector de pantalla. El clic en cualquier punto de la
+            pildora tambien la abre (onClick del contenedor).
+          */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <motion.button
+              type="button"
+              variants={collapsedIconVariants}
+              tabIndex={isExpanded ? -1 : undefined}
+              aria-hidden={isExpanded}
+              aria-label="Open navigation"
+              onClick={(event) => {
+                event.stopPropagation();
+                setExpanded(true);
+              }}
+              className={cn(
+                "inline-flex size-12 items-center justify-center rounded-full text-ink",
+                !isExpanded && "pointer-events-auto",
+              )}
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.nav>
 
       <AnimatePresence>
-        {isOpen ? (
+        {isMenuOpen && isExpanded ? (
           <motion.div
             key="floating-nav-panel"
             id="floating-nav-panel"
@@ -257,7 +343,11 @@ export function FloatingNav() {
             variants={panelVariants}
             initial={shouldReduceMotion ? false : "closed"}
             animate="open"
-            exit={shouldReduceMotion ? { opacity: 0, transition: { duration: 0 } } : "closed"}
+            exit={
+              shouldReduceMotion
+                ? { opacity: 0, transition: { duration: 0 } }
+                : "closed"
+            }
             style={{ transformOrigin: "top center" }}
             className="liquid-glass mt-2 rounded-2xl p-2 md:hidden"
           >
@@ -266,8 +356,8 @@ export function FloatingNav() {
                 <motion.li key={link.key} variants={panelItemVariants}>
                   <a
                     href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex min-h-11 items-center rounded-xl px-4 text-sm text-ink-muted transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-12 items-center rounded-xl px-4 text-base text-ink-muted transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
                   >
                     {t.nav[link.key]}
                   </a>

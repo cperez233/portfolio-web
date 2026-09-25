@@ -33,3 +33,18 @@ export function smoothScrollTo(target: number) {
 
   window.scrollTo({ top: target });
 }
+
+/**
+ * Salto instantaneo, sin animacion. Para mover el scroll dentro de un
+ * tramo fijado (sticky), donde el salto no se ve pero el progreso si.
+ */
+export function jumpScrollTo(target: number) {
+  const lenis = typeof window === "undefined" ? null : window.__lenis;
+
+  if (lenis) {
+    lenis.scrollTo(target, { immediate: true, force: true });
+    return;
+  }
+
+  window.scrollTo({ top: target, behavior: "instant" });
+}
