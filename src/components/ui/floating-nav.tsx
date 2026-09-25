@@ -28,13 +28,17 @@ const EXPAND_SCROLL_THRESHOLD = 80;
 /** Por encima de esto nunca se recoge: en el hero la pildora va entera. */
 const COLLAPSE_AFTER = 150;
 
+/*
+  Resorte sin rebote para el ancho: con rebote la pildora bajaba hasta
+  29px, por debajo del circulo de 48, y recortaba el icono.
+*/
 const containerVariants: Variants = {
   expanded: {
     width: "auto",
     transition: {
       type: "spring",
-      damping: 20,
-      stiffness: 300,
+      bounce: 0,
+      duration: 0.45,
       staggerChildren: 0.06,
       delayChildren: 0.12,
     },
@@ -43,8 +47,8 @@ const containerVariants: Variants = {
     width: "3rem",
     transition: {
       type: "spring",
-      damping: 20,
-      stiffness: 300,
+      bounce: 0,
+      duration: 0.4,
       when: "afterChildren",
       staggerChildren: 0.04,
       staggerDirection: -1,
@@ -82,13 +86,16 @@ const itemVariants: Variants = {
   },
 };
 
+/*
+  El icono del circulo no hereda las variantes de la pildora: tiene su
+  propio `animate`. Como hijo, la pildora esperaba a que apareciera
+  (`afterChildren`) antes de encogerse, y durante casi un segundo se veia
+  el icono en medio de la barra aun abierta. Ahora entra solo cuando la
+  pildora ya termino de recogerse, y sale al instante al abrirla.
+*/
 const collapsedIconVariants: Variants = {
-  expanded: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
-  collapsed: {
-    opacity: 1,
-    scale: 1,
-    transition: { type: "spring", damping: 15, stiffness: 300, delay: 0.15 },
-  },
+  hidden: { opacity: 0, scale: 0.8, transition: { duration: 0.08 } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
 };
 
 /*
@@ -140,6 +147,8 @@ export function FloatingNav() {
   const { isDark, toggleTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const [isExpanded, setExpanded] = useState(true);
+  // El icono del circulo, solo cuando la pildora ya esta recogida del todo.
+  const [isFullyCollapsed, setFullyCollapsed] = useState(false);
   const [isMenuOpen, setMenuOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -208,6 +217,12 @@ export function FloatingNav() {
           variants={containerVariants}
           initial={false}
           animate={state}
+          onAnimationStart={(definition) => {
+            if (definition === "expanded") setFullyCollapsed(false);
+          }}
+          onAnimationComplete={(definition) => {
+            if (definition === "collapsed") setFullyCollapsed(true);
+          }}
           whileHover={!isExpanded ? { scale: 1.08 } : undefined}
           whileTap={!isExpanded ? { scale: 0.95 } : undefined}
           onClick={() => {
@@ -221,15 +236,38 @@ export function FloatingNav() {
             !isExpanded && "cursor-pointer justify-center",
           )}
         >
-          {/* Monograma: las iniciales, en el color del nombre del hero. */}
+          {/*
+            Monograma: las iniciales, en el color del nombre del hero. Al
+            pasar el raton cada letra rueda hacia arriba y vuelve a entrar
+            desde abajo en el acento, la P un instante despues que la C.
+          */}
           <motion.a
             href="#"
             variants={logoVariants}
             tabIndex={isExpanded ? undefined : -1}
             aria-label={t.footer.links.home}
-            className="flex shrink-0 items-center pl-4 pr-1 text-lg font-black tracking-tighter text-name transition-colors duration-500"
+            className="group flex shrink-0 items-center pl-4 pr-1 text-lg font-black tracking-tighter text-name transition-colors duration-500"
           >
-            CP
+            {["C", "P"].map((letter, index) => (
+              <span
+                key={letter}
+                aria-hidden="true"
+                className="relative inline-block overflow-hidden leading-none"
+              >
+                <span
+                  style={{ transitionDelay: `${index * 70}ms` }}
+                  className="block transition-transform duration-500 ease-[var(--ease-premium)] group-hover:-translate-y-full motion-reduce:transition-none"
+                >
+                  {letter}
+                </span>
+                <span
+                  style={{ transitionDelay: `${index * 70}ms` }}
+                  className="absolute inset-0 block translate-y-full text-accent-ink transition-transform duration-500 ease-[var(--ease-premium)] group-hover:translate-y-0 motion-reduce:transition-none"
+                >
+                  {letter}
+                </span>
+              </span>
+            ))}
           </motion.a>
 
           <div
@@ -315,6 +353,8 @@ export function FloatingNav() {
             <motion.button
               type="button"
               variants={collapsedIconVariants}
+              initial={false}
+              animate={isFullyCollapsed && !isExpanded ? "visible" : "hidden"}
               tabIndex={isExpanded ? -1 : undefined}
               aria-hidden={isExpanded}
               aria-label="Open navigation"

@@ -12,6 +12,7 @@ import {
   SectionTransition,
 } from "@/components/ui/section-transition";
 import { RevealWords } from "@/components/ui/reveal-words";
+import { Testimonials } from "@/components/testimonials";
 
 /**
  * Trabajo reciente: una tira de sitios publicados justo debajo del hero.
@@ -126,6 +127,11 @@ export function MiniProjectsSection() {
             </li>
           ))}
         </ul>
+
+        {/* Resenas de clientes, junto a sus paginas. */}
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 md:px-10">
+          <Testimonials />
+        </div>
       </SectionTransition>
     </section>
   );

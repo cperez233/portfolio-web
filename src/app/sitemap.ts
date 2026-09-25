@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const en = new URL(LANGUAGE_PATHS.en, siteUrl).href;
   const es = new URL(LANGUAGE_PATHS.es, siteUrl).href;
   const alternates = { languages: { en, "es-CO": es, "x-default": en } };
-  const lastModified = new Date("2026-09-24");
+  const lastModified = new Date("2026-09-25");
 
   return [
     { url: en, lastModified, alternates },

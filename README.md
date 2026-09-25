@@ -44,6 +44,8 @@ src/
 │  ├─ (en)/           root layout + page for / (English)
 │  ├─ (es)/es/        root layout + page for /es (Spanish)
 │  ├─ robots.ts, sitemap.ts   both URLs, with hreflang alternates
+│  ├─ llms.txt/       plain-text summary for AI assistants, built from content.ts
+│  ├─ api/audit/      free site check behind the #audit form (SSRF-guarded)
 │  ├─ og-image.png/   route that renders the 1200x630 share card
 │  └─ globals.css     design tokens (@theme) + theme overrides
 ├─ components/
@@ -52,13 +54,16 @@ src/
 │  ├─ json-ld.tsx     Person / WebSite / ProfilePage structured data
 │  ├─ about.tsx       editorial blocks + highlight grid
 │  ├─ mini-projects.tsx     live sites: swipe on phones, drifts on desktop
-│  ├─ projects.tsx    sticky stacking case-study cards
+│  ├─ projects.tsx    case studies (+ testimonials.tsx at the end)
+│  ├─ pricing.tsx     three plans with "from" prices + custom quote row
+│  ├─ audit.tsx       free 6-point check with a WhatsApp hook
+│  ├─ faq.tsx         <details> FAQ, mirrored as FAQPage in JSON-LD
 │  ├─ diagrams/       code-drawn architecture / pipeline / terminal panels
 │  └─ ui/             primitives and the larger composed pieces
 ├─ data/
 │  ├─ content.ts      every translatable string, EN + ES
 │  ├─ diagrams.ts     diagram structure: nodes, columns, commands
-│  └─ site.ts         URLs, images, proper nouns (no translation)
+│  └─ site.ts         URLs, images, proper nouns, plan prices (no translation)
 └─ lib/
    ├─ language.tsx    language provider (initial language comes from the URL)
    ├─ language-detection.ts  URL per language + entry-language rules
@@ -91,6 +96,15 @@ shared. Title and description per language live in `content.ts`
 
 WhatsApp clicks are sent to Vercel Analytics as `whatsapp_click` (custom
 events need a Pro plan; page views work on Hobby).
+
+## Prices and testimonials
+
+Plan prices live once, in `plans` in `site.ts` (COP for `/es`, USD for
+`/`). The pricing cards, FAQ answers (`{landing}`, `{web}`, `{panel}`),
+JSON-LD offers and `llms.txt` all read from there.
+
+A testimonial only renders with `approved: true` in `site.ts`, after the
+client has read and accepted the exact quote in `content.ts`.
 
 ## Theming
 
@@ -136,9 +150,10 @@ extraction projects are illustrated with diagrams drawn in code
 theme through the `tech-*` tokens in `globals.css`.
 
 `public/projects/` holds screenshots; only the content-creation project
-displays them today. The document extraction shots are redacted: the
-original captures contained real names and national ID numbers, and the
-identifying columns are blurred before publication.
+displays them today. The FCV shots (`fcv-*.jpg`) are not screenshots:
+the real captures contained names and national ID numbers, so the three
+screens are recreated in HTML with masked data and rendered at 2x with
+headless Chromium. Sources in `assets-src/fcv-mockups/`.
 
 `public/sites/` holds the mini-project screenshots: one 16:10 JPEG per
 published site, captured at 1440x900 and resized to 1200x750.

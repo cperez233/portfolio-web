@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { AboutSection } from "@/components/about";
+import { AuditSection } from "@/components/audit";
+import { FaqSection } from "@/components/faq";
+import { PricingSection } from "@/components/pricing";
 import { MiniProjectsSection } from "@/components/mini-projects";
 import { ProjectsSection } from "@/components/projects";
 import Footer from "@/components/ui/footer-section";
@@ -34,6 +37,9 @@ export function HomePage() {
       <AboutSection />
       <InteractiveVideoScroller />
       <ProjectsSection />
+      <PricingSection />
+      <AuditSection />
+      <FaqSection />
       <Footer />
     </main>
   );

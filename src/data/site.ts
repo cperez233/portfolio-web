@@ -10,6 +10,11 @@ export interface SiteMeta {
   role: string;
   email: string;
   emailHref: string;
+  /**
+   * WhatsApp Business, formato internacional E.164. Es la unica copia del
+   * numero: los enlaces de WhatsApp, el JSON-LD y llms.txt salen de aqui.
+   */
+  phone: string;
   location: string;
   githubUrl: string;
   /**
@@ -25,12 +30,13 @@ export const site: SiteMeta = {
   role: "Systems Engineer & Tech Creator",
   email: "crisperezm879@gmail.com",
   emailHref: "mailto:crisperezm879@gmail.com",
+  phone: "+573334337931",
   location: "Bucaramanga, Colombia",
   githubUrl: "https://github.com/cperez233",
   cvPath: "/cv-cristian-perez.pdf",
 };
 
-export type NavKey = "about" | "services" | "projects" | "contact";
+export type NavKey = "about" | "services" | "projects" | "pricing" | "contact";
 
 export interface NavLink {
   key: NavKey;
@@ -41,6 +47,7 @@ export const navLinks: NavLink[] = [
   { key: "about", href: "#about" },
   { key: "services", href: "#services" },
   { key: "projects", href: "#projects" },
+  { key: "pricing", href: "#pricing" },
   { key: "contact", href: "#contact" },
 ];
 
@@ -61,17 +68,16 @@ export interface ServiceItem {
 }
 
 /**
- * Seis servicios. Nombre, tag y descripcion viven en content.ts: el
- * tag de los servicios 02, 05 y 06 son frases descriptivas, no nombres
- * propios, asi que tambien se traducen.
+ * Cinco servicios, en el orden de `services.items` (content.ts). La IA
+ * documental va dentro de Automatizacion: para quien contrata son la
+ * misma promesa, menos trabajo a mano.
  */
 export const menuItems: ServiceItem[] = [
   { number: "01", diagram: "svc-fullstack" },
   { number: "02", diagram: "svc-seo" },
   { number: "03", diagram: "svc-automation" },
-  { number: "04", diagram: "svc-docai" },
-  { number: "05", diagram: "svc-audit" },
-  { number: "06", diagram: "svc-media" },
+  { number: "04", diagram: "svc-audit" },
+  { number: "05", diagram: "svc-media" },
 ];
 
 export interface CaseShot {
@@ -110,25 +116,14 @@ const phoneShot = (src: string): CaseShot => ({ src, width: 780, height: 1688 })
 
 export const cases: CaseStudy[] = [
   {
-    key: "msq",
-    mobileShots: [
-      phoneShot("/projects/msq-mobile-hero.jpg"),
-      phoneShot("/projects/msq-mobile-fleet.jpg"),
-    ],
-    shots: [
-      desktopShot("/projects/msq-desktop-hero.jpg"),
-      desktopShot("/projects/msq-desktop-fleet.jpg"),
-      desktopShot("/projects/msq-desktop-included.jpg"),
-    ],
-    liveUrl: "https://carros-2.vercel.app/",
-  },
-  {
     key: "fcv",
     stat: "746",
     shots: [
-      { src: "/projects/actas-buscador.jpg", width: 1317, height: 647 },
-      { src: "/projects/actas-pipeline.jpg", width: 1317, height: 691 },
-      { src: "/projects/actas-excel.jpg", width: 1317, height: 651 },
+      // Recreadas en HTML (assets-src/fcv-mockups) con cedulas y nombres
+      // enmascarados: las capturas reales tenian datos personales.
+      desktopShot("/projects/fcv-buscador.jpg"),
+      desktopShot("/projects/fcv-pipeline.jpg"),
+      desktopShot("/projects/fcv-indice.jpg"),
     ],
     repoUrl: "https://github.com/cperez233/digitalizacion-actas-fcv",
   },
@@ -155,7 +150,7 @@ export type FooterGroupKey = "navigation" | "social" | "contact";
 
 export interface FooterLink {
   /** Clave de traduccion, o `label` fijo para nombres propios. */
-  labelKey?: "home" | "about" | "services" | "projects" | "email";
+  labelKey?: "home" | "about" | "services" | "projects" | "pricing" | "faq" | "email";
   label?: string;
   href: string;
   external?: boolean;
@@ -174,6 +169,8 @@ export const footerGroups: FooterGroup[] = [
       { labelKey: "about", href: "#about" },
       { labelKey: "services", href: "#services" },
       { labelKey: "projects", href: "#projects" },
+      { labelKey: "pricing", href: "#pricing" },
+      { labelKey: "faq", href: "#faq" },
     ],
   },
   /* Una sola columna de redes. Linktree se fue: repetia TikTok e
@@ -206,7 +203,7 @@ export const footerGroups: FooterGroup[] = [
          Aqui es un enlace de directorio, no una llamada a la accion. */
       {
         label: "WhatsApp",
-        href: "https://wa.me/573052669219",
+        href: `https://wa.me/${site.phone.slice(1)}`,
         external: true,
       },
       { labelKey: "email", href: "mailto:crisperezm879@gmail.com" },
@@ -228,6 +225,13 @@ export interface MiniProject {
  * se traduce: vive en content.ts, en este mismo orden.
  */
 export const miniProjects: MiniProject[] = [
+  {
+    key: "master-service-quality",
+    name: "Master Service Quality",
+    domain: "carros-2.vercel.app",
+    href: "https://carros-2.vercel.app/",
+    image: "/sites/master-service-quality.jpg",
+  },
   {
     key: "hotel-logistico",
     name: "Hotel Logístico",
@@ -272,4 +276,108 @@ export const miniProjects: MiniProject[] = [
   },
 ];
 
+export type PlanKey = "landing" | "web" | "panel";
+
+export interface Plan {
+  key: PlanKey;
+  /** Precio "desde", en pesos: lo ve la version en espanol. */
+  cop: number;
+  /** Precio "desde", en dolares: lo ve la version en ingles. */
+  usd: number;
+  /** El plan que se destaca. */
+  featured?: boolean;
+}
+
+/**
+ * Precios de referencia. Nombre, que incluye y plazo viven en content.ts;
+ * aqui solo los numeros, porque los comparten la seccion de precios, las
+ * preguntas frecuentes, el JSON-LD y llms.txt. Cambiar un precio aqui lo
+ * cambia en todos a la vez.
+ *
+ * Cada idioma muestra su moneda: /es en pesos, / en dolares (quien lee en
+ * ingles casi siempre esta fuera de Colombia).
+ */
+export const plans: Plan[] = [
+  { key: "landing", cop: 690_000, usd: 290 },
+  { key: "web", cop: 1_490_000, usd: 590, featured: true },
+  { key: "panel", cop: 2_890_000, usd: 990 },
+];
+
+/**
+ * Kit de marca (logo, colores, tipografias, plantillas para redes): va
+ * aparte de los planes, con descuento si se suma a cualquiera de ellos.
+ * Asi el plan mas barato sigue siendo barato para quien ya tiene logo.
+ */
+export const brandKit = {
+  alone: { cop: 390_000, usd: 150 },
+  withPlan: { cop: 290_000, usd: 110 },
+} as const;
+
+/** Revision completa de un sitio ya publicado (se descuenta si hay proyecto). */
+export const fullAudit = { cop: 190_000, usd: 90 } as const;
+
+export const currency: Record<"en" | "es", "USD" | "COP"> = { en: "USD", es: "COP" };
+
+/** "$590.000" en /es, "$190" en /. */
+export function formatPrice(amount: { cop: number; usd: number }, language: "en" | "es") {
+  const code = currency[language];
+  const value = code === "COP" ? amount.cop : amount.usd;
+  return new Intl.NumberFormat(language === "es" ? "es-CO" : "en-US", {
+    style: "currency",
+    currency: code,
+    maximumFractionDigits: 0,
+  })
+    .format(value)
+    // es-CO escribe "$ 590.000"; en Colombia se lee "$590.000".
+    .replace(/^\$\s/, "$");
+}
+
+export interface Testimonial {
+  /** Caso o sitio al que pertenece: la cita se enlaza a el. */
+  key: string;
+  /** Quien lo dice y su negocio. Nombres propios: no se traducen. */
+  author: string;
+  business: string;
+  href: string;
+  /**
+   * Solo se publica con `approved: true`, es decir, cuando el cliente ha
+   * leido la frase y ha dicho que si. Una cita inventada en nombre de un
+   * negocio real es justo lo que hace desconfiar de un portafolio.
+   */
+  approved: boolean;
+}
+
+/** El texto de cada cita vive en content.ts (testimonials.quotes), por key. */
+export const testimonials: Testimonial[] = [
+  {
+    key: "hotel-logistico",
+    author: "Hotel Logístico",
+    business: "Santa Marta",
+    href: "https://hotellogistico.com",
+    approved: true,
+  },
+  {
+    key: "msq",
+    author: "Master Service Quality",
+    business: "Barrancabermeja",
+    href: "https://carros-2.vercel.app/",
+    approved: true,
+  },
+  {
+    key: "m10drinks",
+    author: "M10 Drinks",
+    business: "Floridablanca",
+    href: "https://m10drinksversionfinal.netlify.app/",
+    approved: true,
+  },
+];
+
 export const portrait = { local: "/perfil.png" } as const;
+
+/** Sustituye {landing}, {web} y {panel} por el precio de cada plan. */
+export function fillPlanPrices(text: string, language: "en" | "es") {
+  return plans.reduce(
+    (result, plan) => result.replaceAll(`{${plan.key}}`, formatPrice(plan, language)),
+    text,
+  );
+}

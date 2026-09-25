@@ -1,7 +1,8 @@
 import { track } from "@vercel/analytics";
+import { site } from "@/data/site";
 
-/** Numero de WhatsApp en formato internacional, sin signos. */
-const WHATSAPP_NUMBER = "573052669219";
+/** Numero de WhatsApp en formato internacional, sin signos (sale de site.ts). */
+const WHATSAPP_NUMBER = site.phone.replace(/\D/g, "");
 
 /**
  * Construye el enlace de WhatsApp con el mensaje ya escrito.

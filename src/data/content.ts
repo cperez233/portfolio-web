@@ -7,6 +7,10 @@
  */
 
 import type { DiagramId } from "./diagrams";
+import type { PlanKey } from "./site";
+
+/** Comprobaciones de la revision gratuita (ver app/api/audit). */
+export type AuditCheckId = "https" | "mobile" | "meta" | "schema" | "preview" | "indexable";
 
 export type Language = "en" | "es";
 
@@ -28,8 +32,14 @@ export interface Dictionary {
    * servidor (metadata de cada layout) y el toggle, que al cambiar de
    * idioma sin recargar actualiza tambien document.title.
    */
-  meta: { title: string; description: string; ogLocale: string };
-  nav: { about: string; services: string; projects: string; contact: string };
+  meta: {
+    title: string;
+    description: string;
+    ogLocale: string;
+    /** Cargo en el JSON-LD de esta version. */
+    jobTitle: string;
+  };
+  nav: { about: string; services: string; projects: string; pricing: string; contact: string };
   hero: {
     tagline: string;
     description: string;
@@ -107,13 +117,99 @@ export interface Dictionary {
     availability: string;
     cta: string;
     groups: { navigation: string; social: string; contact: string };
-    links: { home: string; about: string; services: string; projects: string; email: string };
+    links: {
+      home: string;
+      about: string;
+      services: string;
+      projects: string;
+      pricing: string;
+      faq: string;
+      email: string;
+    };
     rights: string;
   };
   languageToggle: { label: string };
   /** Mensaje que se abre ya escrito en WhatsApp. */
   whatsappMessage: string;
   diagrams: Record<DiagramId, DiagramCopy>;
+  testimonials: {
+    title: string;
+    /** Frase de cada cliente, por `key` de testimonials (site.ts). */
+    quotes: Record<string, string>;
+  };
+  pricing: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    /** "Desde", delante del precio. */
+    from: string;
+    featured: string;
+    /** Linea que abre la lista de un plan que incluye al anterior. */
+    includesPrevious: string;
+    cta: string;
+    /** `{plan}` es el nombre del plan. */
+    whatsappMessage: string;
+    /** Por `key` de plans (site.ts). */
+    plans: Record<
+      PlanKey,
+      {
+        name: string;
+        /** Nombre corto para el selector de planes en celular. */
+        short: string;
+        summary: string;
+        time: string;
+        features: string[];
+      }
+    >;
+    custom: { name: string; summary: string; cta: string; whatsappMessage: string };
+    /** Kit de marca. `{price}` solo, `{bundle}` sumado a un plan. */
+    brand: { name: string; summary: string; cta: string; whatsappMessage: string };
+    /** Notas al pie. `{price}` es el precio de la revision completa. */
+    /**
+     * Lo que paga el cliente directamente, cada ano, fuera del precio del
+     * proyecto. Las cuentas quedan a su nombre y con su tarjeta: si el
+     * sitio crece y el proveedor cobra mas por uso, esa factura no cae
+     * sobre quien lo construyo.
+     */
+    extras: {
+      title: string;
+      intro: string;
+      items: Array<{ label: string; value: string }>;
+    };
+    auditNote: string;
+    auditLink: string;
+    currencyNote: string;
+  };
+  audit: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    label: string;
+    placeholder: string;
+    submit: string;
+    loading: string;
+    errors: { invalid: string; unreachable: string; rateLimited: string; generic: string };
+    /** `{n}` y `{total}`. */
+    score: string;
+    checks: Record<AuditCheckId, { label: string; pass: string; fail: string }>;
+    hookTitle: string;
+    hookBody: string;
+    cta: string;
+    /** `{url}`, `{n}` y `{total}`. */
+    whatsappMessage: string;
+    again: string;
+  };
+  faq: {
+    eyebrow: string;
+    title: string;
+    /** Tarjeta junto a las preguntas: escribir si la duda no esta. */
+    ask: { title: string; body: string; cta: string; whatsappMessage: string };
+    /**
+     * Las respuestas pueden llevar {landing}, {web}, {panel}: se
+     * sustituyen por los precios de site.ts, para que no se desfasen.
+     */
+    items: Array<{ question: string; answer: string }>;
+  };
   miniProjects: {
     eyebrow: string;
     title: string;
@@ -133,15 +229,17 @@ const en: Dictionary = {
     description:
       "Freelance full-stack developer in Bucaramanga, Colombia. Web apps, workflow automation and AI document extraction for small teams, plus video that sells them.",
     ogLocale: "en_US",
+    jobTitle: "Full-Stack Developer",
   },
   nav: {
     about: "About",
     services: "Services",
     projects: "Projects",
+    pricing: "Pricing",
     contact: "Contact",
   },
   hero: {
-    tagline: "Software that runs your business, and video that sells it.",
+    tagline: "Websites and software that run your business, and video that sells it.",
     description:
       "I design, build and explain the systems small teams depend on. Without the jargon.",
     badgeAvailability: "Open to new projects",
@@ -156,18 +254,19 @@ const en: Dictionary = {
     title: "About me",
     blocks: [
       {
-        title: "Engineering & Systems",
-        body: "I build complete systems, start to finish. I don't marry one technology: I pick whatever fits the problem in front of me. And after working in cybersecurity, I check where the data goes before anything else.",
+        title: "Engineering & security",
+        body: "I build complete systems, start to finish, with whatever technology the problem needs. I come from cybersecurity, so the first thing I check is where your data goes.",
         traits: [
-          { label: "Tool-Agnostic", detail: "The right stack per problem, not per habit" },
-          { label: "Security Mindset", detail: "Data flow auditing, input integrity" },
+          { label: "Right tool per problem", detail: "not per habit" },
+          { label: "Security first", detail: "your data, protected from day one" },
         ],
       },
       {
-        title: "Communication & Video",
-        body: "I also write, present and edit video, which built an audience of 32K+ followers. The skill that keeps a stream watchable is the same one that makes a sales pitch land.",
+        title: "Brand & content",
+        body: "A website works better when the brand behind it is clear. I help you with your logo, colours and short videos for social media, the same way I built an audience of 32K+ on TikTok.",
         traits: [
-          { label: "Content & Streaming", detail: "TikTok / Instagram / Twitch" },
+          { label: "Visual identity", detail: "logo, colours, fonts" },
+          { label: "Content for social media", detail: "scripts and editing that hold attention" },
         ],
       },
     ],
@@ -183,40 +282,29 @@ const en: Dictionary = {
     title: "Services",
     items: [
       {
-        name: "Full-Stack Web & Software Applications",
-        tag: "Laravel / React / Next.js / PostgreSQL / Docker / Python",
-        description:
-          "Web platforms, custom applications and the software your operation runs on, built from scratch: the database, the logic and the screens your team uses every day.",
+        name: "Websites & custom software",
+        tag: "Next.js / React / Laravel / PostgreSQL",
+        description: "Your website, your online store or the system your team works with, built from scratch.",
       },
       {
-        name: "SEO, GEO & AEO for Google and AI",
-        tag: "Technical SEO / Schema.org / Local SEO / AI answers",
-        description:
-          "Your business showing up when someone searches Google and when they ask ChatGPT, Perplexity or AI Overviews. Clean structure, schema markup, local SEO and content written to be quoted, measured in Search Console.",
+        name: "Found on Google and AI",
+        tag: "Local SEO / Google Maps / ChatGPT",
+        description: "You show up when people search Google or Maps, and when they ask ChatGPT.",
       },
       {
-        name: "Workflow Automation & Integration",
-        tag: "n8n / Python / Webhooks / APIs",
-        description:
-          "Your tools finally talk to each other, and repetitive tasks disappear. Automated pipelines that save dozens of hours and remove the errors of copying data by hand.",
+        name: "Automation & AI for documents",
+        tag: "n8n / Python / OCR / AI",
+        description: "Repetitive tasks that run on their own, and paperwork turned into data you find in seconds.",
       },
       {
-        name: "Document AI & Data Extraction",
-        tag: "Azure Doc Intelligence / OCR / LLMs / Python",
-        description:
-          "PDFs, records and paper documents turned into structured data you can search in seconds. Secure OCR and AI do the reading, so nobody transcribes by hand.",
+        name: "Review & advisory",
+        tag: "Website / Sales / Security",
+        description: "I review your website, how you sell online and where your data sits, and tell you what to fix first.",
       },
       {
-        name: "Business & Technical Advisory",
-        tag: "Sales funnel / Process audit / Security & data",
-        description:
-          "An audit of your sales funnel, operations and technical security. A clear report on where revenue leaks, what slows you down and which data is at risk, with what to fix first.",
-      },
-      {
-        name: "Technical Video & Product Storytelling",
-        tag: "High-retention editing / Scripting / Streaming",
-        description:
-          "Technical products turned into high-retention video people get in thirty seconds. Strategic scripts and dynamic editing built to earn trust and close sales.",
+        name: "Brand & video for social media",
+        tag: "Logo / Visual identity / Short video",
+        description: "Logo, colours and short videos so your brand looks the same on your website and on social media.",
       },
     ],
   },
@@ -236,35 +324,19 @@ const en: Dictionary = {
     },
     items: [
       {
-        client: "Master Service Quality",
-        category: "Website · vehicle rental",
-        title: "Trucks you can quote from your phone",
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        category: "Document AI · cybersecurity team",
+        title: "The FCV's paper records, searchable in seconds",
         problem:
-          "A company that rents pickups and SUVs by the month to contractors in Barrancabermeja needed clients to see vehicles, prices and what's included without calling.",
-        solution:
-          "A mobile-first site: every truck with its monthly rate, what the price covers and what it doesn't, and a WhatsApp quote with the chosen vehicle already in the message. Plus local SEO and GEO, so it shows up on Google and in AI answers when someone looks for truck rental in Barrancabermeja.",
-        result:
-          "The client picks a truck and quotes it in two taps, with the price already on screen.",
-        shotAlts: [
-          "Master Service Quality homepage on a phone",
-          "Trucks with monthly rates",
-          "What the monthly rate includes",
-        ],
-      },
-      {
-        client: "FCV",
-        category: "Document AI · cybersecurity internship",
-        title: "Paper records, searchable in seconds",
-        problem:
-          "Hundreds of scanned records. Finding a single one meant opening PDFs one by one.",
+          "The FCV had hundreds of scanned records. Finding a single one meant opening PDFs one by one.",
         solution:
           "A system that reads the scans with AI, pulls out name, ID number and site, and builds a search tool. Doubtful reads get flagged for a person to check.",
         result: "What used to mean opening PDFs one by one is now typing an ID number.",
         statLabel: "records searchable by ID, name or site",
         shotAlts: [
-          "Record search tool",
+          "The FCV record search tool",
           "Pipeline processing the scans",
-          "Index of reviewed records",
+          "Record index, doubtful reads flagged for review",
         ],
       },
       {
@@ -302,6 +374,8 @@ const en: Dictionary = {
       about: "About",
       services: "Services",
       projects: "Projects",
+      pricing: "Pricing",
+      faq: "FAQ",
       email: "Email",
     },
     rights: "All rights reserved.",
@@ -364,6 +438,151 @@ const en: Dictionary = {
       },
     },
   },
+  testimonials: {
+    title: "What clients say",
+    quotes: {
+      "hotel-logistico":
+        "Since we launched the website, bookings come straight to our WhatsApp. Really good work.",
+      msq: "We don't have to explain prices over the phone anymore. Clients already know which truck they want.",
+      m10drinks:
+        "People order from the website at any hour. Cristian was quick and always on top of things.",
+    },
+  },
+  pricing: {
+    eyebrow: "Plans",
+    title: "Pricing",
+    intro: "Starting prices for each type of project. The final price is agreed in writing before work begins.",
+    from: "From",
+    featured: "Most chosen",
+    includesPrevious: "Everything in the previous plan, plus:",
+    cta: "I want this one",
+    whatsappMessage: "Hi Cristian, I saw your pricing and I'm interested in the {plan} plan.",
+    plans: {
+      landing: {
+        name: "Landing page",
+        short: "Landing",
+        summary: "A clean, fast page that presents your business and brings in messages.",
+        time: "Ready in 1 week",
+        features: [
+          "Custom design, made for phones first",
+          "WhatsApp button and contact form",
+          "Live on your domain and on Google",
+        ],
+      },
+      web: {
+        name: "Website + Google & AI",
+        short: "Web + AI",
+        summary: "For people to find you when they search, not only when you share the link.",
+        time: "2 to 3 weeks",
+        features: [
+          "Up to 5 sections or pages",
+          "Local SEO and Google Maps profile",
+          "Ready to be quoted by ChatGPT and Google AI",
+        ],
+      },
+      panel: {
+        name: "Website with admin panel",
+        short: "With panel",
+        summary: "Change prices, photos and products yourself, whenever you want.",
+        time: "3 to 5 weeks",
+        features: [
+          "Your own panel to edit prices and photos",
+          "Catalogue, bookings or quote form",
+          "I show you how to use it",
+        ],
+      },
+    },
+    custom: {
+      name: "App or custom system",
+      summary: "Automations, internal systems, AI that reads your documents. I understand the problem first and give you a fixed price.",
+      cta: "Ask for a quote",
+      whatsappMessage: "Hi Cristian, I'd like a quote for an app or custom system.",
+    },
+    brand: {
+      name: "Brand kit",
+      summary: "Logo, colours, fonts and templates for your social media. From {price}, or {bundle} added to any plan. Social videos are quoted by volume.",
+      cta: "I want my brand",
+      whatsappMessage: "Hi Cristian, I'm interested in the brand kit.",
+    },
+    extras: {
+      title: "Paid separately, by you",
+      intro: "They go in your name and on your card, paid directly to the provider. I help you set them up and leave usage alerts on.",
+      items: [
+        { label: "Domain (yourbusiness.com)", value: "about US$15–30 a year" },
+        { label: "Hosting for a landing page", value: "from US$0 to about US$25 a year" },
+        { label: "Hosting with admin panel and database", value: "about US$5–25 a month, depending on traffic" },
+        { label: "Support and changes after delivery", value: "quoted separately" },
+      ],
+    },
+    auditNote: "Already have a website? Full review for {price}, deducted if we then build yours together.",
+    auditLink: "Or try the free basic check",
+    currencyNote: "Prices in US dollars. For businesses in Colombia I quote in pesos.",
+  },
+  audit: {
+    eyebrow: "Free check",
+    title: "Is your website ready for Google and AI?",
+    intro: "Paste your address and see in seconds the basics many sites miss.",
+    label: "Your website address",
+    placeholder: "yourbusiness.com",
+    submit: "Check for free",
+    loading: "Checking your site…",
+    errors: {
+      invalid: "That doesn't look like a website address. Try something like yourbusiness.com",
+      unreachable: "I couldn't open that site. Check the address and try again.",
+      rateLimited: "Too many checks in a row. Try again in a few minutes.",
+      generic: "Something went wrong. Try again in a moment.",
+    },
+    score: "{n} of {total} basics in order",
+    checks: {
+      https: { label: "Secure connection", pass: "Opens with HTTPS, no warning", fail: "Browsers may mark it as not secure" },
+      mobile: { label: "Made for phones", pass: "Adapts to the screen", fail: "It may look tiny on a phone" },
+      meta: { label: "Title and description", pass: "Google knows what to show", fail: "Google has to guess what to show" },
+      schema: { label: "Data for Google and AI", pass: "Has structured data", fail: "No structured data for Google or AI" },
+      preview: { label: "Preview on WhatsApp", pass: "Shows an image when shared", fail: "Shared as a bare link, no image" },
+      indexable: { label: "Visible on Google", pass: "Google is allowed to list it", fail: "It is asking Google not to list it" },
+    },
+    hookTitle: "This is only the surface.",
+    hookBody: "Real speed on phones, how you rank against your competition and what AI says about you: I review it and send it to you for free over WhatsApp.",
+    cta: "Get the full review",
+    whatsappMessage: "Hi Cristian, I checked {url} on your site and it scored {n}/{total}. Can you send me the full review?",
+    again: "Check another site",
+  },
+  faq: {
+    eyebrow: "Questions",
+    title: "Frequently asked",
+    ask: {
+      title: "Question not here?",
+      body: "Ask me on WhatsApp. I usually reply the same day.",
+      cta: "Ask on WhatsApp",
+      whatsappMessage: "Hi Cristian, I have a question before starting a project.",
+    },
+    items: [
+      {
+        question: "How much does a website cost?",
+        answer: "From {landing} for a landing page, {web} with SEO for Google and AI, and {panel} with an admin panel. Apps and custom systems are quoted separately. The final price is agreed before I start.",
+      },
+      {
+        question: "How long does it take?",
+        answer: "A landing page, about 1 week. A full website, 2 to 3 weeks; with an admin panel, 3 to 5. It goes faster if you already have your photos and texts.",
+      },
+      {
+        question: "What do I need to get started?",
+        answer: "Your logo, photos of your business and an idea of what you sell. If you don't have texts, we write them together.",
+      },
+      {
+        question: "What does showing up on ChatGPT or Google AI mean?",
+        answer: "More and more people ask ChatGPT, Perplexity or Google things like \"where can I find X in my city?\". I prepare your site with structured data and clear answers so AI understands it and can recommend you. Nobody can guarantee first place, but it can be ready.",
+      },
+      {
+        question: "Are the domain and hosting included?",
+        answer: "No, and that's on purpose. They are paid yearly (or monthly, for sites with a database) directly to the provider, in your name and on your card, so the website is yours and you don't depend on me to keep it online. I help you pick and set them up. If your site grows a lot, the provider may charge more for usage; I leave alerts on so it never takes you by surprise.",
+      },
+      {
+        question: "Do you work with clients outside Colombia?",
+        answer: "Yes. I'm based in Bucaramanga and work with businesses across Colombia and abroad, in Spanish or English, over WhatsApp and video calls. For clients abroad I quote in US dollars.",
+      },
+    ],
+  },
   miniProjects: {
     eyebrow: "Recent work",
     title: "Websites already live",
@@ -371,6 +590,7 @@ const en: Dictionary = {
     newTab: "(opens in a new tab)",
     imageAlt: "Website built for",
     items: [
+      "Truck rental · monthly quotes in Barrancabermeja",
       "Hotel in Santa Marta · bookings over WhatsApp",
       "Footwear factory · wholesale catalogue",
       "Baby store · nationwide delivery",
@@ -387,15 +607,17 @@ const es: Dictionary = {
     description:
       "Desarrollo páginas web, software a la medida y automatizaciones para negocios en Bucaramanga y toda Colombia. Mira sitios ya publicados y cotiza por WhatsApp.",
     ogLocale: "es_CO",
+    jobTitle: "Desarrollador web full-stack",
   },
   nav: {
     about: "Sobre mí",
     services: "Servicios",
     projects: "Proyectos",
+    pricing: "Precios",
     contact: "Contacto",
   },
   hero: {
-    tagline: "Software que hace funcionar tu negocio, y video que lo vende.",
+    tagline: "Páginas web y software que hacen funcionar tu negocio, y video que lo vende.",
     description:
       "Diseño, construyo y explico los sistemas de los que depende un equipo pequeño. Sin jerga.",
     badgeAvailability: "Disponible para proyectos nuevos",
@@ -410,18 +632,19 @@ const es: Dictionary = {
     title: "Sobre mí",
     blocks: [
       {
-        title: "Ingeniería y sistemas",
-        body: "Construyo sistemas completos, de principio a fin. No me caso con una tecnología: elijo la que le sirve al problema que tengo delante. Y después de trabajar en ciberseguridad, lo primero que reviso es por dónde pasan los datos.",
+        title: "Ingeniería y seguridad",
+        body: "Construyo sistemas completos, de principio a fin, con la tecnología que pide cada problema. Vengo de ciberseguridad: lo primero que reviso es por dónde pasan tus datos.",
         traits: [
-          { label: "Agnóstico a herramientas", detail: "El stack que pide el problema, no la costumbre" },
-          { label: "Mentalidad de seguridad", detail: "Auditoría de flujos, integridad de datos" },
+          { label: "La herramienta que pide el problema", detail: "no la costumbre" },
+          { label: "Seguridad primero", detail: "tus datos protegidos desde el día uno" },
         ],
       },
       {
-        title: "Comunicación y video",
-        body: "También escribo, presento y edito video, y así construí una audiencia de 32K+ seguidores. La habilidad que hace que alguien se quede viendo un directo es la que hace que una propuesta convenza.",
+        title: "Marca y contenido",
+        body: "Una página funciona mejor cuando la marca detrás está clara. Te ayudo con el logo, los colores y videos cortos para redes, igual que construí una audiencia de 32K+ en TikTok.",
         traits: [
-          { label: "Contenido y streaming", detail: "TikTok / Instagram / Twitch" },
+          { label: "Identidad visual", detail: "logo, colores, tipografías" },
+          { label: "Contenido para redes", detail: "guiones y edición que retienen" },
         ],
       },
     ],
@@ -437,40 +660,29 @@ const es: Dictionary = {
     title: "Servicios",
     items: [
       {
-        name: "Aplicaciones web y software full-stack",
-        tag: "Laravel / React / Next.js / PostgreSQL / Docker / Python",
-        description:
-          "Plataformas web, aplicaciones a medida y el software con el que opera tu negocio, desde cero: la base de datos, la lógica y las pantallas que tu equipo usa a diario.",
+        name: "Páginas web y software a medida",
+        tag: "Next.js / React / Laravel / PostgreSQL",
+        description: "Tu página, tu tienda en línea o el sistema con el que trabaja tu equipo, hecho desde cero.",
       },
       {
-        name: "SEO, GEO y AEO para Google y la IA",
-        tag: "SEO técnico / Schema.org / SEO local / Respuestas de IA",
-        description:
-          "Que tu negocio aparezca cuando alguien busca en Google y cuando le pregunta a ChatGPT, Perplexity o a los AI Overviews. Estructura limpia, datos estructurados, SEO local y contenido escrito para ser citado, medido en Search Console.",
+        name: "Que te encuentren en Google y en la IA",
+        tag: "SEO local / Google Maps / ChatGPT",
+        description: "Apareces cuando te buscan en Google o en Maps, y cuando le preguntan a ChatGPT.",
       },
       {
-        name: "Automatización e integración de flujos",
-        tag: "n8n / Python / Webhooks / APIs",
-        description:
-          "Tus herramientas por fin se hablan entre ellas y las tareas repetitivas desaparecen. Pipelines automáticos que ahorran decenas de horas sin errores de copiar datos a mano.",
+        name: "Automatización e IA para documentos",
+        tag: "n8n / Python / OCR / IA",
+        description: "Tareas repetitivas que se hacen solas, y papeles que se vuelven datos que encuentras en segundos.",
       },
       {
-        name: "IA documental y extracción de datos",
-        tag: "Azure Doc Intelligence / OCR / LLMs / Python",
-        description:
-          "PDFs, actas y documentos físicos convertidos en datos estructurados que se buscan al instante. OCR seguro e IA hacen la lectura, sin transcripción manual.",
+        name: "Revisión y asesoría",
+        tag: "Página web / Ventas / Seguridad",
+        description: "Reviso tu página, cómo vendes por internet y dónde están tus datos, y te digo qué arreglar primero.",
       },
       {
-        name: "Asesoría técnica y de negocio",
-        tag: "Embudos de venta / Auditoría de procesos / Seguridad y datos",
-        description:
-          "Auditoría de tu embudo de ventas, tus procesos y tu seguridad técnica. Un informe claro de dónde se pierden ingresos, dónde se frena todo y qué datos están en riesgo, con lo primero que hay que arreglar.",
-      },
-      {
-        name: "Video técnico y storytelling de producto",
-        tag: "Edición de alta retención / Guion / Streaming",
-        description:
-          "Productos técnicos convertidos en video de alta retención que se entiende en treinta segundos. Guion estratégico y edición dinámica pensados para generar confianza y cerrar ventas.",
+        name: "Marca y video para redes",
+        tag: "Logo / Identidad visual / Video corto",
+        description: "Logo, colores y videos cortos para que tu marca se vea igual en tu página y en redes.",
       },
     ],
   },
@@ -490,35 +702,19 @@ const es: Dictionary = {
     },
     items: [
       {
-        client: "Master Service Quality",
-        category: "Página web · renta de camionetas",
-        title: "Camionetas que se cotizan desde el celular",
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        category: "IA documental · equipo de ciberseguridad",
+        title: "Las actas de la FCV, encontradas en segundos",
         problem:
-          "Una empresa que renta camionetas por mes a contratistas en Barrancabermeja necesitaba que sus clientes vieran vehículos, precios y qué incluye sin tener que llamar.",
-        solution:
-          "Una página pensada para celular: cada camioneta con su tarifa mensual, lo que cubre el precio y lo que no, y cotización por WhatsApp con el vehículo ya escrito en el mensaje. Además, SEO local y GEO para que aparezca en Google y en las respuestas de la IA cuando alguien busca renta de camionetas en Barrancabermeja.",
-        result:
-          "El cliente elige la camioneta y la cotiza en dos toques, con el precio ya en pantalla.",
-        shotAlts: [
-          "Inicio de Master Service Quality en un celular",
-          "Camionetas con tarifas mensuales",
-          "Lo que incluye la tarifa mensual",
-        ],
-      },
-      {
-        client: "FCV",
-        category: "IA documental · prácticas en ciberseguridad",
-        title: "Actas en papel, encontradas en segundos",
-        problem:
-          "Cientos de actas escaneadas. Encontrar una sola era abrir PDFs uno por uno.",
+          "La FCV tenía cientos de actas escaneadas. Encontrar una sola era abrir PDFs uno por uno.",
         solution:
           "Un sistema que lee los escaneos con IA, saca nombre, cédula y sede, y arma un buscador. Las lecturas dudosas se marcan para que una persona las revise.",
         result: "Lo que antes era abrir PDFs uno por uno ahora es escribir una cédula.",
         statLabel: "actas que se encuentran por cédula, nombre o sede",
         shotAlts: [
-          "Buscador de actas",
+          "Buscador de actas de la FCV",
           "Pipeline procesando los escaneos",
-          "Índice de actas revisadas",
+          "Índice de actas, con lecturas dudosas marcadas",
         ],
       },
       {
@@ -556,6 +752,8 @@ const es: Dictionary = {
       about: "Sobre mí",
       services: "Servicios",
       projects: "Proyectos",
+      pricing: "Precios",
+      faq: "Preguntas frecuentes",
       email: "Correo",
     },
     rights: "Todos los derechos reservados.",
@@ -618,6 +816,151 @@ const es: Dictionary = {
       },
     },
   },
+  testimonials: {
+    title: "Lo que dicen los clientes",
+    quotes: {
+      "hotel-logistico":
+        "Desde que tenemos la página, las reservas nos llegan directo al WhatsApp. Muy buen trabajo.",
+      msq: "Ya no tenemos que explicar precios por teléfono, los clientes llegan sabiendo qué camioneta quieren.",
+      m10drinks:
+        "La gente pide por la página a cualquier hora. Cristian fue rápido y siempre estuvo pendiente.",
+    },
+  },
+  pricing: {
+    eyebrow: "Planes",
+    title: "Precios",
+    intro: "Valores de referencia para cada tipo de proyecto. El precio final se acuerda por escrito antes de empezar.",
+    from: "Desde",
+    featured: "El más elegido",
+    includesPrevious: "Todo lo del plan anterior, más:",
+    cta: "Quiero este",
+    whatsappMessage: "Hola Cristian, vi tus precios y me interesa el plan {plan}.",
+    plans: {
+      landing: {
+        name: "Página de presentación",
+        short: "Presentación",
+        summary: "Una página bonita y rápida que presenta tu negocio y te trae mensajes.",
+        time: "Lista en 1 semana",
+        features: [
+          "Diseño a tu medida, pensado para celular",
+          "Botón de WhatsApp y formulario",
+          "Publicada en tu dominio y visible en Google",
+        ],
+      },
+      web: {
+        name: "Web + Google e IA",
+        short: "Web + IA",
+        summary: "Para que te encuentren cuando buscan, no solo cuando compartes el link.",
+        time: "2 a 3 semanas",
+        features: [
+          "Hasta 5 secciones o páginas",
+          "SEO local y perfil en Google Maps",
+          "Lista para que ChatGPT y la IA de Google te citen",
+        ],
+      },
+      panel: {
+        name: "Web con panel de administración",
+        short: "Con panel",
+        summary: "Cambias precios, fotos y productos tú mismo, cuando quieras.",
+        time: "3 a 5 semanas",
+        features: [
+          "Tu propio panel para editar precios y fotos",
+          "Catálogo, reservas o cotizador",
+          "Te enseño a usarlo",
+        ],
+      },
+    },
+    custom: {
+      name: "App o sistema a medida",
+      summary: "Automatizaciones, sistemas internos, IA que lee tus documentos. Primero entiendo el problema y te doy un precio cerrado.",
+      cta: "Cotizar",
+      whatsappMessage: "Hola Cristian, quiero cotizar una app o un sistema a medida.",
+    },
+    brand: {
+      name: "Kit de marca",
+      summary: "Logo, colores, tipografías y plantillas para tus redes. Desde {price}, o {bundle} si lo sumas a cualquier plan. Los videos para redes se cotizan según cantidad.",
+      cta: "Quiero mi marca",
+      whatsappMessage: "Hola Cristian, me interesa el kit de marca.",
+    },
+    extras: {
+      title: "Lo que pagas aparte",
+      intro: "Van a tu nombre y con tu tarjeta, directo al proveedor. Te ayudo a crearlos y dejo alertas de consumo activas.",
+      items: [
+        { label: "Dominio (tunegocio.com)", value: "aprox. $60.000 – $120.000 al año" },
+        { label: "Hosting de una página de presentación", value: "desde $0 hasta aprox. $100.000 al año" },
+        { label: "Hosting con panel y base de datos", value: "aprox. $20.000 – $100.000 al mes, según visitas" },
+        { label: "Soporte y cambios después de la entrega", value: "se cotizan aparte" },
+      ],
+    },
+    auditNote: "¿Ya tienes página? Revisión completa por {price}, y te la descuento si después hacemos la tuya.",
+    auditLink: "O prueba la revisión básica gratis",
+    currencyNote: "Precios en pesos colombianos. Para proyectos fuera de Colombia cotizo en dólares.",
+  },
+  audit: {
+    eyebrow: "Revisión gratis",
+    title: "¿Tu página está lista para Google y la IA?",
+    intro: "Pega la dirección y mira en segundos lo básico que a muchas páginas les falta.",
+    label: "Dirección de tu página",
+    placeholder: "tunegocio.com",
+    submit: "Revisar gratis",
+    loading: "Revisando tu página…",
+    errors: {
+      invalid: "Eso no parece la dirección de una página. Prueba algo como tunegocio.com",
+      unreachable: "No pude abrir esa página. Revisa la dirección e inténtalo otra vez.",
+      rateLimited: "Demasiadas revisiones seguidas. Inténtalo en unos minutos.",
+      generic: "Algo falló. Inténtalo de nuevo en un momento.",
+    },
+    score: "{n} de {total} puntos básicos en orden",
+    checks: {
+      https: { label: "Conexión segura", pass: "Abre con HTTPS, sin avisos", fail: "El navegador puede marcarla como no segura" },
+      mobile: { label: "Hecha para celular", pass: "Se adapta a la pantalla", fail: "Puede verse diminuta en el celular" },
+      meta: { label: "Título y descripción", pass: "Google sabe qué mostrar", fail: "Google tiene que adivinar qué mostrar" },
+      schema: { label: "Datos para Google y la IA", pass: "Tiene datos estructurados", fail: "Sin datos estructurados para Google ni la IA" },
+      preview: { label: "Vista previa en WhatsApp", pass: "Sale con imagen al compartirla", fail: "Se comparte como link suelto, sin imagen" },
+      indexable: { label: "Visible en Google", pass: "Google puede mostrarla", fail: "Le está pidiendo a Google que no la muestre" },
+    },
+    hookTitle: "Esto es solo la superficie.",
+    hookBody: "La velocidad real en celular, cómo quedas frente a tu competencia y qué dice la IA de ti: lo reviso y te lo mando gratis por WhatsApp.",
+    cta: "Quiero la revisión completa",
+    whatsappMessage: "Hola Cristian, revisé {url} en tu página y salió {n}/{total}. ¿Me mandas la revisión completa?",
+    again: "Revisar otra página",
+  },
+  faq: {
+    eyebrow: "Dudas",
+    title: "Preguntas frecuentes",
+    ask: {
+      title: "¿No está tu pregunta?",
+      body: "Escríbeme por WhatsApp. Suelo responder el mismo día.",
+      cta: "Preguntar por WhatsApp",
+      whatsappMessage: "Hola Cristian, tengo una duda antes de empezar un proyecto.",
+    },
+    items: [
+      {
+        question: "¿Cuánto cuesta una página web?",
+        answer: "Desde {landing} una página de presentación, {web} con SEO para Google y la IA, y {panel} con panel de administración. Las apps y sistemas a medida se cotizan aparte. El valor final lo acordamos antes de empezar.",
+      },
+      {
+        question: "¿Cuánto se demora?",
+        answer: "Una página de presentación, alrededor de 1 semana. Una web completa, 2 a 3 semanas; con panel, 3 a 5. Va más rápido si ya tienes fotos y textos.",
+      },
+      {
+        question: "¿Qué necesito para empezar?",
+        answer: "Tu logo, fotos de tu negocio y una idea de lo que vendes. Si no tienes textos, los escribimos juntos.",
+      },
+      {
+        question: "¿Qué es aparecer en ChatGPT o en la IA de Google?",
+        answer: "Cada vez más gente le pregunta a ChatGPT, Perplexity o a Google cosas como \"¿dónde encuentro X en mi ciudad?\". Preparo tu página con datos estructurados y respuestas claras para que la IA la entienda y pueda recomendarte. Nadie puede garantizar el primer lugar, pero sí dejarla lista.",
+      },
+      {
+        question: "¿El dominio y el hosting están incluidos?",
+        answer: "No, y es a propósito. Se pagan cada año (o cada mes, en webs con base de datos) directo al proveedor, a tu nombre y con tu tarjeta: así la página es tuya y no dependes de mí para mantenerla en línea. Yo te ayudo a elegirlos y configurarlos. Si tu página crece mucho, el proveedor puede cobrar más por uso; dejo alertas activas para que nunca te tome por sorpresa.",
+      },
+      {
+        question: "¿Trabajas fuera de Bucaramanga o de Colombia?",
+        answer: "Sí. Estoy en Bucaramanga y trabajo con negocios de toda Colombia y de otros países, en español o en inglés, por WhatsApp y videollamada. Afuera de Colombia cotizo en dólares.",
+      },
+    ],
+  },
   miniProjects: {
     eyebrow: "Trabajo reciente",
     title: "Páginas web ya publicadas",
@@ -625,6 +968,7 @@ const es: Dictionary = {
     newTab: "(se abre en otra pestaña)",
     imageAlt: "Página web de",
     items: [
+      "Renta de camionetas · cotización mensual en Barrancabermeja",
       "Hotel en Santa Marta · reservas por WhatsApp",
       "Fábrica de calzado · catálogo mayorista",
       "Tienda de bebés · envíos a todo el país",
