@@ -176,6 +176,8 @@ export interface Dictionary {
       intro: string;
       items: Array<{ label: string; value: string }>;
     };
+    /** Garantias y referidos: tres lineas cortas bajo los planes. */
+    offers: Array<{ title: string; body: string }>;
     auditNote: string;
     auditLink: string;
     currencyNote: string;
@@ -511,9 +513,14 @@ const en: Dictionary = {
         { label: "Domain (yourbusiness.com)", value: "about US$15–30 a year" },
         { label: "Hosting for a landing page", value: "from US$0 to about US$25 a year" },
         { label: "Hosting with admin panel and database", value: "about US$5–25 a month, depending on traffic" },
-        { label: "Support and changes after delivery", value: "quoted separately" },
+        { label: "Support after the first 30 days", value: "quoted separately" },
       ],
     },
+    offers: [
+      { title: "Changes until you approve", body: "We adjust the design until you're happy, before anything goes live." },
+      { title: "30 days of free support", body: "If something breaks in the first month after launch, I fix it at no cost." },
+      { title: "10% for referrals", body: "Send me a business that hires me and get 10% off your next project or change." },
+    ],
     auditNote: "Already have a website? Full review for {price}, deducted if we then build yours together.",
     auditLink: "Or try the free basic check",
     currencyNote: "Prices in US dollars. For businesses in Colombia I quote in pesos.",
@@ -889,9 +896,14 @@ const es: Dictionary = {
         { label: "Dominio (tunegocio.com)", value: "aprox. $60.000 – $120.000 al año" },
         { label: "Hosting de una página de presentación", value: "desde $0 hasta aprox. $100.000 al año" },
         { label: "Hosting con panel y base de datos", value: "aprox. $20.000 – $100.000 al mes, según visitas" },
-        { label: "Soporte y cambios después de la entrega", value: "se cotizan aparte" },
+        { label: "Soporte después de los primeros 30 días", value: "se cotiza aparte" },
       ],
     },
+    offers: [
+      { title: "Cambios hasta que apruebes", body: "Ajustamos el diseño hasta que te guste, antes de publicar nada." },
+      { title: "30 días de soporte gratis", body: "Si algo falla el primer mes después de publicar, lo arreglo sin costo." },
+      { title: "10% por referidos", body: "Si me recomiendas un negocio y me contrata, tienes 10% de descuento en tu próximo proyecto o cambio." },
+    ],
     auditNote: "¿Ya tienes página? Revisión completa por {price}, y te la descuento si después hacemos la tuya.",
     auditLink: "O prueba la revisión básica gratis",
     currencyNote: "Precios en pesos colombianos. Para proyectos fuera de Colombia cotizo en dólares.",

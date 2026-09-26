@@ -9,7 +9,7 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
-import { ArrowDown, ArrowUpRight, Check } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Check } from "lucide-react";
 import { brandKit, currency, fullAudit, formatPrice, plans, type Plan, type PlanKey } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
@@ -87,6 +87,22 @@ export function PricingSection() {
           ))}
         </ul>
 
+        {/* Garantias y referidos: lo que quita riesgo a decir que si. */}
+        <FadeIn delay={0.1} y={16}>
+          <FadeSwap>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-6 lg:mt-10">
+              {copy.offers.map((offer) => (
+                <li key={offer.title} className="flex min-w-0 gap-3">
+                  <Check aria-hidden="true" className="mt-1 size-4 shrink-0 text-accent-ink" />
+                  <p className="text-base leading-relaxed text-ink-muted">
+                    <span className="font-medium text-ink">{offer.title}.</span> {offer.body}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </FadeSwap>
+        </FadeIn>
+
         {/*
           Lo que va aparte: la app a medida (se cotiza) y el kit de marca
           (precio propio, mas barato sumado a un plan). Filas, no una
@@ -151,9 +167,9 @@ export function PricingSection() {
                 className="group inline-flex items-center gap-1 font-medium text-accent-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent-ink"
               >
                 {copy.auditLink}
-                <ArrowDown
+                <ArrowUp
                   aria-hidden="true"
-                  className="size-3.5 transition-transform duration-300 group-hover:translate-y-0.5"
+                  className="size-3.5 transition-transform duration-300 group-hover:-translate-y-0.5"
                 />
               </a>
               <span className="mt-2 block text-ink-subtle">{copy.currencyNote}</span>
@@ -326,7 +342,12 @@ function MobilePlans() {
             }}
             className="relative z-10 col-start-1 row-start-1 flex touch-pan-y"
           >
-            <PlanCard plan={plan} index={index} idPrefix="plan-mobile" animatePrice />
+            {/*
+              El conteo solo al cambiar de plan: en la primera carga el
+              precio sale ya en su valor. Si no, el HTML servido decia
+              "$470" (el 80% desde donde arranca el conteo).
+            */}
+            <PlanCard plan={plan} index={index} idPrefix="plan-mobile" animatePrice={direction !== 0} />
           </motion.div>
         </AnimatePresence>
       </div>

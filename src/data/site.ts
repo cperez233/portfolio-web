@@ -270,8 +270,8 @@ export const miniProjects: MiniProject[] = [
   {
     key: "m10drinks",
     name: "M10 Drinks",
-    domain: "m10drinksversionfinal.netlify.app",
-    href: "https://m10drinksversionfinal.netlify.app/",
+    domain: "m10drinkslicorera.com",
+    href: "https://www.m10drinkslicorera.com/",
     image: "/sites/m10drinks.jpg",
   },
 ];
@@ -367,7 +367,7 @@ export const testimonials: Testimonial[] = [
     key: "m10drinks",
     author: "M10 Drinks",
     business: "Floridablanca",
-    href: "https://m10drinksversionfinal.netlify.app/",
+    href: "https://www.m10drinkslicorera.com/",
     approved: true,
   },
 ];

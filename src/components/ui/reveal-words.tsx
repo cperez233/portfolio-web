@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -22,6 +23,10 @@ interface RevealWordsProps {
  *
  * La key por texto hace que al cambiar de idioma el titulo nuevo vuelva
  * a entrar en lugar de aparecer de golpe.
+ *
+ * El texto existe una sola vez en el HTML: las palabras animadas son el
+ * titulo. Con una copia sr-only mas otra aria-hidden, buscadores y
+ * extractores de texto leian "About meAbout me".
  */
 export function RevealWords({ text, delay = 0 }: RevealWordsProps) {
   const shouldReduceMotion = useReducedMotion();
@@ -32,15 +37,9 @@ export function RevealWords({ text, delay = 0 }: RevealWordsProps) {
 
   return (
     <span key={text} className="inline">
-      {/* Texto completo para lectores de pantalla y buscadores; las
-          palabras animadas van ocultas para no leerse dos veces. */}
-      <span className="sr-only">{text}</span>
-      <span aria-hidden="true">
-        {words.map((word, i) => (
-          <span
-            key={`${word}-${i}`}
-            className="-my-[0.14em] inline-block overflow-hidden py-[0.14em] align-bottom"
-          >
+      {words.map((word, i) => (
+        <Fragment key={`${word}-${i}`}>
+          <span className="-my-[0.14em] inline-block overflow-hidden py-[0.14em] align-bottom">
             <motion.span
               className="inline-block"
               initial={{ y: "110%" }}
@@ -49,11 +48,13 @@ export function RevealWords({ text, delay = 0 }: RevealWordsProps) {
               transition={{ duration: 0.85, delay: delay + i * 0.07, ease }}
             >
               {word}
-              {i < words.length - 1 ? " " : null}
             </motion.span>
           </span>
-        ))}
-      </span>
+          {/* Fuera del inline-block: dentro, el espacio final se colapsa
+              y las palabras se pegaban ("SOBREMÍ"). */}
+          {i < words.length - 1 ? " " : null}
+        </Fragment>
+      ))}
     </span>
   );
 }

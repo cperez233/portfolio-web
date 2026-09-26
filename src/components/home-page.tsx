@@ -34,11 +34,12 @@ export function HomePage() {
     <main id="content" className="flex-1 overflow-x-clip">
       <PortfolioHero cvHref={resolveCvHref()} />
       <MiniProjectsSection />
+      {/* La revision gratis va arriba: es el mejor gancho para quien aun no escribe. */}
+      <AuditSection />
       <AboutSection />
       <InteractiveVideoScroller />
       <ProjectsSection />
       <PricingSection />
-      <AuditSection />
       <FaqSection />
       <Footer />
     </main>
