@@ -127,6 +127,19 @@ export interface Dictionary {
       email: string;
     };
     rights: string;
+    form: {
+      title: string;
+      name: string;
+      email: string;
+      message: string;
+      messagePlaceholder: string;
+      submit: string;
+      sending: string;
+      success: string;
+      error: string;
+      /** Asunto del correo que me llega. */
+      subject: string;
+    };
   };
   languageToggle: { label: string };
   /** Mensaje que se abre ya escrito en WhatsApp. */
@@ -257,7 +270,7 @@ const en: Dictionary = {
     blocks: [
       {
         title: "Engineering & security",
-        body: "I build complete systems, start to finish, with whatever technology the problem needs. I come from cybersecurity, so the first thing I check is where your data goes.",
+        body: "I build complete systems, start to finish, with whatever technology the problem needs. I come from cybersecurity, so the first thing I check is where your data goes. I also run carpy, my software studio, for projects that need a team.",
         traits: [
           { label: "Right tool per problem", detail: "not per habit" },
           { label: "Security first", detail: "your data, protected from day one" },
@@ -265,7 +278,7 @@ const en: Dictionary = {
       },
       {
         title: "Brand & content",
-        body: "A website works better when the brand behind it is clear. I help you with your logo, colours and short videos for social media, the same way I built an audience of 32K+ on TikTok.",
+        body: "A website works better when the brand behind it is clear. I built an audience of 32K+ on TikTok by talking to people the way they talk, and I use that to make content that brings your business customers, not just views. Logo and colours included.",
         traits: [
           { label: "Visual identity", detail: "logo, colours, fonts" },
           { label: "Content for social media", detail: "scripts and editing that hold attention" },
@@ -350,7 +363,7 @@ const en: Dictionary = {
         solution:
           "I write, record, edit and stream everything myself on TikTok, Instagram and Twitch.",
         result:
-          "Over 2M organic impressions. The same skill goes into demos and videos for clients.",
+          "Over 2M organic impressions from people who stay to watch. I bring that same connection to content that helps businesses grow.",
         statLabel: "followers built with my own content",
         shotAlts: [
           "TikTok profile with 32K+ followers",
@@ -381,6 +394,18 @@ const en: Dictionary = {
       email: "Email",
     },
     rights: "All rights reserved.",
+    form: {
+      title: "Prefer email? Write to me here.",
+      name: "Your name",
+      email: "Your email",
+      message: "What do you need?",
+      messagePlaceholder: "Your business, what isn't working and when you'd like it ready.",
+      submit: "Send message",
+      sending: "Sending…",
+      success: "Got it. I'll reply to your email within one business day.",
+      error: "It didn't go through. Try again or write to me on WhatsApp.",
+      subject: "New message from the portfolio",
+    },
   },
   languageToggle: { label: "Change language" },
   whatsappMessage:
@@ -597,6 +622,7 @@ const en: Dictionary = {
     newTab: "(opens in a new tab)",
     imageAlt: "Website built for",
     items: [
+      "My software studio · custom systems, integrations and audits",
       "Truck rental · monthly quotes in Barrancabermeja",
       "Hotel in Santa Marta · bookings over WhatsApp",
       "Footwear factory · wholesale catalogue",
@@ -640,7 +666,7 @@ const es: Dictionary = {
     blocks: [
       {
         title: "Ingeniería y seguridad",
-        body: "Construyo sistemas completos, de principio a fin, con la tecnología que pide cada problema. Vengo de ciberseguridad: lo primero que reviso es por dónde pasan tus datos.",
+        body: "Construyo sistemas completos, de principio a fin, con la tecnología que pide cada problema. Vengo de ciberseguridad: lo primero que reviso es por dónde pasan tus datos. También dirijo carpy, mi estudio de software, para los proyectos que piden un equipo.",
         traits: [
           { label: "La herramienta que pide el problema", detail: "no la costumbre" },
           { label: "Seguridad primero", detail: "tus datos protegidos desde el día uno" },
@@ -648,7 +674,7 @@ const es: Dictionary = {
       },
       {
         title: "Marca y contenido",
-        body: "Una página funciona mejor cuando la marca detrás está clara. Te ayudo con el logo, los colores y videos cortos para redes, igual que construí una audiencia de 32K+ en TikTok.",
+        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 32K+ en TikTok hablándole a la gente en su idioma, y eso mismo lo pongo en contenido que le trae clientes a tu negocio, no solo vistas. Logo y colores incluidos.",
         traits: [
           { label: "Identidad visual", detail: "logo, colores, tipografías" },
           { label: "Contenido para redes", detail: "guiones y edición que retienen" },
@@ -733,7 +759,7 @@ const es: Dictionary = {
         solution:
           "Escribo, grabo, edito y transmito todo yo, en TikTok, Instagram y Twitch.",
         result:
-          "Más de 2M de impresiones orgánicas. Lo mismo aplico a demos y videos para clientes.",
+          "Más de 2M de impresiones orgánicas de gente que se queda a ver. Esa misma conexión la llevo a contenido que ayuda a crecer negocios.",
         statLabel: "seguidores construidos con contenido propio",
         shotAlts: [
           "Perfil de TikTok con 32K+ seguidores",
@@ -764,6 +790,18 @@ const es: Dictionary = {
       email: "Correo",
     },
     rights: "Todos los derechos reservados.",
+    form: {
+      title: "¿Prefieres correo? Escríbeme aquí.",
+      name: "Tu nombre",
+      email: "Tu correo",
+      message: "¿Qué necesitas?",
+      messagePlaceholder: "Tu negocio, qué no está funcionando y para cuándo lo quieres.",
+      submit: "Enviar mensaje",
+      sending: "Enviando…",
+      success: "Recibido. Te respondo a tu correo en menos de un día hábil.",
+      error: "No se pudo enviar. Inténtalo de nuevo o escríbeme por WhatsApp.",
+      subject: "Nuevo mensaje desde el portafolio",
+    },
   },
   languageToggle: { label: "Cambiar idioma" },
   whatsappMessage:
@@ -980,6 +1018,7 @@ const es: Dictionary = {
     newTab: "(se abre en otra pestaña)",
     imageAlt: "Página web de",
     items: [
+      "Mi estudio de software · sistemas a medida, integraciones y auditorías",
       "Renta de camionetas · cotización mensual en Barrancabermeja",
       "Hotel en Santa Marta · reservas por WhatsApp",
       "Fábrica de calzado · catálogo mayorista",

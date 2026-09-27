@@ -9,7 +9,17 @@ export interface SiteMeta {
   name: string;
   role: string;
   email: string;
+  /**
+   * Ancla del formulario de contacto. Sustituye al mailto: abria la app
+   * de correo del sistema, y en movil casi siempre la de Gmail.
+   */
   emailHref: string;
+  /**
+   * Access key publica de Web3Forms. Va en el bundle a proposito: la API
+   * solo acepta envios desde el navegador y la key solo sirve para
+   * mandarme correos a mi.
+   */
+  web3formsKey: string;
   /**
    * WhatsApp Business, formato internacional E.164. Es la unica copia del
    * numero: los enlaces de WhatsApp, el JSON-LD y llms.txt salen de aqui.
@@ -29,7 +39,8 @@ export const site: SiteMeta = {
   name: "Cristian Pérez",
   role: "Systems Engineer & Tech Creator",
   email: "crisperezm879@gmail.com",
-  emailHref: "mailto:crisperezm879@gmail.com",
+  emailHref: "#contact-form",
+  web3formsKey: "a2d5baf0-6975-4e68-9e31-76aa17a9822d",
   phone: "+573334337931",
   location: "Bucaramanga, Colombia",
   githubUrl: "https://github.com/cperez233",
@@ -206,7 +217,7 @@ export const footerGroups: FooterGroup[] = [
         href: `https://wa.me/${site.phone.slice(1)}`,
         external: true,
       },
-      { labelKey: "email", href: "mailto:crisperezm879@gmail.com" },
+      { labelKey: "email", href: site.emailHref },
     ],
   },
 ];
@@ -225,6 +236,13 @@ export interface MiniProject {
  * se traduce: vive en content.ts, en este mismo orden.
  */
 export const miniProjects: MiniProject[] = [
+  {
+    key: "carpy",
+    name: "carpy",
+    domain: "carpy.tech",
+    href: "https://www.carpy.tech/",
+    image: "/sites/carpy.jpg",
+  },
   {
     key: "master-service-quality",
     name: "Master Service Quality",

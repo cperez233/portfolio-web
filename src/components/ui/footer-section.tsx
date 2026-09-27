@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { footerGroups, hero, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
+import { ContactForm } from "./contact-form";
 import { FadeSwap } from "./FadeSwap";
 import { Magnetic } from "./magnetic";
 import { RevealWords } from "./reveal-words";
@@ -55,7 +56,7 @@ export default function Footer() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col gap-12 border-b border-line pb-14 lg:flex-row lg:justify-between lg:gap-16"
         >
-          <div className="max-w-sm shrink-0">
+          <div className="w-full max-w-xl min-w-0 shrink-0 lg:max-w-md">
             <FadeSwap>
               <p className="text-sm font-medium text-accent-ink">
                 {t.footer.eyebrow}
@@ -86,12 +87,9 @@ export default function Footer() {
             </Magnetic>
             </div>
 
-            <a
-              href={site.emailHref}
-              className="mt-4 block text-sm text-ink-muted transition-colors duration-200 hover:text-accent-ink"
-            >
-              {site.email}
-            </a>
+            <div className="mt-8">
+              <ContactForm />
+            </div>
           </div>
 
           {/* Tres columnas: navegacion, redes, contacto */}
