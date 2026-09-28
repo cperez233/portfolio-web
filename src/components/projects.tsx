@@ -107,6 +107,10 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
         )}
       >
         <FadeSwap>
+          {/* Cada caso es un capitulo del manga: 第1話, 第2話... */}
+          <span aria-hidden="true" className="manga-chapter mb-3">
+            第{index + 1}話
+          </span>
           <p className="text-sm text-ink-subtle">
             <span className="font-medium text-accent-ink">{copy.client}</span>
             {" · "}
@@ -128,7 +132,7 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
           flip ? "lg:col-start-6" : "lg:col-start-1",
         )}
       >
-        <Gallery item={item} alts={copy.shotAlts} />
+        <Gallery item={item} alts={copy.shotAlts} flip={flip} />
       </motion.div>
 
       <div
@@ -146,7 +150,7 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8, ease, delay: 0.15 }}
-          className="relative z-10 mx-3 -mt-12 rounded-3xl border border-line-strong bg-surface p-5 shadow-[var(--tech-card-shadow)] transition-colors duration-500 sm:mx-6 sm:p-6 lg:mx-0 lg:mt-8"
+          className="manga-panel halftone-corner relative z-10 mx-3 -mt-12 p-5 transition-colors duration-500 sm:mx-6 sm:p-6 lg:mx-0 lg:mt-8"
         >
           {item.stat ? (
             <p className="text-6xl font-semibold tracking-tighter text-name transition-colors duration-500 sm:text-7xl">
@@ -174,15 +178,16 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
 
         <FadeIn delay={0.1}>
           <FadeSwap>
-            <dl className="mt-8 flex flex-col gap-5">
+            {/* Cajas de narracion de manga: la etiqueta es la pestana negra. */}
+            <dl className="mt-10 flex flex-col gap-7">
               {(
                 [
                   [labels.problem, copy.problem],
                   [labels.solution, copy.solution],
                 ] as const
               ).map(([label, value]) => (
-                <div key={label} className="grid gap-1.5 sm:grid-cols-[8rem_1fr] sm:gap-6 lg:grid-cols-1 lg:gap-1.5">
-                  <dt className="text-sm font-medium text-ink">{label}</dt>
+                <div key={label} className="manga-caption">
+                  <dt className="manga-caption-tab">{label}</dt>
                   <dd className="text-base leading-relaxed text-ink-muted">{value}</dd>
                 </div>
               ))}
@@ -233,7 +238,16 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
  * En escritorio la fila ocupa el ancho de la columna, una captura cada
  * vez, con flechas: con raton no hay gesto de deslizar.
  */
-function Gallery({ item, alts }: { item: CaseStudy; alts: string[] }) {
+function Gallery({
+  item,
+  alts,
+  flip,
+}: {
+  item: CaseStudy;
+  alts: string[];
+  /** Inclina la vineta hacia el lado contrario en los casos alternos. */
+  flip: boolean;
+}) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -243,12 +257,18 @@ function Gallery({ item, alts }: { item: CaseStudy; alts: string[] }) {
           ? false
           : { clipPath: "inset(6% 8% 6% 8% round 32px)", opacity: 0 }
       }
-      whileInView={{ clipPath: "inset(0% 0% 0% 0% round 0px)", opacity: 1 }}
+      // Termina un poco FUERA de la caja (inset negativo): la sombra dura de
+      // las vinetas sobresale 6px y un inset(0) la recortaria.
+      whileInView={{ clipPath: "inset(-5% -5% -5% -5% round 0px)", opacity: 1 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 1.1, ease }}
       // Sangra hasta el borde de la pantalla en celular: la fila corre de
-      // lado a lado, como en una app.
-      className="-mx-5 sm:-mx-8 md:-mx-10 lg:mx-0"
+      // lado a lado, como una tira de manga. En escritorio la vineta se
+      // inclina un grado, hacia un lado u otro segun el caso.
+      className={cn(
+        "-mx-5 sm:-mx-8 md:-mx-10 lg:mx-0",
+        flip ? "lg:rotate-1" : "lg:-rotate-1",
+      )}
     >
       {item.mobileShots ? (
         <>
@@ -340,7 +360,7 @@ function ShotRow({
                 "group relative overflow-hidden border border-line-strong bg-surface-2 shadow-[var(--tech-card-shadow)] transition-[transform,opacity,background-color,border-color] duration-500 ease-[var(--ease-premium)]",
                 phone
                   ? "aspect-[390/844] rounded-[28px] p-1.5"
-                  : "aspect-[16/11] rounded-[22px] lg:aspect-[16/10] lg:rounded-[28px]",
+                  : "aspect-[16/11] lg:aspect-[16/10]",
                 // La captura activa al frente; las demas se apartan un poco
                 // al deslizar. En escritorio solo se ve una, no hace falta.
                 index !== active && "scale-[0.94] opacity-55 lg:scale-100 lg:opacity-100",

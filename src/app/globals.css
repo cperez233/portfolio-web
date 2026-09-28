@@ -1023,6 +1023,89 @@ html.lenis body {
     box-shadow: inset 0 3px 0 0 var(--color-ink);
   }
 
+  /* Numero de capitulo (第1話) sobre cada caso de Proyectos. */
+  .manga-chapter {
+    display: inline-block;
+    padding: 0.15em 0.6em 0.1em;
+    background-color: var(--color-ink);
+    color: var(--color-canvas);
+    font-family: var(--font-jp);
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    box-shadow: 3px 3px 0 0 var(--color-accent);
+    rotate: -2deg;
+  }
+
+  /*
+    Caja de narracion de manga (el recuadro rectangular del narrador):
+    trazo de tinta, fondo liso y la etiqueta como pestana negra que
+    monta sobre el borde superior.
+  */
+  .manga-caption {
+    position: relative;
+    padding: 1.35rem 1.1rem 1rem;
+    border: 2px solid var(--color-line-strong);
+    background-color: var(--color-surface);
+  }
+
+  .manga-caption-tab {
+    position: absolute;
+    top: 0;
+    left: 0.9rem;
+    translate: 0 -55%;
+    padding: 0.2em 0.6em 0.1em;
+    background-color: var(--color-ink);
+    color: var(--color-canvas);
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /*
+    Sello (hanko) pegado al retrato del hero: avisa que el retrato se
+    puede tocar. Rojo bermellon como los sellos japoneses, con el kanji
+    de "tiempo" y la pista debajo. Cada pocos segundos da un golpe
+    para llamar la mirada; con reduced motion se queda quieto.
+  */
+  .time-stamp {
+    position: absolute;
+    right: -0.9rem;
+    bottom: -0.8rem;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    padding: 0.2rem 0.3rem 0.15rem;
+    background-color: #c8321e;
+    color: #f7f2e8;
+    border: 2px solid #f7f2e8;
+    outline: 2px solid #161418;
+    box-shadow: 3px 3px 0 0 #161418;
+    rotate: 8deg;
+    line-height: 1;
+    animation: stamp-knock 6s ease-in-out 3s infinite;
+  }
+
+  .time-stamp-kanji {
+    font-family: var(--font-jp);
+    font-size: clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
+  }
+
+  .time-stamp-hint {
+    font-family: var(--font-display);
+    font-size: clamp(0.5rem, 0.4rem + 0.3vw, 0.7rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .time-stamp {
+      animation: none;
+    }
+  }
+
   /* Corchetes dorados del nombre del Stand, como en el README. */
   .stand-name::before,
   .stand-name::after {
@@ -1073,6 +1156,21 @@ html.lenis body {
   }
   100% {
     transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+/* Golpe del sello: quieto casi todo el ciclo, un "pum" corto al final. */
+@keyframes stamp-knock {
+  0%,
+  86%,
+  100% {
+    scale: 1;
+  }
+  90% {
+    scale: 1.25;
+  }
+  94% {
+    scale: 0.95;
   }
 }
 

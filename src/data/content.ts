@@ -258,6 +258,8 @@ export interface Dictionary {
     approach: string;
     /** Etiqueta del retrato del hero, que al tocarlo "detiene el tiempo". */
     timeStop: string;
+    /** Pista corta en el sello del retrato. */
+    timeStopHint: string;
     toBeContinued: string;
     farewell: string;
   };
@@ -363,6 +365,18 @@ const en: Dictionary = {
       detail: "pair programming platform with an AI tutor",
     },
     items: [
+      {
+        client: "carpy",
+        category: "My software studio · co-founder",
+        title: "carpy: a team for the projects that need more than one person",
+        problem:
+          "Some projects are too much for one person to do well: an internal system, an e-invoicing integration or a security audit, all with a deadline.",
+        solution:
+          "I co-founded carpy, a software studio with its own team: custom software, websites and online stores, integrations, data dashboards and security audits, for businesses in Colombia and abroad.",
+        result:
+          "Every project ships with the code in a repository in the client's name from day one, plus a manual to run it.",
+        shotAlts: ["carpy.tech home page"],
+      },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
         category: "Document AI · cybersecurity team",
@@ -671,6 +685,7 @@ const en: Dictionary = {
     },
     approach: "Oh? You're approaching me?",
     timeStop: "Cristian Pérez — tap to stop time",
+    timeStopHint: "Tap",
     toBeContinued: "To Be Continued",
     farewell: "Arrivederci.",
   },
@@ -776,6 +791,18 @@ const es: Dictionary = {
       detail: "plataforma de programación en pareja con tutor de IA",
     },
     items: [
+      {
+        client: "carpy",
+        category: "Mi estudio de software · cofundador",
+        title: "carpy: un equipo para los proyectos que piden más de una persona",
+        problem:
+          "Hay proyectos que una sola persona no alcanza a cubrir bien: un sistema interno, una integración con facturación electrónica o una auditoría, todo con fecha de entrega.",
+        solution:
+          "Cofundé carpy, un estudio de software con equipo propio: software a medida, páginas y tiendas en línea, integraciones, tableros de datos y auditorías de seguridad, para negocios en Colombia y afuera.",
+        result:
+          "Cada proyecto se entrega con el código en un repositorio a nombre del cliente desde el primer día, y un manual para operarlo.",
+        shotAlts: ["Página de inicio de carpy.tech"],
+      },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
         category: "IA documental · equipo de ciberseguridad",
@@ -1084,6 +1111,7 @@ const es: Dictionary = {
     },
     approach: "¿Oh? ¿Te acercas a mí?",
     timeStop: "Cristian Pérez — toca para detener el tiempo",
+    timeStopHint: "Toca",
     toBeContinued: "To Be Continued",
     farewell: "Arrivederci.",
   },

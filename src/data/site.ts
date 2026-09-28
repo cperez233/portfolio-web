@@ -127,6 +127,12 @@ const phoneShot = (src: string): CaseShot => ({ src, width: 780, height: 1688 })
 
 export const cases: CaseStudy[] = [
   {
+    // Mi estudio de software. Sin cifra: su resultado se cuenta en texto.
+    key: "carpy",
+    shots: [{ src: "/sites/carpy.jpg", width: 1200, height: 750 }],
+    liveUrl: "https://www.carpy.tech/",
+  },
+  {
     key: "fcv",
     stat: "746",
     shots: [

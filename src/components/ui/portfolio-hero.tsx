@@ -221,16 +221,28 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             onClick={stopTime}
             aria-label={t.jojo.timeStop}
             title={t.jojo.timeStop}
-            className="manga-portrait relative block h-[86px] w-[60px] cursor-pointer overflow-hidden bg-surface-2 transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]"
+            className="relative block cursor-pointer transition-transform duration-300 hover:scale-105"
           >
-            <Image
-              src={portrait.local}
-              alt={site.name}
-              fill
-              priority
-              sizes="(min-width: 1024px) 134px, (min-width: 768px) 116px, (min-width: 640px) 100px, 60px"
-              className="object-cover"
-            />
+            <span className="manga-portrait relative block h-[86px] w-[60px] overflow-hidden bg-surface-2 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]">
+              <Image
+                src={portrait.local}
+                alt={site.name}
+                fill
+                priority
+                sizes="(min-width: 1024px) 134px, (min-width: 768px) 116px, (min-width: 640px) 100px, 60px"
+                className="object-cover"
+              />
+            </span>
+            {/*
+              Sello que avisa que el retrato se toca (el easter egg no se
+              descubria solo). Fuera del recorte del retrato para que
+              sobresalga de la esquina. aria-hidden: el boton ya tiene
+              su aria-label.
+            */}
+            <span aria-hidden="true" className="time-stamp">
+              <span className="time-stamp-kanji">時</span>
+              <span className="time-stamp-hint">{t.jojo.timeStopHint}</span>
+            </span>
           </button>
         </div>
       </div>
