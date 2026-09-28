@@ -48,7 +48,7 @@ export function ProjectsSection() {
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn className="mb-14 sm:mb-20">
           <FadeSwap>
-            <p className="mb-4 text-sm font-medium text-accent-ink">
+            <p data-part={`${t.jojo.part} 5`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.projects.eyebrow}
             </p>
             <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -153,7 +153,7 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
               <CountUp value={item.stat} />
             </p>
           ) : (
-            <p className="text-sm font-medium text-accent-ink">{labels.result}</p>
+            <p className="jojo-eyebrow text-accent-ink">{labels.result}</p>
           )}
           <FadeSwap>
             {copy.statLabel ? (

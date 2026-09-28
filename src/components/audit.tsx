@@ -76,7 +76,7 @@ export function AuditSection() {
       <div className="relative z-10 mx-auto w-full max-w-3xl">
         <FadeIn>
           <FadeSwap>
-            <p className="mb-4 text-sm font-medium text-accent-ink">{copy.eyebrow}</p>
+            <p data-part={`${t.jojo.part} 2`} className="jojo-eyebrow mb-4 text-accent-ink">{copy.eyebrow}</p>
             <h2
               id="audit-title"
               className="text-balance text-3xl font-semibold tracking-tight text-ink sm:text-5xl"

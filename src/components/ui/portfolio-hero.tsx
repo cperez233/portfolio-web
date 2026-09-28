@@ -10,6 +10,7 @@ import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
+import { Menacing } from "@/components/ui/menacing";
 
 interface BlurTextProps {
   text: string;
@@ -99,8 +100,15 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     interpolan, asi que el nombre saltaria de golpe al cambiar de tema
     mientras el resto funde en 500ms.
   */
-  const nameClassName =
-    "w-full flex-nowrap justify-center whitespace-nowrap text-name transition-colors duration-500 text-[19vw] font-black uppercase leading-[0.8] tracking-tighter select-none sm:text-[16vw] md:text-[15vw] lg:text-[14vw]";
+  /*
+    Estilo JoJo: Anton (mas estrecha que la Geist Black, de ahi el vw un
+    poco mayor) y los dos colores de la portada del README: nombre en
+    crema/tinta, apellido en oro.
+  */
+  const nameBaseClassName =
+    "w-full flex-nowrap justify-center whitespace-nowrap font-display transition-colors duration-500 text-[22vw] uppercase leading-[0.84] tracking-[0.01em] select-none sm:text-[18.5vw] md:text-[17vw] lg:text-[15.5vw]";
+  const firstNameClassName = `${nameBaseClassName} text-ink`;
+  const nameClassName = `${nameBaseClassName} text-name`;
 
   return (
     <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
@@ -118,8 +126,29 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         className="flex h-full origin-top flex-col justify-between px-4 pb-4 pt-20 sm:pb-6 sm:pt-24"
       >
 
-      {/* Nombre monumental con el retrato ovalado centrado entre lineas */}
+      {/* Nombre monumental con el retrato en vineta centrado entre lineas */}
       <div className="relative my-auto w-full text-center">
+        {/*
+          Fondo de vineta de impacto: lineas de velocidad y trama de puntos
+          detras del retrato, y el ゴゴゴ a los lados. Todo decorativo y
+          detras del nombre (-z-10), sin eventos.
+        */}
+        <div
+          aria-hidden="true"
+          className="speed-lines pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[150vw] -translate-x-1/2 -translate-y-1/2 sm:size-[110vw] lg:size-[80vw]"
+        />
+        <div
+          aria-hidden="true"
+          className="halftone halftone-fade pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[90vw] -translate-x-1/2 -translate-y-1/2 lg:size-[52vw]"
+        />
+        <Menacing
+          size="clamp(1.6rem, 4vw, 3.6rem)"
+          className="absolute -top-[9%] left-[3%] z-20 hidden sm:block"
+        />
+        <Menacing
+          size="clamp(1.4rem, 3.4vw, 3rem)"
+          className="absolute -top-[62%] right-[4%] z-20 sm:-bottom-[12%] sm:top-auto sm:right-[3%]"
+        />
         {/*
           El nombre es el <h1> de la pagina: sin el, el HTML no tenia
           ningun encabezado principal. aria-label porque las letras van en
@@ -131,7 +160,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           <BlurText
             text={hero.firstName}
               delay={90}
-              className={nameClassName}
+              className={firstNameClassName}
           />{" "}
           <BlurText
             text={hero.lastName}
@@ -152,7 +181,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           chicos para que el medallon tape menos el nombre.
         */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <div className="relative h-[86px] w-[52px] overflow-hidden rounded-full border-2 border-accent bg-surface-2 shadow-2xl transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[86px] md:h-[168px] md:w-[99px] lg:h-[194px] lg:w-[116px]">
+          <div className="manga-portrait relative h-[86px] w-[60px] overflow-hidden bg-surface-2 transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]">
             <Image
               src={portrait.local}
               alt={site.name}
@@ -215,7 +244,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               onClick={() => trackWhatsappClick("hero", language)}
               target="_blank"
               rel="noopener noreferrer"
-              className="accent-fill group inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide shadow-lg transition-transform duration-300 hover:scale-105 active:scale-95"
+              className="accent-fill group inline-flex min-h-12 items-center gap-2 rounded-full px-7 text-base font-bold tracking-wide transition-transform duration-300 hover:scale-105 active:scale-95"
             >
               {t.hero.ctaPrimary}
               <ArrowUpRight

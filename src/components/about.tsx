@@ -10,6 +10,7 @@ import { miniProjects } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { RevealWords } from "@/components/ui/reveal-words";
 import { CountUp } from "@/components/ui/count-up";
+import { Menacing } from "@/components/ui/menacing";
 
 /**
  * About editorial: dos bloques de texto, cada uno con sus rasgos debajo,
@@ -39,11 +40,12 @@ export function AboutSection() {
       className="relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
       <SectionEdge />
+      <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-16 z-10 hidden sm:block" />
 
       <SectionTransition className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn>
           <FadeSwap>
-            <p className="mb-5 text-sm font-medium text-accent-ink">
+            <p data-part={`${t.jojo.part} 3`} className="jojo-eyebrow mb-5 text-accent-ink">
               {t.about.eyebrow}
             </p>
             <h2 className="max-w-3xl text-section font-semibold uppercase text-ink">
@@ -111,7 +113,7 @@ export function AboutSection() {
             escritorio acompana al texto (sticky) mientras se lee.
           */}
           <motion.dl
-            className="order-first grid grid-cols-2 gap-x-6 border-t border-line lg:order-none lg:sticky lg:top-28 lg:col-span-5 lg:grid-cols-1 lg:self-start"
+            className="order-first grid grid-cols-2 gap-3 sm:gap-4 lg:order-none lg:sticky lg:top-28 lg:col-span-5 lg:grid-cols-1 lg:self-start"
             initial={shouldReduceMotion ? false : "hidden"}
             whileInView="show"
             viewport={{ once: true, amount: 0.3 }}
@@ -133,12 +135,12 @@ export function AboutSection() {
                 }}
                 className={
                   fact.wide
-                    ? "col-span-2 flex flex-col gap-2 border-b border-line py-5 sm:py-6 lg:col-span-1"
-                    : "flex flex-col gap-2 border-b border-line py-5 sm:py-6"
+                    ? "manga-panel halftone-corner col-span-2 flex flex-col gap-2 p-5 sm:p-6 lg:col-span-1"
+                    : "manga-panel halftone-corner flex flex-col gap-2 p-5 sm:p-6"
                 }
               >
                 <dt className="sr-only">{fact.label}</dt>
-                <dd className="text-5xl font-semibold tracking-tighter text-name transition-colors duration-500 sm:text-7xl">
+                <dd className="font-display text-6xl tracking-wide text-name transition-colors duration-500 sm:text-7xl">
                   <CountUp value={fact.value} />
                 </dd>
                 <dd className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm text-ink-muted sm:text-lg">

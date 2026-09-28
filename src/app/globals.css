@@ -19,19 +19,21 @@
 ------------------------------------------------------------------ */
 @theme {
   /* Superficies - claro */
-  --color-canvas: #f8f9fa;
-  --color-surface: #ffffff;
-  --color-surface-2: #f1f2f4;
-  --color-surface-3: #e7e9ec;
+  /* Papel de manga: crema tibio, como la version clara del README. */
+  --color-canvas: #f1ebdf;
+  --color-surface: #f7f2e8;
+  --color-surface-2: #e9e1d2;
+  --color-surface-3: #ddd4c3;
 
   /* Texto - claro */
-  --color-ink: #0c0c0c;
-  --color-ink-muted: #52525b;
-  --color-ink-subtle: #71717a;
+  --color-ink: #161418;
+  --color-ink-muted: #4a453e;
+  --color-ink-subtle: #6b655c;
 
-  /* Bordes - claro */
-  --color-line: rgba(12, 12, 12, 0.1);
-  --color-line-strong: rgba(12, 12, 12, 0.18);
+  /* Bordes - claro. El fuerte es casi tinta llena: las tarjetas se leen
+     como viñetas de manga. */
+  --color-line: rgba(22, 20, 24, 0.14);
+  --color-line-strong: rgba(22, 20, 24, 0.78);
 
   /*
     Acento vino. `accent` es color de RELLENO (botones, bordes, barras):
@@ -39,11 +41,11 @@
     `accent-ink` es el acento cuando hace de TEXTO. En oscuro no puede
     ser #652a31: sobre #09090b da 1.83:1 e incumple AA.
   */
-  --color-accent: #652a31;
-  --color-accent-strong: #8c3b45;
-  --color-accent-ink: #652a31;
-  --color-on-accent: #ffffff;
-  --color-accent-dim: rgba(101, 42, 49, 0.12);
+  --color-accent: #e3b341;
+  --color-accent-strong: #f0c75a;
+  --color-accent-ink: #7d5408;
+  --color-on-accent: #161418;
+  --color-accent-dim: rgba(227, 179, 65, 0.2);
 
   /*
     Color del nombre monumental. Solido y no gradiente a proposito: los
@@ -54,7 +56,7 @@
     daba 1.83:1, por debajo incluso del minimo de 3:1 para texto grande.
     A 179px eso es lo primero que se ve, y era lo menos legible.
   */
-  --color-name: #8c3b45;
+  --color-name: #9a6a0c;
 
   /*
     Paneles tecnicos (diagramas, terminal, tarjetas de servicio y galeria):
@@ -67,17 +69,17 @@
     claros en oscuro (-300/-400): el mismo tono, legible en cada fondo.
     El acento en claro es el vino fuerte (#8c3b45, 7:1 sobre zinc-100).
   */
-  --color-tech-bg: #f7f7f8;
-  --color-tech-bar: #efeff1;
-  --color-tech-node: #ffffff;
-  --color-tech-line: #e4e4e7;
-  --color-tech-dot: #d4d4d8;
-  --color-tech-ink: #18181b;
-  --color-tech-ink-soft: #3f3f46;
-  --color-tech-ink-muted: #52525b;
-  --color-tech-ink-subtle: #6b6b73;
-  --color-tech-term: rgba(9, 9, 11, 0.035);
-  --color-tech-accent: #8c3b45;
+  --color-tech-bg: #f7f2e8;
+  --color-tech-bar: #e9e1d2;
+  --color-tech-node: #fbf8f1;
+  --color-tech-line: rgba(22, 20, 24, 0.7);
+  --color-tech-dot: #c9bfae;
+  --color-tech-ink: #161418;
+  --color-tech-ink-soft: #3a352f;
+  --color-tech-ink-muted: #4a453e;
+  --color-tech-ink-subtle: #6b655c;
+  --color-tech-term: rgba(22, 20, 24, 0.04);
+  --color-tech-accent: #9a6a0c;
   --color-tech-ok: #047857;
   --color-tech-warn: #b45309;
   --color-tech-error: #be123c;
@@ -85,7 +87,18 @@
   --color-tech-status: #047857;
 
   /* Tipografia */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  /* Estilo JoJo: Anton para titulos, Dela Gothic para katakana y SFX. */
+  --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
+  --font-jp: var(--font-dela), "Hiragino Kaku Gothic StdN", "Yu Gothic", sans-serif;
+
+  /* Viñetas de manga: esquinas rectas. Las pildoras (rounded-full) quedan. */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
   --font-mono: var(--font-fira-code), ui-monospace, monospace;
 
   /* Escala fluida. El cuerpo nunca baja de 16px. */
@@ -100,49 +113,49 @@
 
 /* Tema oscuro. `html.dark` (0,1,1) gana a `:root` (0,1,0) sin !important. */
 html.dark {
-  --color-canvas: #09090b;
-  --color-surface: #0c0c0c;
-  --color-surface-2: #141414;
-  --color-surface-3: #1c1c1f;
+  /* Tinta de manga nocturna: el negro, crema y oro del README. */
+  --color-canvas: #111013;
+  --color-surface: #17151a;
+  --color-surface-2: #1e1b21;
+  --color-surface-3: #28242b;
 
-  --color-ink: #fafafa;
-  --color-ink-muted: #a1a1aa;
-  --color-ink-subtle: #71717a;
+  --color-ink: #ece6d8;
+  --color-ink-muted: #b3ac9f;
+  --color-ink-subtle: #8f897e;
 
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.14);
+  --color-line: rgba(236, 230, 216, 0.12);
+  --color-line-strong: rgba(236, 230, 216, 0.6);
 
-  /* Tinte vino claro: 7.3:1 sobre #09090b, legible a cualquier tamano. */
-  --color-accent-ink: #c98d95;
-  /* Blush legible sobre negro: 5.51:1 y conserva la identidad vino. */
-  --color-name: #c46d79;
-  --color-accent-dim: rgba(140, 59, 69, 0.18);
+  --color-accent-ink: #e3b341;
+  --color-name: #e3b341;
+  --color-accent-dim: rgba(227, 179, 65, 0.14);
 
-  /* Paneles tecnicos: la escala zinc del editor oscuro de siempre. */
-  --color-tech-bg: #09090b;
-  --color-tech-bar: rgba(24, 24, 27, 0.8);
-  --color-tech-node: rgba(24, 24, 27, 0.9);
-  --color-tech-line: #27272a;
-  --color-tech-dot: #3f3f46;
-  --color-tech-ink: #f4f4f5;
-  --color-tech-ink-soft: #d4d4d8;
-  --color-tech-ink-muted: #a1a1aa;
-  --color-tech-ink-subtle: #71717a;
+  --color-tech-bg: #0d0c0f;
+  --color-tech-bar: #17151a;
+  --color-tech-node: #1a181d;
+  --color-tech-line: rgba(236, 230, 216, 0.28);
+  --color-tech-dot: #3a353d;
+  --color-tech-ink: #ece6d8;
+  --color-tech-ink-soft: #d6cfc1;
+  --color-tech-ink-muted: #b3ac9f;
+  --color-tech-ink-subtle: #8f897e;
   --color-tech-term: rgba(0, 0, 0, 0.4);
-  --color-tech-accent: #c98d95;
+  --color-tech-accent: #e3b341;
   --color-tech-ok: #34d399;
   --color-tech-warn: #fcd34d;
   --color-tech-error: #fb7185;
   --color-tech-info: #7dd3fc;
   --color-tech-status: #6ee7b7;
 
-  --tech-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.6);
-  --tech-card-shadow: 0 28px 60px -34px rgba(0, 0, 0, 0.85);
+  --tech-shadow: 6px 6px 0 0 rgba(227, 179, 65, 0.85);
+  --tech-card-shadow: 6px 6px 0 0 rgba(227, 179, 65, 0.85);
   --stack-shadow: 0 -16px 40px -24px rgba(0, 0, 0, 0.55);
-  --tech-grid-line: rgba(255, 255, 255, 0.035);
-  --orb-core: #652a31;
-  --orb-mid: rgba(101, 42, 49, 0.15);
-  --orb-opacity: 0.2;
+  --tech-grid-line: rgba(236, 230, 216, 0.035);
+  --orb-core: rgba(227, 179, 65, 0.55);
+  --orb-mid: rgba(227, 179, 65, 0.1);
+  --orb-opacity: 0.14;
+  --halftone-dot: rgba(236, 230, 216, 0.16);
+  --panel-shadow: #e3b341;
 }
 
 /*
@@ -153,13 +166,16 @@ html.dark {
   por los lados y ningun `overflow-x-clip` las corte.
 */
 :root {
-  --tech-shadow: 0 20px 44px -28px rgba(15, 23, 42, 0.22);
-  --tech-card-shadow: 0 22px 44px -30px rgba(15, 23, 42, 0.26);
-  --stack-shadow: 0 -12px 30px -22px rgba(15, 23, 42, 0.18);
-  --tech-grid-line: rgba(9, 9, 11, 0.045);
-  --orb-core: rgba(214, 120, 133, 0.5);
-  --orb-mid: rgba(214, 120, 133, 0.1);
-  --orb-opacity: 0.3;
+  /* Sombras duras de viñeta: desplazadas y sin desenfoque. */
+  --tech-shadow: 6px 6px 0 0 #161418;
+  --tech-card-shadow: 6px 6px 0 0 #161418;
+  --stack-shadow: 0 -12px 30px -22px rgba(22, 20, 24, 0.18);
+  --tech-grid-line: rgba(22, 20, 24, 0.05);
+  --orb-core: rgba(227, 179, 65, 0.6);
+  --orb-mid: rgba(227, 179, 65, 0.12);
+  --orb-opacity: 0.35;
+  --halftone-dot: rgba(22, 20, 24, 0.13);
+  --panel-shadow: #161418;
 }
 
 @layer base {
@@ -174,11 +190,30 @@ html.dark {
   }
 
   body {
+    /* Archivo trae espacios estrechos: con tracking-tight las palabras se pegaban. */
+    word-spacing: 0.05em;
     background-color: var(--color-canvas);
     color: var(--color-ink);
     transition:
       background-color 0.3s var(--ease-premium),
       color 0.3s var(--ease-premium);
+  }
+
+  /*
+    Titulos en Anton, como la portada del README. Anton solo tiene peso
+    400: sin font-synthesis el navegador la engordaria al ver
+    font-semibold/font-black en los componentes.
+  */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-synthesis: none;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    font-weight: 700;
   }
 
   ::selection {
@@ -209,9 +244,29 @@ html.dark {
 
 @layer components {
   /* Relleno de marca: el gradiente vino pedido, con texto blanco encima. */
+  /*
+    Boton JoJo: oro lleno, tinta encima, trazo de viñeta y sombra dura.
+    Al pulsar la sombra se aplasta, como un golpe de manga.
+  */
   .accent-fill {
-    background-image: linear-gradient(135deg, #652a31 0%, #8c3b45 100%);
-    color: #ffffff;
+    background-color: var(--color-accent);
+    background-image: none;
+    color: #161418;
+    border: 2.5px solid #161418;
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 400 !important;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition:
+      transform 0.18s var(--ease-premium),
+      box-shadow 0.18s var(--ease-premium);
+  }
+  .accent-fill:hover {
+    box-shadow: 7px 7px 0 0 var(--color-ink);
+  }
+  .accent-fill:active {
+    box-shadow: 1px 1px 0 0 var(--color-ink);
   }
 
   /*
@@ -296,12 +351,23 @@ html.lenis body {
     llegaba al borde a plena intensidad en vez de desvanecerse: se veia
     cortada a cuchillo en el lado izquierdo y en el derecho.
   */
+  /*
+    En el estilo manga la capa que sube no tiene esquinas redondeadas:
+    entra como una viñeta nueva, con trazo de tinta y banda dorada.
+  */
   .layer-top {
-    box-shadow: 0 -24px 48px -24px rgba(0, 0, 0, 0.32);
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-top: 3px solid var(--color-ink);
+    box-shadow:
+      0 -8px 0 0 var(--color-accent),
+      0 -24px 48px -24px rgba(0, 0, 0, 0.32);
   }
 
   html.dark .layer-top {
-    box-shadow: 0 -24px 48px -24px rgba(0, 0, 0, 0.75);
+    box-shadow:
+      0 -8px 0 0 var(--color-accent),
+      0 -24px 48px -24px rgba(0, 0, 0, 0.75);
   }
 }
 
@@ -662,4 +728,365 @@ html.lenis body {
       animation: none;
     }
   }
+}
+
+/* ------------------------------------------------------------------
+   Estilo JoJo / manga. Solo piel: no toca layout, capas ni animaciones
+   de scroll. Mismo lenguaje que el README de perfil (portada con reloj,
+   tarjeta de Stand): tinta, crema, oro, trama de puntos y ゴゴゴ.
+------------------------------------------------------------------ */
+@keyframes menacing {
+  0%,
+  100% {
+    transform: rotate(var(--menacing-rotate, -10deg)) scale(1) translate(0, 0);
+  }
+  25% {
+    transform: rotate(var(--menacing-rotate, -10deg)) scale(1.07)
+      translate(-1.5px, 1px);
+  }
+  50% {
+    transform: rotate(var(--menacing-rotate, -10deg)) scale(1)
+      translate(1px, -1px);
+  }
+  75% {
+    transform: rotate(var(--menacing-rotate, -10deg)) scale(1.05)
+      translate(0, 1.5px);
+  }
+}
+
+@layer components {
+  .menacing-glyph {
+    font-family: var(--font-jp);
+    line-height: 1;
+    color: var(--color-accent);
+    /* Contorno del color del fondo: el ゴ se despega de lo que tenga detras. */
+    -webkit-text-stroke: 4px var(--color-canvas);
+    paint-order: stroke fill;
+    animation: menacing 1.5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menacing-glyph {
+      animation: none;
+      transform: rotate(var(--menacing-rotate, -10deg));
+    }
+  }
+
+  /* Trama de puntos (screentone), como el README. */
+  .halftone {
+    background-image: radial-gradient(
+      circle,
+      var(--halftone-dot) 1.6px,
+      transparent 1.7px
+    );
+    background-size: 9px 9px;
+  }
+
+  /* Se desvanece en circulo: una mancha de trama, no un papel pintado. */
+  .halftone-fade {
+    -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+    mask-image: radial-gradient(closest-side, #000, transparent);
+  }
+
+  /* Lineas de velocidad radiales, el fondo de las viñetas de impacto. */
+  .speed-lines {
+    background-image: repeating-conic-gradient(
+      from 0deg,
+      var(--halftone-dot) 0deg 1.2deg,
+      transparent 1.2deg 7deg
+    );
+    -webkit-mask-image: radial-gradient(
+      closest-side,
+      transparent 30%,
+      #000 72%,
+      transparent
+    );
+    mask-image: radial-gradient(
+      closest-side,
+      transparent 30%,
+      #000 72%,
+      transparent
+    );
+  }
+
+  /*
+    Etiqueta de seccion: el "PART 1" del README. Mismo texto de siempre,
+    ahora en Anton con una barra dorada delante.
+  */
+  .jojo-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .jojo-eyebrow::before {
+    content: "";
+    flex: none;
+    width: 2.25rem;
+    height: 4px;
+    background-color: var(--color-accent);
+    box-shadow: 2px 2px 0 0 var(--color-ink);
+  }
+
+  /*
+    Con data-part la barra se vuelve la placa "PARTE 3" de cada arco de
+    JoJo. El texto sale del diccionario (jojo.part) via atributo; el
+    " / ''" lo oculta a lectores de pantalla: es decoracion, la etiqueta
+    real sigue siendo el texto del parrafo.
+  */
+  .jojo-eyebrow[data-part]::before {
+    content: attr(data-part) / "";
+    width: auto;
+    height: auto;
+    padding: 0.2em 0.55em 0.15em;
+    color: #161418;
+    font-size: 0.85em;
+    letter-spacing: 0.14em;
+    transform: skewX(-10deg);
+  }
+
+  /*
+    Viñeta de manga. El "borde" es el propio fondo (tinta) y ::before
+    pinta el interior 3px mas adentro: asi el trazo sigue tambien el
+    corte diagonal, cosa que un border normal no hace con clip-path.
+  */
+  .manga-panel {
+    --panel-cut: 0px;
+    --panel-fill: var(--color-surface);
+    position: relative;
+    isolation: isolate;
+    background-color: var(--color-line-strong);
+    box-shadow: 5px 5px 0 0 var(--panel-shadow);
+  }
+
+  .manga-panel::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    z-index: -1;
+    background-color: var(--panel-fill);
+    clip-path: inherit;
+  }
+
+  /* Trama en la esquina superior derecha, desvanecida hacia dentro. */
+  .manga-panel.halftone-corner::before {
+    background-image:
+      radial-gradient(
+        circle at 100% 0,
+        transparent 0,
+        var(--panel-fill) 55%
+      ),
+      radial-gradient(circle, var(--halftone-dot) 1.6px, transparent 1.7px);
+    background-size:
+      100% 100%,
+      9px 9px;
+  }
+
+  /*
+    Corte diagonal entre dos viñetas vecinas, solo en escritorio. Con
+    clip-path la sombra dura se recortaria, asi que ahi se quita.
+  */
+  @media (width >= 64rem) {
+    .manga-panel-cut-right,
+    .manga-panel-cut-left {
+      box-shadow: none;
+    }
+
+    .manga-panel-cut-right {
+      clip-path: polygon(0 0, 100% 0, calc(100% - 48px) 100%, 0 100%);
+    }
+
+    .manga-panel-cut-left {
+      clip-path: polygon(48px 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
+
+  /*
+    Globo de dialogo de manga: trazo de tinta, sombra dura y rabito
+    abajo a la izquierda (dos triangulos: tinta detras, relleno delante).
+  */
+  .jojo-bubble {
+    position: relative;
+    display: inline-block;
+    padding: 0.55em 1em 0.45em;
+    border: 2.5px solid var(--color-ink);
+    border-radius: 999px;
+    background-color: var(--color-surface);
+    box-shadow: 4px 4px 0 0 var(--color-accent);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 0.9rem + 1vw, 1.5rem);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    rotate: -2deg;
+  }
+
+  .jojo-bubble::before,
+  .jojo-bubble::after {
+    content: "";
+    position: absolute;
+    left: 1.6em;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+
+  .jojo-bubble::before {
+    bottom: -17px;
+    border-width: 16px 14px 0 0;
+    border-color: var(--color-ink) transparent transparent transparent;
+  }
+
+  .jojo-bubble::after {
+    bottom: -11px;
+    left: calc(1.6em + 3px);
+    border-width: 11px 9px 0 0;
+    border-color: var(--color-surface) transparent transparent transparent;
+  }
+
+  /*
+    Flecha "To Be Continued". La forma es ::before con clip-path; el
+    contorno crema sale de cuatro drop-shadow en el contenedor, que si
+    siguen la silueta recortada (un border no podria).
+  */
+  .tbc-arrow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 3.5rem;
+    padding: 0.4rem 2rem 0.4rem 3.4rem;
+    filter: drop-shadow(2.5px 0 0 var(--color-ink))
+      drop-shadow(-2.5px 0 0 var(--color-ink))
+      drop-shadow(0 2.5px 0 var(--color-ink))
+      drop-shadow(0 -2.5px 0 var(--color-ink));
+  }
+
+  .tbc-arrow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--color-accent);
+    clip-path: polygon(
+      0 50%,
+      2.2rem 0,
+      2.2rem 16%,
+      100% 16%,
+      100% 84%,
+      2.2rem 84%,
+      2.2rem 100%
+    );
+  }
+
+  .tbc-arrow-text {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 0.8rem + 1.4vw, 1.9rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #161418;
+    transform: skewX(-12deg);
+  }
+
+  /* Corchetes dorados del nombre del Stand, como en el README. */
+  .stand-name::before,
+  .stand-name::after {
+    content: "";
+    position: absolute;
+    width: 0.32em;
+    height: 0.32em;
+    border-color: var(--color-accent);
+    border-style: solid;
+  }
+
+  .stand-name::before {
+    left: 0;
+    top: 0.05em;
+    border-width: 0.09em 0 0 0.09em;
+  }
+
+  .stand-name::after {
+    right: 0;
+    bottom: 0.02em;
+    border-width: 0 0.09em 0.09em 0;
+  }
+
+  /*
+    Retrato del hero: de medallon a viñeta de manga. Trazo de tinta,
+    sombra dura dorada y un leve giro de pose.
+  */
+  .manga-portrait {
+    border-radius: 0 !important;
+    border: 3px solid var(--color-ink) !important;
+    box-shadow: 6px 6px 0 0 var(--color-accent) !important;
+    rotate: -3deg;
+  }
+}
+
+/*
+  Titulares de seccion: sombra dura desplazada en oro apagado, como el
+  rotulo de un capitulo. text-shadow no crea contexto de apilado, asi
+  que no interfiere con RevealWords.
+*/
+@layer base {
+  h2 {
+    text-shadow: 0.05em 0.05em 0 var(--color-accent-dim);
+  }
+}
+
+/*
+  Navbar: el vidrio liquido se vuelve una viñeta de manga. Mismas capas
+  y animaciones (la forma y el giro siguen en floating-nav.tsx); solo
+  cambia la piel: fondo casi opaco con trama, trazo de tinta y sombra dura.
+*/
+@layer components {
+  .liquid-glass,
+  html.dark .liquid-glass {
+    border-radius: 0 !important;
+    background-color: color-mix(in srgb, var(--color-canvas) 90%, transparent);
+    background-image: radial-gradient(
+      circle,
+      var(--halftone-dot) 1.2px,
+      transparent 1.3px
+    );
+    background-size: 7px 7px;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    outline: 2px solid var(--color-line-strong);
+    box-shadow: 4px 4px 0 0 var(--color-accent);
+  }
+
+  .liquid-glass::before {
+    display: none;
+  }
+
+  .liquid-glass[data-scrolled="true"],
+  html.dark .liquid-glass[data-scrolled="true"] {
+    background-color: color-mix(in srgb, var(--color-canvas) 97%, transparent);
+    box-shadow: 5px 5px 0 0 var(--color-accent);
+  }
+
+  .glass-chip,
+  html.dark .glass-chip {
+    background-color: var(--color-surface-2);
+    box-shadow: inset 0 0 0 1.5px var(--color-line-strong);
+  }
+}
+
+/*
+  Sin capa a proposito: las reglas fuera de @layer ganan a las utilidades
+  de Tailwind sin !important. Las pildoras con trazo (botones
+  secundarios, etiquetas, conmutadores, el campo de la revision) y los
+  botones dorados pasan a esquinas rectas, como globos de manga. Los
+  puntos (rounded-full sin borde) no cambian.
+*/
+.rounded-full:is(.border-line, .border-line-strong, .border-tech-line, .glass-chip),
+.accent-fill,
+.glass-chip .accent-fill {
+  border-radius: 0;
 }

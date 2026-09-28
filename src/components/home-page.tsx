@@ -6,6 +6,7 @@ import { FaqSection } from "@/components/faq";
 import { PricingSection } from "@/components/pricing";
 import { MiniProjectsSection } from "@/components/mini-projects";
 import { ProjectsSection } from "@/components/projects";
+import { StandSection } from "@/components/stand-card";
 import Footer from "@/components/ui/footer-section";
 import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
 import PortfolioHero from "@/components/ui/portfolio-hero";
@@ -37,6 +38,8 @@ export function HomePage() {
       {/* La revision gratis va arriba: es el mejor gancho para quien aun no escribe. */}
       <AuditSection />
       <AboutSection />
+      {/* Guino JoJo: la tarjeta de Stand del README, cerrando Sobre mi. */}
+      <StandSection />
       <InteractiveVideoScroller />
       <ProjectsSection />
       <PricingSection />

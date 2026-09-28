@@ -17,6 +17,7 @@ import { FadeIn } from "@/components/ui/FadeIn";
 import { FadeSwap } from "@/components/ui/FadeSwap";
 import { SectionEdge } from "@/components/ui/section-transition";
 import { RevealWords } from "@/components/ui/reveal-words";
+import { Menacing } from "@/components/ui/menacing";
 import { cn } from "@/lib/utils";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -54,11 +55,12 @@ export function PricingSection() {
       className="layer-top relative z-30 -mt-8 overflow-x-clip rounded-t-[32px] bg-canvas px-5 py-20 transition-colors duration-500 sm:rounded-t-[48px] sm:px-8 sm:py-28 md:px-10"
     >
       <SectionEdge />
+      <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-16 z-10 hidden sm:block" />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn className="mb-10 sm:mb-14">
           <FadeSwap>
-            <p className="mb-4 text-sm font-medium text-accent-ink">{copy.eyebrow}</p>
+            <p data-part={`${t.jojo.part} 6`} className="jojo-eyebrow mb-4 text-accent-ink">{copy.eyebrow}</p>
             <h2
               id="pricing-title"
               className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl"
@@ -269,7 +271,7 @@ function MobilePlans() {
               {active ? (
                 <motion.span
                   layoutId="plan-pill"
-                  className="accent-fill absolute inset-0 rounded-full shadow-[0_6px_18px_-8px_rgba(101,42,49,0.8)]"
+                  className="accent-fill absolute inset-0 rounded-full"
                   transition={
                     shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }
                   }

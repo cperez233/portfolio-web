@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fira_Code, Geist } from "next/font/google";
+import { Anton, Archivo, Dela_Gothic_One, Fira_Code } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { dictionaries, type Language } from "@/data/content";
 import { LanguageProvider } from "@/lib/language";
@@ -13,15 +13,35 @@ import { siteUrl } from "@/lib/site-url";
 import "@/app/globals.css";
 
 /**
- * Dos familias y no mas: grotesca sobria para lectura, mono para tags,
- * numeros y el nombre monumental del hero.
+ * Tipografia estilo JoJo, la misma del README de perfil: Archivo para
+ * lectura, Anton para titulos, Dela Gothic para el ゴゴゴ decorativo y
+ * mono para tags y numeros.
  *
  * Se cargan con next/font en lugar de <link> a Google: se auto-hospedan,
  * no sale ninguna peticion a google.com y no hay salto de layout.
  */
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
+});
+
+/* Estilo JoJo: Anton para titulos y nombres, como la portada del README. */
+const anton = Anton({
+  variable: "--font-anton",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+/*
+  Katakana y SFX manga (ゴゴゴ, ドドド). preload false: la fuente solo trae
+  el subconjunto latino como "subset" y los glifos japoneses llegan por
+  unicode-range cuando se usan.
+*/
+const delaGothic = Dela_Gothic_One({
+  variable: "--font-dela",
+  weight: "400",
+  subsets: ["latin"],
+  preload: false,
 });
 
 const firaCode = Fira_Code({
@@ -94,8 +114,8 @@ export const viewport: Viewport = {
     que en tema claro la barra del navegador seguia pintandose oscura.
   */
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8f9fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+    { media: "(prefers-color-scheme: light)", color: "#f1ebdf" },
+    { media: "(prefers-color-scheme: dark)", color: "#111013" },
   ],
   // El sitio tiene los dos temas: declarar solo `dark` hacia que los
   // controles nativos y la barra de scroll se quedasen oscuros en claro.
@@ -143,7 +163,7 @@ export function RootShell({
     <html
       lang={language}
       suppressHydrationWarning
-      className={`dark ${geistSans.variable} ${firaCode.variable} h-full antialiased`}
+      className={`dark ${archivo.variable} ${anton.variable} ${delaGothic.variable} ${firaCode.variable} h-full antialiased`}
     >
       {/* La regla asume que <head> solo aparece en app/layout.tsx; este
           componente ES el layout raiz, compartido por los dos idiomas. */}

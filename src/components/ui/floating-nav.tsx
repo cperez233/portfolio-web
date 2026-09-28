@@ -246,7 +246,7 @@ export function FloatingNav() {
             variants={logoVariants}
             tabIndex={isExpanded ? undefined : -1}
             aria-label={t.footer.links.home}
-            className="group flex shrink-0 items-center pl-4 pr-1 text-lg font-black tracking-tighter text-name transition-colors duration-500"
+            className="group flex shrink-0 items-center pl-4 pr-1 font-display text-xl tracking-wide text-name transition-colors duration-500"
           >
             {["C", "P"].map((letter, index) => (
               <span

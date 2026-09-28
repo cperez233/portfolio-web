@@ -11,6 +11,7 @@ import { FadeSwap } from "./FadeSwap";
 import { Magnetic } from "./magnetic";
 import { RevealWords } from "./reveal-words";
 import { SectionEdge } from "./section-transition";
+import { Menacing } from "@/components/ui/menacing";
 
 /**
  * Import desde `framer-motion`, no desde `motion/react`: este proyecto
@@ -41,6 +42,7 @@ export default function Footer() {
       className="relative z-40 overflow-x-clip border-t border-line bg-canvas px-5 pb-0 pt-20 transition-colors duration-500 sm:px-8 md:px-10"
     >
       <SectionEdge />
+      <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-10 z-10 hidden lg:block" />
       <div
         aria-hidden="true"
         className="glow-accent pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(48rem,120vw)] -translate-x-1/2"
@@ -58,9 +60,11 @@ export default function Footer() {
         >
           <div className="w-full max-w-xl min-w-0 shrink-0 lg:max-w-md">
             <FadeSwap>
-              <p className="text-sm font-medium text-accent-ink">
+              <p data-part={`${t.jojo.part} 8`} className="jojo-eyebrow text-accent-ink">
                 {t.footer.eyebrow}
               </p>
+              {/* El "¿Oh? ¿Te acercas?" de Dio, en globo de manga. */}
+              <p className="jojo-bubble mt-6">{t.jojo.approach}</p>
               <p className="mt-5 text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                 <RevealWords text={t.footer.headline} />
               </p>
@@ -139,6 +143,37 @@ export default function Footer() {
           </FadeSwap>
           <p>{site.location}</p>
         </div>
+
+        {/*
+          Cierre de capitulo: la flecha "To Be Continued" entra desde la
+          izquierda cuando el final de la pagina llega a pantalla, como
+          el congelado del final de cada episodio.
+        */}
+        {/*
+          El observador va en el contenedor quieto: la flecha empieza
+          fuera de su caja, y si se observara a si misma nunca "entraria".
+        */}
+        <motion.div
+          initial={shouldReduceMotion ? false : "hidden"}
+          whileInView="show"
+          viewport={{ once: true, amount: 0.8 }}
+          className="mt-12 flex items-center justify-between gap-6 overflow-x-clip py-1"
+        >
+          <motion.div
+            variants={{
+              hidden: { x: "-120%", opacity: 0 },
+              show: { x: 0, opacity: 1 },
+            }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="tbc-arrow ml-1"
+          >
+            <span className="tbc-arrow-text">{t.jojo.toBeContinued}</span>
+          </motion.div>
+          <p className="shrink-0 text-right text-base font-bold text-ink">
+            {t.jojo.farewell}
+            <span className="block text-sm font-normal text-ink-subtle">— Cris</span>
+          </p>
+        </motion.div>
       </div>
 
       {/*
@@ -152,7 +187,7 @@ export default function Footer() {
       >
         <motion.p
           style={shouldReduceMotion ? undefined : { y: wordmarkY }}
-          className="whitespace-nowrap pt-[0.16em] text-center text-[11.5vw] font-black uppercase leading-[0.78] tracking-tighter text-name transition-colors duration-500"
+          className="whitespace-nowrap pt-[0.16em] text-center font-display text-[13.5vw] uppercase leading-[0.84] tracking-[0.01em] text-name transition-colors duration-500"
         >
           {hero.firstName} {hero.lastName}
         </motion.p>

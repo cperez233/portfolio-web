@@ -54,7 +54,7 @@ export function MiniProjectsSection() {
       <SectionTransition className="relative z-10">
         <FadeIn className="mx-auto w-full max-w-6xl px-5 sm:px-8 md:px-10">
           <FadeSwap>
-            <p className="mb-4 text-sm font-medium text-accent-ink">
+            <p data-part={`${t.jojo.part} 1`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.miniProjects.eyebrow}
             </p>
             <h2

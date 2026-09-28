@@ -236,6 +236,29 @@ export interface Dictionary {
     /** Una linea por sitio, en el orden de `miniProjects`. */
     items: string[];
   };
+  /**
+   * Guinos a JoJo, los mismos del README de perfil: la tarjeta de Stand,
+   * el "¿Oh? ¿Te acercas?" del contacto y el "To Be Continued" del final.
+   */
+  jojo: {
+    /** Prefijo de las etiquetas de seccion: "Part 1", "Parte 1". */
+    part: string;
+    stand: {
+      label: string;
+      name: string;
+      /** Nombre del Stand en katakana (decorativo). */
+      nameJp: string;
+      user: string;
+      description: string;
+      /** Los seis atributos, en el orden de `standStats` (site.ts). */
+      stats: string[];
+      /** Resumen de la grafica para lector de pantalla. */
+      chartLabel: string;
+    };
+    approach: string;
+    toBeContinued: string;
+    farewell: string;
+  };
 }
 
 const en: Dictionary = {
@@ -632,6 +655,22 @@ const en: Dictionary = {
       "Liquor store · 24/7 delivery in Floridablanca",
     ],
   },
+  jojo: {
+    part: "Part",
+    stand: {
+      label: "Stand",
+      name: "Paranoid Android",
+      nameJp: "パラノイド・アンドロイド",
+      user: "Stand user — Cristian Pérez",
+      description:
+        "Builds software, websites and apps that businesses actually use, and makes content that goes viral. Has a cybersecurity streak: checks the locks before handing over the keys.",
+      stats: ["Power", "Speed", "Range", "Stamina", "Precision", "Potential"],
+      chartLabel: "Stand stats: Power C, Speed B, Range A, Stamina A, Precision A, Potential A.",
+    },
+    approach: "Oh? You're approaching me?",
+    toBeContinued: "To Be Continued",
+    farewell: "Arrivederci.",
+  },
 };
 
 const es: Dictionary = {
@@ -1027,6 +1066,22 @@ const es: Dictionary = {
       "Peluquería canina · citas por WhatsApp",
       "Licorera · domicilio 24/7 en Floridablanca",
     ],
+  },
+  jojo: {
+    part: "Parte",
+    stand: {
+      label: "Stand",
+      name: "Paranoid Android",
+      nameJp: "パラノイド・アンドロイド",
+      user: "Usuario del Stand — Cristian Pérez",
+      description:
+        "Construye software, páginas web y apps que los negocios usan de verdad, y crea contenido que se vuelve viral. Tiene aires de ciberseguridad: revisa las cerraduras antes de entregar las llaves.",
+      stats: ["Poder", "Velocidad", "Alcance", "Resistencia", "Precisión", "Potencial"],
+      chartLabel: "Estadísticas del Stand: Poder C, Velocidad B, Alcance A, Resistencia A, Precisión A, Potencial A.",
+    },
+    approach: "¿Oh? ¿Te acercas a mí?",
+    toBeContinued: "To Be Continued",
+    farewell: "Arrivederci.",
   },
 };
 

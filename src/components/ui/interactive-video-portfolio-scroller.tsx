@@ -119,7 +119,7 @@ function ServiceCards() {
       <div className="mx-auto w-full max-w-3xl">
         <FadeIn>
           <FadeSwap>
-            <p className="mb-4 text-sm font-medium text-accent-ink">
+            <p data-part={`${t.jojo.part} 4`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.services.eyebrow}
             </p>
             <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -659,7 +659,7 @@ function DesktopScroller() {
         <div className="mx-auto w-full max-w-6xl">
           <div className="mb-10 flex items-end justify-between gap-4">
             <FadeSwap>
-              <p className="mb-4 text-sm font-medium text-accent-ink">
+              <p data-part={`${t.jojo.part} 4`} className="jojo-eyebrow mb-4 text-accent-ink">
                 {t.services.eyebrow}
               </p>
               <h2 className="text-6xl font-semibold uppercase tracking-tight text-ink">

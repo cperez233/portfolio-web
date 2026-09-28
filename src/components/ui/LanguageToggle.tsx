@@ -53,7 +53,7 @@ export function LanguageToggle() {
             {isActive ? (
               <motion.span
                 layoutId="language-pill"
-                className="accent-fill absolute inset-0 -z-10 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_4px_14px_-4px_rgba(101,42,49,0.7)]"
+                className="accent-fill absolute inset-0 -z-10 rounded-full"
                 transition={
                   shouldReduceMotion
                     ? { duration: 0 }

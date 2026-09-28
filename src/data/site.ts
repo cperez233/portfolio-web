@@ -399,3 +399,17 @@ export function fillPlanPrices(text: string, language: "en" | "es") {
     text,
   );
 }
+
+/**
+ * Tarjeta de Stand (estilo JoJo), la misma del README de perfil. El
+ * nombre de cada atributo en japones y su nota no se traducen; la
+ * etiqueta en EN/ES vive en content.ts (`jojo.stand.stats`), en este orden.
+ */
+export const standStats = [
+  { jp: "破壊力", grade: "C" },
+  { jp: "スピード", grade: "B" },
+  { jp: "射程距離", grade: "A" },
+  { jp: "持続力", grade: "A" },
+  { jp: "精密動作性", grade: "A" },
+  { jp: "成長性", grade: "A" },
+] as const;
