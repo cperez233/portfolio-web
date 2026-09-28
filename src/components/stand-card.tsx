@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { FadeSwap } from "@/components/ui/FadeSwap";
 import { Menacing } from "@/components/ui/menacing";
@@ -46,9 +47,20 @@ const statsPolygon = standStats
 function StandRadar() {
   const { t } = useLanguage();
   const shouldReduceMotion = useReducedMotion();
+  /*
+    La animacion la dispara la grafica entera, no cada pieza. El
+    poligono y las notas empiezan en escala 0, es decir sin area, y
+    Safari (y otros navegadores de celular) nunca consideran "a la
+    vista" un elemento sin area: la animacion no arrancaba y el
+    hexagono dorado no aparecia.
+  */
+  const svgRef = useRef<SVGSVGElement>(null);
+  const inView = useInView(svgRef, { once: true, amount: 0.35 });
+  const show = inView || Boolean(shouldReduceMotion);
 
   return (
     <svg
+      ref={svgRef}
       viewBox="0 0 520 470"
       role="img"
       aria-label={t.jojo.stand.chartLabel}
@@ -87,14 +99,15 @@ function StandRadar() {
       <motion.polygon
         points={statsPolygon}
         fill="var(--color-accent)"
-        fillOpacity="0.35"
+        fillOpacity="0.55"
         stroke="var(--color-accent)"
         strokeWidth="3.5"
         strokeLinejoin="round"
-        style={{ transformOrigin: `${CX}px ${CY}px` }}
+        // Origen en el centro de su propia caja: con coordenadas en px,
+        // Safari y Chrome resuelven el origen de un SVG distinto.
+        style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
         initial={shouldReduceMotion ? false : { scale: 0, rotate: -40 }}
-        whileInView={{ scale: 1, rotate: 0 }}
-        viewport={{ once: true, amount: 0.6 }}
+        animate={show ? { scale: 1, rotate: 0 } : undefined}
         transition={{ duration: 1.2, ease: [0.2, 0.9, 0.2, 1.15], delay: 0.2 }}
       />
 
@@ -110,10 +123,9 @@ function StandRadar() {
         return (
           <g key={stat.jp}>
             <motion.g
-              style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+              style={{ transformBox: "fill-box", transformOrigin: "50% 50%" }}
               initial={shouldReduceMotion ? false : { scale: 0 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true, amount: 0.6 }}
+              animate={show ? { scale: 1 } : undefined}
               transition={{
                 type: "spring",
                 stiffness: 420,
