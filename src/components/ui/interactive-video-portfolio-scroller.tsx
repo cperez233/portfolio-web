@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUp, ArrowUpRight, Plus, X } from "lucide-react";
 import { TechVisual } from "@/components/diagrams";
 import { menuItems, type ServiceItem } from "@/data/site";

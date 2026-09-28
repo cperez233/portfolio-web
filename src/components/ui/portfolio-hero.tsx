@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ChevronDown, ArrowUpRight, Download, Mail } from "lucide-react";
 import { hero, portrait, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";

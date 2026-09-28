@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useLanguage } from "@/lib/language";
 import { cn } from "@/lib/utils";
 

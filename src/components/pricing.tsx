@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   motion,
-  useReducedMotion,
   useSpring,
   useTransform,
   type Variants,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUp, ArrowUpRight, Check } from "lucide-react";
 import { brandKit, currency, fullAudit, formatPrice, plans, type Plan, type PlanKey } from "@/data/site";
 import { useLanguage } from "@/lib/language";

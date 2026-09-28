@@ -1746,3 +1746,15 @@ html.lenis body {
 .glass-chip .accent-fill {
   border-radius: 0;
 }
+
+/*
+  Red de seguridad (root-shell.tsx): si React no hidrato a los 6 s, todo
+  lo que Framer Motion dejo oculto desde el servidor se muestra tal cual.
+*/
+html.motion-fallback [style*="opacity"] {
+  opacity: 1 !important;
+}
+
+html.motion-fallback [style*="transform"] {
+  transform: none !important;
+}

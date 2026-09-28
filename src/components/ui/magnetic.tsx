@@ -4,9 +4,9 @@ import { useEffect, useState, type PointerEvent } from "react";
 import {
   motion,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 const spring = { stiffness: 260, damping: 18, mass: 0.6 };
 

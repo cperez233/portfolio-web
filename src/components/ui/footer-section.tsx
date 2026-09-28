@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight } from "lucide-react";
 import { footerGroups, hero, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";

@@ -5,10 +5,10 @@ import {
   AnimatePresence,
   motion,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   type Variants,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { Menu, Moon, Sun } from "lucide-react";
 import { navLinks } from "@/data/site";
 import { useLanguage } from "@/lib/language";

@@ -134,6 +134,16 @@ const themeScript = `try{if(localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
 )})==="light"){document.documentElement.classList.remove("dark")}}catch(e){}`;
 
+/*
+  Red de seguridad de las animaciones. Muchas secciones salen del
+  servidor en opacidad 0 y las hace aparecer Framer Motion al hidratar.
+  Si el JavaScript no llega a arrancar (un navegador viejo, un error),
+  la pagina se quedaba en blanco bajo el hero. Si a los 6 s React no ha
+  marcado `__hydrated` (lo hace SmoothScroll), la clase motion-fallback
+  fuerza todo visible (ver globals.css).
+*/
+const motionFallbackScript = `setTimeout(function(){if(!window.__hydrated){document.documentElement.classList.add("motion-fallback")}},6000)`;
+
 /** Texto del enlace de salto, que va fuera del LanguageProvider. */
 const skipLabel: Record<Language, string> = {
   en: "Skip to content",
@@ -176,6 +186,11 @@ export function RootShell({
           que esto viene a evitar. Asi se ejecuta al parsear el HTML.
         */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: motionFallbackScript }} />
+        {/* Sin JavaScript, lo mismo desde el principio. */}
+        <noscript>
+          <style>{`[style*="opacity"]{opacity:1!important}[style*="transform"]{transform:none!important}`}</style>
+        </noscript>
         <JsonLd language={language} />
       </head>
       {/* overflow-x-clip en la raiz, no overflow-hidden: clip no crea un

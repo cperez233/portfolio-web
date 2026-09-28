@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { FadeSwap } from "@/components/ui/FadeSwap";
 import { Menacing } from "@/components/ui/menacing";

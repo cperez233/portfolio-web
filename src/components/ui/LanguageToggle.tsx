@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useLanguage } from "@/lib/language";
 import { LANGUAGE_PATHS } from "@/lib/language-detection";
 import type { Language } from "@/data/content";

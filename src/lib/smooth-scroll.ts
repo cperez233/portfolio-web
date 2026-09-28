@@ -15,6 +15,8 @@ import type Lenis from "lenis";
 declare global {
   interface Window {
     __lenis?: Lenis | null;
+    /** React ya hidrato (lo lee la red de seguridad de root-shell). */
+    __hydrated?: boolean;
   }
 }
 

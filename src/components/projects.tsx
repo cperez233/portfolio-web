@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUp, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { cases, miniProjects, moreWork, type CaseShot, type CaseStudy } from "@/data/site";
 import { useLanguage } from "@/lib/language";

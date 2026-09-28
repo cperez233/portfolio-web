@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight, Check, LoaderCircle, RotateCcw, X } from "lucide-react";
 import type { AuditCheckId } from "@/data/content";
 import type { AuditResponse } from "@/app/api/audit/route";

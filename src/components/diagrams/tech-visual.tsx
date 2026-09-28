@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion, type HTMLMotionProps } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { diagrams, type DiagramId } from "@/data/diagrams";
 import { useLanguage } from "@/lib/language";
 import { cn } from "@/lib/utils";

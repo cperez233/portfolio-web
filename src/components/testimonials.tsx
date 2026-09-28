@@ -3,11 +3,11 @@
 import { useRef, type RefObject } from "react";
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   type Variants,
 } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight } from "lucide-react";
 import { testimonials, type Testimonial } from "@/data/site";
 import { useLanguage } from "@/lib/language";

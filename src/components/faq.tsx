@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { fillPlanPrices } from "@/data/site";
 import { useLanguage } from "@/lib/language";

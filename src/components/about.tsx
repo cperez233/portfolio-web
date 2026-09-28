@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUp } from "lucide-react";
 import { AnimatedText } from "@/components/ui/AnimatedText";
 import { FadeIn } from "@/components/ui/FadeIn";

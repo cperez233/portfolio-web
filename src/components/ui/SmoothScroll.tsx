@@ -17,6 +17,9 @@ import { registerLenis } from "@/lib/smooth-scroll";
  */
 export function SmoothScroll() {
   useEffect(() => {
+    // React arranco: la red de seguridad de root-shell no hace falta.
+    window.__hydrated = true;
+
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
