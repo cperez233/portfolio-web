@@ -65,7 +65,7 @@ export function AuditSection() {
     <section
       id="audit"
       aria-labelledby="audit-title"
-      className="relative z-30 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
+      className="manga-separator relative z-30 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
       <SectionEdge />
       <div

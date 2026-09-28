@@ -6,6 +6,7 @@ import { FadeSwap } from "@/components/ui/FadeSwap";
 import { Menacing } from "@/components/ui/menacing";
 import { standStats } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { cn } from "@/lib/utils";
 
 /*
   Geometria del radar. Seis ejes empezando arriba y en sentido horario,
@@ -104,7 +105,7 @@ function StandRadar() {
         const right = p.x > CX + 1;
         const anchor = top || bottom ? "middle" : right ? "start" : "end";
         const labelX = top || bottom ? p.x : p.x + (right ? 30 : -30);
-        const labelY = top ? p.y - 48 : bottom ? p.y + 44 : p.y - 3;
+        const labelY = top ? p.y - 52 : bottom ? p.y + 44 : p.y - 4;
 
         return (
           <g key={stat.jp}>
@@ -144,17 +145,17 @@ function StandRadar() {
               y={labelY}
               textAnchor={anchor}
               fontFamily="var(--font-jp)"
-              fontSize="14"
+              fontSize="17"
               fill="var(--color-ink)"
             >
               {stat.jp}
             </text>
             <text
               x={labelX}
-              y={labelY + 17}
+              y={labelY + 20}
               textAnchor={anchor}
               fontFamily="var(--font-sans)"
-              fontSize="12"
+              fontSize="15"
               fill="var(--color-ink-subtle)"
             >
               {t.jojo.stand.stats[i]}
@@ -167,71 +168,60 @@ function StandRadar() {
 }
 
 /**
- * Tarjeta de Stand, la del README de perfil, montada como una pagina de
- * manga: dos vinetas separadas por un corte diagonal (solo en
- * escritorio; en celular se apilan rectas).
- *
- * Va entre Sobre mi y Servicios, con el mismo z-10 y fondo que Sobre mi:
- * Servicios sigue deslizandose por encima igual que antes. Sin sticky ni
- * transform en la seccion, asi que no toca el layering.
+ * Tarjeta de Stand, la del README de perfil, en tamano vineta: cierra la
+ * pagina de manga de Sobre mi (no es una seccion propia). Dos vinetas
+ * separadas por un corte diagonal en escritorio; en celular se apilan
+ * rectas. Compacta a proposito: cabe entera en una pantalla de 600px.
  */
-export function StandSection() {
+export function StandCard({ className }: { className?: string }) {
   const { t } = useLanguage();
   const copy = t.jojo.stand;
 
   return (
-    <section
-      aria-labelledby="stand-title"
-      className="relative z-10 overflow-x-clip bg-canvas px-5 pb-28 pt-4 transition-colors duration-500 sm:px-8 md:px-10"
-    >
-      <FadeIn className="relative mx-auto w-full max-w-6xl">
-        <div className="grid gap-3 lg:grid-cols-12 lg:gap-0">
-          {/* Vineta 1: nombre del Stand y su usuario */}
-          <div className="manga-panel manga-panel-cut-right halftone-corner relative lg:col-span-7 lg:-mr-6">
-            <div className="relative px-6 py-8 sm:px-10 sm:py-12 lg:pr-20">
-              <FadeSwap>
-                <p className="font-display text-sm tracking-[0.3em] text-ink-subtle uppercase">
-                  {copy.label}
-                </p>
-                <h2
-                  id="stand-title"
-                  className="stand-name relative mt-3 inline-block px-5 text-5xl leading-[0.92] text-ink sm:text-7xl"
-                >
-                  {copy.name}
-                </h2>
-                <p
-                  aria-hidden="true"
-                  className="mt-4 font-jp text-lg tracking-[0.12em] text-accent-ink sm:text-xl"
-                >
-                  {copy.nameJp}
-                </p>
-                <p className="mt-8 text-lg font-bold text-ink sm:text-xl">
-                  {copy.user}
-                </p>
-                <p className="mt-3 max-w-lg text-lead text-ink-muted">
-                  {copy.description}
-                </p>
-              </FadeSwap>
-            </div>
+    <FadeIn className={cn("relative", className)}>
+      <div className="grid gap-4 lg:grid-cols-12 lg:gap-0">
+        {/* Vineta 1: nombre del Stand y su usuario */}
+        <div className="manga-panel manga-panel-cut-right halftone-corner relative lg:col-span-7 lg:-mr-6">
+          <div className="relative px-6 py-6 sm:px-8 sm:py-7 lg:pr-16">
+            <FadeSwap>
+              <p className="font-display text-xs uppercase tracking-[0.3em] text-ink-subtle">
+                {copy.label}
+              </p>
+              <h3 className="stand-name relative mt-2 inline-block px-4 font-display text-4xl font-normal uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-5xl">
+                {copy.name}
+              </h3>
+              <p
+                aria-hidden="true"
+                className="mt-2 font-jp text-base tracking-[0.12em] text-accent-ink"
+              >
+                {copy.nameJp}
+              </p>
+              <p className="mt-4 text-base font-bold text-ink">{copy.user}</p>
+              <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-muted sm:text-base">
+                {copy.description}
+              </p>
+            </FadeSwap>
           </div>
+        </div>
 
-          {/* Vineta 2: la grafica, con lineas de velocidad detras */}
-          <div className="manga-panel manga-panel-cut-left relative overflow-hidden lg:col-span-5 lg:-ml-3">
-            <div
-              aria-hidden="true"
-              className="speed-lines pointer-events-none absolute left-1/2 top-1/2 size-[160%] -translate-x-1/2 -translate-y-1/2"
-            />
-            <div className="relative flex h-full items-center justify-center px-2 py-6 lg:pl-10">
+        {/* Vineta 2: la grafica, con lineas de velocidad detras */}
+        <div className="manga-panel manga-panel-cut-left relative overflow-hidden lg:col-span-5 lg:-ml-3">
+          <div
+            aria-hidden="true"
+            className="speed-lines pointer-events-none absolute left-1/2 top-1/2 size-[160%] -translate-x-1/2 -translate-y-1/2"
+          />
+          <div className="relative flex h-full items-center justify-center px-2 py-3 lg:pl-10">
+            <div className="w-full max-w-[340px]">
               <StandRadar />
             </div>
           </div>
         </div>
+      </div>
 
-        <Menacing
-          size="clamp(1.5rem, 3vw, 2.6rem)"
-          className="absolute -top-8 right-2 z-10 sm:right-6"
-        />
-      </FadeIn>
-    </section>
+      <Menacing
+        size="clamp(1.2rem, 2.2vw, 2rem)"
+        className="absolute -top-7 right-2 z-10 sm:right-5"
+      />
+    </FadeIn>
   );
 }

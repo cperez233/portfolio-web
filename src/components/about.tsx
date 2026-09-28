@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/language";
 import { RevealWords } from "@/components/ui/reveal-words";
 import { CountUp } from "@/components/ui/count-up";
 import { Menacing } from "@/components/ui/menacing";
+import { StandCard } from "@/components/stand-card";
 
 /**
  * About editorial: dos bloques de texto, cada uno con sus rasgos debajo,
@@ -37,7 +38,7 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
+      className="manga-separator relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
       <SectionEdge />
       <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-16 z-10 hidden sm:block" />
@@ -60,11 +61,26 @@ export function AboutSection() {
           En celular los datos van primero y en dos columnas: las cifras
           grandes enganchan antes que dos parrafos seguidos.
         */}
-        <div className="mt-10 grid gap-14 sm:mt-14 lg:grid-cols-12 lg:gap-16">
-          <div className="flex flex-col gap-14 lg:col-span-7">
+        {/*
+          Pagina de manga: cada bloque es una vineta y los dos de la
+          izquierda se separan con un corte diagonal (solo escritorio; el
+          segundo sube 16px para que la calle entre ellos quede fina).
+        */}
+        <div className="mt-10 grid gap-10 sm:mt-14 lg:grid-cols-12 lg:gap-8">
+          <div className="flex flex-col gap-4 lg:col-span-7 lg:gap-0">
             {t.about.blocks.map((block, index) => (
-              <FadeIn key={block.title} delay={0.1 + index * 0.08}>
-                <article>
+              <FadeIn
+                key={block.title}
+                delay={0.1 + index * 0.08}
+                className={index > 0 ? "lg:-mt-4" : undefined}
+              >
+                <article
+                  className={
+                    index === 0
+                      ? "manga-panel manga-panel-cut-bottom halftone-corner px-6 pb-9 pt-7 sm:px-8 sm:pb-12 sm:pt-8"
+                      : "manga-panel manga-panel-cut-top px-6 pb-8 pt-9 sm:px-8 sm:pb-9 sm:pt-12"
+                  }
+                >
                   <h3 className="text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                     {block.title}
                   </h3>
@@ -77,7 +93,7 @@ export function AboutSection() {
                   <AnimatedText
                     key={language}
                     text={block.body}
-                    className="mt-6 text-lead text-ink-muted"
+                    className="mt-4 text-lead text-ink-muted"
                   />
 
                   {/*
@@ -86,7 +102,7 @@ export function AboutSection() {
                     sabia a que bloque respondian.
                   */}
                   <FadeSwap>
-                    <ul className="mt-7 flex flex-col gap-3">
+                    <ul className="mt-5 flex flex-col gap-2">
                       {block.traits.map((trait) => (
                         <li key={trait.label} className="flex gap-4">
                           <span
@@ -135,15 +151,15 @@ export function AboutSection() {
                 }}
                 className={
                   fact.wide
-                    ? "manga-panel halftone-corner col-span-2 flex flex-col gap-2 p-5 sm:p-6 lg:col-span-1"
-                    : "manga-panel halftone-corner flex flex-col gap-2 p-5 sm:p-6"
+                    ? "manga-panel halftone-corner col-span-2 flex flex-col gap-1 px-5 py-4 lg:col-span-1"
+                    : "manga-panel halftone-corner flex flex-col gap-1 px-5 py-4"
                 }
               >
                 <dt className="sr-only">{fact.label}</dt>
-                <dd className="font-display text-6xl tracking-wide text-name transition-colors duration-500 sm:text-7xl">
+                <dd className="font-display text-5xl tracking-wide text-name lg:text-6xl transition-colors duration-500 sm:text-7xl">
                   <CountUp value={fact.value} />
                 </dd>
-                <dd className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm text-ink-muted sm:text-lg">
+                <dd className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-sm text-ink-muted sm:text-base">
                   <FadeSwap>
                     <span>{fact.label}</span>
                   </FadeSwap>
@@ -164,6 +180,9 @@ export function AboutSection() {
             ))}
           </motion.dl>
         </div>
+
+        {/* Ultima fila de la pagina: la tarjeta de Stand, en tamano vineta. */}
+        <StandCard className="mt-10 sm:mt-12" />
       </SectionTransition>
     </section>
   );

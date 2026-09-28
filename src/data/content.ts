@@ -256,6 +256,8 @@ export interface Dictionary {
       chartLabel: string;
     };
     approach: string;
+    /** Etiqueta del retrato del hero, que al tocarlo "detiene el tiempo". */
+    timeStop: string;
     toBeContinued: string;
     farewell: string;
   };
@@ -668,6 +670,7 @@ const en: Dictionary = {
       chartLabel: "Stand stats: Power C, Speed B, Range A, Stamina A, Precision A, Potential A.",
     },
     approach: "Oh? You're approaching me?",
+    timeStop: "Cristian Pérez — tap to stop time",
     toBeContinued: "To Be Continued",
     farewell: "Arrivederci.",
   },
@@ -1080,6 +1083,7 @@ const es: Dictionary = {
       chartLabel: "Estadísticas del Stand: Poder C, Velocidad B, Alcance A, Resistencia A, Precisión A, Potencial A.",
     },
     approach: "¿Oh? ¿Te acercas a mí?",
+    timeStop: "Cristian Pérez — toca para detener el tiempo",
     toBeContinued: "To Be Continued",
     farewell: "Arrivederci.",
   },

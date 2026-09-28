@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { ChevronDown, ArrowUpRight, Download, Mail } from "lucide-react";
@@ -62,7 +62,32 @@ interface PortfolioHeroProps {
 export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const { t, language } = useLanguage();
   const heroRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const portraitRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion();
+
+  /*
+    ZA WARUDO: el tiempo se detiene durante unos segundos. Se guarda el
+    centro del retrato relativo al hero pegado, porque el retrato se mueve
+    con la escala del scroll y la esfera tiene que nacer de el. Con
+    reduced motion no se dispara: es un efecto que es todo movimiento.
+  */
+  const [timeStop, setTimeStop] = useState<{ id: number; x: number; y: number } | null>(null);
+
+  function stopTime() {
+    if (shouldReduceMotion) return;
+    const portraitEl = portraitRef.current;
+    const stickyEl = stickyRef.current;
+    if (!portraitEl || !stickyEl) return;
+
+    const portraitBox = portraitEl.getBoundingClientRect();
+    const stickyBox = stickyEl.getBoundingClientRect();
+    setTimeStop({
+      id: Date.now(),
+      x: portraitBox.left + portraitBox.width / 2 - stickyBox.left,
+      y: portraitBox.top + portraitBox.height / 2 - stickyBox.top,
+    });
+  }
 
   /*
     Capa fora.so: el hero queda pegado y las secciones siguientes se
@@ -112,7 +137,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
   return (
     <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
-      <div className="sticky top-0 h-svh min-h-[600px] overflow-x-clip bg-canvas transition-colors duration-500">
+      <div
+        ref={stickyRef}
+        data-time-stopped={timeStop ? "true" : undefined}
+        className="sticky top-0 h-svh min-h-[600px] overflow-x-clip bg-canvas transition-colors duration-500"
+      >
       <motion.div
         style={
           shouldReduceMotion
@@ -180,17 +209,29 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           real. 100px si cabia; ahora todos los tamanos van un 14% mas
           chicos para que el medallon tape menos el nombre.
         */}
+        {/*
+          El retrato es tambien el boton de ZA WARUDO: al tocarlo el tiempo
+          se detiene (ver stopTime). aria-label porque la imagen sola no
+          dice que hace el boton.
+        */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-          <div className="manga-portrait relative h-[86px] w-[60px] overflow-hidden bg-surface-2 transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]">
+          <button
+            ref={portraitRef}
+            type="button"
+            onClick={stopTime}
+            aria-label={t.jojo.timeStop}
+            title={t.jojo.timeStop}
+            className="manga-portrait relative block h-[86px] w-[60px] cursor-pointer overflow-hidden bg-surface-2 transition-transform duration-300 hover:scale-105 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]"
+          >
             <Image
               src={portrait.local}
               alt={site.name}
               fill
               priority
-              sizes="(min-width: 1024px) 116px, (min-width: 768px) 99px, (min-width: 640px) 86px, 52px"
+              sizes="(min-width: 1024px) 134px, (min-width: 768px) 116px, (min-width: 640px) 100px, 60px"
               className="object-cover"
             />
-          </div>
+          </button>
         </div>
       </div>
 
@@ -317,6 +358,33 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         </a>
       </div>
       </motion.div>
+
+      {/*
+        ZA WARUDO. Una esfera blanca con mix-blend-mode: difference crece
+        desde el retrato e invierte todo el hero, como el reloj de la
+        portada del README. Va FUERA del motion.div para no heredar su
+        escala, y dentro del sticky (que ya es contexto de apilado), asi
+        que solo invierte el hero. Sin z-index a proposito: un z-index
+        crearia su propio contexto y la esfera se mezclaria con nada (se
+        veria blanca). Al ir despues en el DOM ya pinta encima. La key
+        reinicia la animacion en cada toque. Decorativo: aria-hidden.
+      */}
+      {timeStop ? (
+        <div
+          key={timeStop.id}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
+          onAnimationEnd={(event) => {
+            if (event.animationName === "za-warudo") setTimeStop(null);
+          }}
+        >
+          <span
+            className="za-warudo-sphere"
+            style={{ left: timeStop.x, top: timeStop.y }}
+          />
+          <span className="za-warudo-text">時よ止まれ！</span>
+        </div>
+      ) : null}
       </div>
     </div>
   );
