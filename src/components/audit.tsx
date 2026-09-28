@@ -106,7 +106,7 @@ export function AuditSection() {
                 placeholder={copy.placeholder}
                 aria-invalid={state.status === "error" || undefined}
                 aria-describedby={state.status === "error" ? "audit-error" : undefined}
-                className="min-h-14 w-full flex-1 rounded-full border border-line-strong bg-surface px-6 text-base text-ink placeholder:text-ink-subtle transition-colors duration-200 focus:border-accent focus:outline-none"
+                className="manga-field min-h-14 w-full flex-1 bg-surface px-6 text-base text-ink placeholder:text-ink-subtle"
               />
               <button
                 type="submit"
@@ -194,7 +194,7 @@ export function AuditSection() {
                 </motion.ul>
 
                 {/* El gancho: lo que esta revision no mide. */}
-                <div className="mt-8 rounded-2xl bg-accent-dim p-5 sm:p-6">
+                <div className="manga-hook mt-8 p-5 sm:p-6">
                   <p className="text-lg font-medium tracking-tight text-ink">{copy.hookTitle}</p>
                   <p className="mt-2 text-base leading-relaxed text-ink-muted">{copy.hookBody}</p>
                   <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">

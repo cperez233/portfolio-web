@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 
 type Status = "idle" | "sending" | "success" | "error";
 
+// Campo de manga: trazo de tinta y sombra dorada al enfocarlo (manga-field).
 const fieldClass =
-  "mt-2 block w-full min-w-0 rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-subtle transition-colors duration-200 hover:border-line-strong focus-visible:border-accent-ink";
+  "manga-field mt-2 block w-full min-w-0 bg-canvas px-4 py-3 text-base text-ink placeholder:text-ink-subtle";
 
 /**
  * Formulario de contacto por Web3Forms. Reemplaza al mailto: el correo
@@ -54,12 +55,13 @@ export function ContactForm() {
     <form
       id="contact-form"
       onSubmit={handleSubmit}
-      className="scroll-mt-24 rounded-2xl border border-line bg-surface-2 p-5 sm:p-6"
+      // Una carta en vineta: el titulo va en el cartel de tinta de arriba.
+      className="manga-form scroll-mt-24 p-5 sm:p-6"
     >
-      <p className="text-base font-medium text-ink">{copy.title}</p>
+      <p className="manga-form-title">{copy.title}</p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        <label className="block min-w-0 text-sm text-ink-muted">
+        <label className="manga-label block min-w-0">
           {copy.name}
           <input
             type="text"
@@ -70,7 +72,7 @@ export function ContactForm() {
             className={fieldClass}
           />
         </label>
-        <label className="block min-w-0 text-sm text-ink-muted">
+        <label className="manga-label block min-w-0">
           {copy.email}
           <input
             type="email"
@@ -83,7 +85,7 @@ export function ContactForm() {
         </label>
       </div>
 
-      <label className="mt-4 block text-sm text-ink-muted">
+      <label className="manga-label mt-4 block">
         {copy.message}
         <textarea
           name="message"
@@ -109,7 +111,7 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={sending}
-          className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium text-ink transition-colors duration-200 hover:border-accent-ink hover:text-accent-ink disabled:cursor-wait disabled:opacity-60"
+          className="accent-fill group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 px-6 text-sm disabled:cursor-wait disabled:opacity-60"
         >
           {sending ? copy.sending : copy.submit}
           <ArrowUpRight

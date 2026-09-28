@@ -1198,6 +1198,118 @@ html.lenis body {
     }
   }
 
+  /*
+    Servicios: cada servicio es una pagina de manga del mazo. Trazo de
+    tinta, sombra dura y la franja de tinta de arriba, que es lo que
+    asoma de la pagina cuando la siguiente la tapa.
+  */
+  .service-page {
+    border: 3px solid var(--color-line-strong);
+    background-color: var(--color-canvas);
+    background-image: radial-gradient(
+      circle at 100% 100%,
+      transparent 0,
+      var(--color-canvas) 45%
+    ),
+    radial-gradient(circle, var(--halftone-dot) 1.4px, transparent 1.5px);
+    background-size:
+      100% 100%,
+      9px 9px;
+    box-shadow: 6px 6px 0 0 var(--panel-shadow);
+  }
+
+  .service-page-bar {
+    background-color: var(--color-ink);
+    border-bottom: 3px solid var(--color-accent);
+  }
+
+  /* El diagrama va en su propia viñeta dentro de la pagina. */
+  .service-diagram {
+    border: 2px solid var(--color-line-strong);
+    box-shadow: 4px 4px 0 0 var(--panel-shadow);
+  }
+
+  /*
+    Formularios en estilo manga. El de correo es una carta en viñeta:
+    trazo, sombra dura, trama en la esquina y el titulo en el cartel de
+    tinta de arriba, que ocupa todo el ancho (margenes negativos del
+    mismo tamaño que el relleno del formulario).
+  */
+  .manga-form {
+    border: 3px solid var(--color-line-strong);
+    background-color: var(--color-surface);
+    background-image: radial-gradient(
+      circle at 100% 0,
+      transparent 0,
+      var(--color-surface) 50%
+    ),
+    radial-gradient(circle, var(--halftone-dot) 1.4px, transparent 1.5px);
+    background-size:
+      100% 100%,
+      9px 9px;
+    box-shadow: 6px 6px 0 0 var(--panel-shadow);
+  }
+
+  .manga-form-title {
+    margin: -1.25rem -1.25rem 0;
+    padding: 0.7rem 1.25rem 0.6rem;
+    background-color: var(--color-ink);
+    border-bottom: 3px solid var(--color-accent);
+    color: var(--color-canvas);
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (width >= 40rem) {
+    .manga-form-title {
+      margin: -1.5rem -1.5rem 0;
+      padding-inline: 1.5rem;
+    }
+  }
+
+  /* Etiqueta de campo: pequeña, en Anton, como rotulo de viñeta. */
+  .manga-label {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Campo: trazo de tinta; al enfocarlo, sombra dura dorada. */
+  .manga-field {
+    border: 2px solid var(--color-line-strong);
+    border-radius: 0;
+    font-family: var(--font-sans);
+    letter-spacing: normal;
+    text-transform: none;
+    transition:
+      box-shadow 0.2s var(--ease-premium),
+      translate 0.2s var(--ease-premium),
+      border-color 0.2s var(--ease-premium);
+  }
+
+  .manga-field:hover {
+    border-color: var(--color-ink);
+  }
+
+  .manga-field:focus,
+  .manga-field:focus-visible {
+    outline: none;
+    border-color: var(--color-ink);
+    box-shadow: 4px 4px 0 0 var(--color-accent);
+    translate: -2px -2px;
+  }
+
+  /* Gancho de la revision gratis: caja de narracion dorada. */
+  .manga-hook {
+    border: 2px solid var(--color-accent);
+    background-color: var(--color-accent-dim);
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+  }
+
   /* Numero en contorno del panel de Servicios (escritorio). */
   .service-ghost-number {
     font-family: var(--font-display);
