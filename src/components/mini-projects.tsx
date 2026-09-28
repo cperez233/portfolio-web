@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/section-transition";
 import { RevealWords } from "@/components/ui/reveal-words";
 import { Testimonials } from "@/components/testimonials";
+import { cn } from "@/lib/utils";
 
 /**
  * Trabajo reciente: una tira de sitios publicados justo debajo del hero.
@@ -71,12 +72,13 @@ export function MiniProjectsSection() {
 
         <ul
           data-lenis-prevent
-          className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-2 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
+          className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 pb-4 pt-3 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
         >
           {miniProjects.map((project, index) => (
             <li key={project.key} className="snap-start">
               <SiteCard
                 project={project}
+                index={index}
                 caption={t.miniProjects.items[index]}
                 imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
                 focusable
@@ -89,12 +91,13 @@ export function MiniProjectsSection() {
           aria-hidden="true"
           className="marquee-fade mt-12 hidden overflow-x-clip sm:mt-16 md:block"
         >
-          <div className="marquee-drift flex w-max gap-4 sm:gap-6">
+          <div className="marquee-drift flex w-max gap-4 py-3 sm:gap-7">
             {[0, 1, 2].map((copy) =>
               miniProjects.map((project, index) => (
                 <SiteCard
                   key={`${copy}-${project.key}`}
                   project={project}
+                  index={index}
                   caption={t.miniProjects.items[index]}
                   imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
                 />
@@ -139,6 +142,8 @@ export function MiniProjectsSection() {
 
 interface SiteCardProps {
   project: MiniProject;
+  /** Posicion en la lista: alterna el ladeo de la vineta. */
+  index: number;
   caption: string;
   /** Alt de la captura: buscadores de imagenes y quien no la ve. */
   imageAlt: string;
@@ -153,6 +158,7 @@ interface SiteCardProps {
  */
 function SiteCard({
   project,
+  index,
   caption,
   imageAlt,
   focusable = false,
@@ -178,14 +184,20 @@ function SiteCard({
         una propiedad de transformacion recien creada es lo que dispara
         el parpadeo en el borde redondeado.
       */}
-      <div className="overflow-hidden rounded-2xl border border-line-strong bg-surface transition-transform duration-300 ease-premium will-change-[translate] group-hover:-translate-y-1">
-        <div className="flex items-center gap-3 border-b border-line bg-surface-2 px-4 py-2.5">
-          <span className="flex shrink-0 gap-1.5">
-            <span className="size-2 rounded-full bg-line-strong" />
-            <span className="size-2 rounded-full bg-line-strong" />
-            <span className="size-2 rounded-full bg-line-strong" />
+      <div
+        className={cn(
+          "site-panel overflow-hidden bg-surface will-change-[translate] group-hover:-translate-y-1",
+          index % 2 === 1 && "is-even",
+        )}
+      >
+        {/* La barra con el dominio es ahora el cartel de tinta de la vineta. */}
+        <div className="site-panel-bar flex items-center gap-3 px-4 py-2">
+          <span className="flex shrink-0 gap-1">
+            <span className="size-2 bg-accent" />
+            <span className="size-2 bg-canvas/50" />
+            <span className="size-2 bg-canvas/30" />
           </span>
-          <span className="min-w-0 truncate rounded-md bg-canvas px-3 py-1 font-mono text-xs text-ink-subtle">
+          <span className="min-w-0 truncate font-mono text-xs text-canvas/80">
             {project.domain}
           </span>
         </div>

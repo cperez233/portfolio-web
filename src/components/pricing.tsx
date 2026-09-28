@@ -117,6 +117,7 @@ export function PricingSection() {
             cta={copy.custom.cta}
             message={copy.custom.whatsappMessage}
             location="pricing-custom"
+            variant="custom"
           />
           <AddonRow
             name={copy.brand.name}
@@ -126,6 +127,7 @@ export function PricingSection() {
             cta={copy.brand.cta}
             message={copy.brand.whatsappMessage}
             location="pricing-brand"
+            variant="brand"
             delay={0.08}
           />
         </div>
@@ -189,6 +191,7 @@ function AddonRow({
   cta,
   message,
   location,
+  variant,
   delay = 0,
 }: {
   name: string;
@@ -196,6 +199,12 @@ function AddonRow({
   cta: string;
   message: string;
   location: string;
+  /**
+   * `custom`: vineta de impacto (colores invertidos, lineas de velocidad
+   * y un ドン). `brand`: vineta con trama, la paleta del kit y un キラッ
+   * (el brillo del manga). Mismo contenido; cambia la puesta en escena.
+   */
+  variant: "custom" | "brand";
   delay?: number;
 }) {
   const { language } = useLanguage();
@@ -203,20 +212,52 @@ function AddonRow({
   return (
     <FadeIn delay={0.1 + delay} y={24} className="flex">
       <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ type: "spring", stiffness: 400, damping: 24 }}
-        className="flex w-full flex-col gap-4 rounded-3xl border border-line bg-surface-2 p-6 transition-colors duration-500 sm:flex-row sm:items-center sm:justify-between sm:gap-8 lg:flex-col lg:items-start lg:justify-between lg:gap-5"
+        // Al pasar el raton la vineta "recibe el golpe": sube y se ladea.
+        whileHover={{ y: -5, rotate: variant === "custom" ? -0.8 : 0.8 }}
+        transition={{ type: "spring", stiffness: 400, damping: 22 }}
+        className={cn(
+          "addon-panel relative flex w-full flex-col gap-4 overflow-hidden p-6 transition-colors duration-500 sm:flex-row sm:items-center sm:justify-between sm:gap-8 lg:flex-col lg:items-start lg:justify-between lg:gap-5",
+          variant === "custom" ? "addon-impact" : "addon-brand",
+        )}
       >
-        <FadeSwap>
-          <p className="text-lg font-medium tracking-tight text-ink">{name}</p>
-          <p className="mt-1 text-base leading-relaxed text-ink-muted">{summary}</p>
+        {variant === "custom" ? (
+          <div
+            aria-hidden="true"
+            className="speed-lines pointer-events-none absolute right-0 top-1/2 size-[150%] -translate-y-1/2 translate-x-1/3"
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            className="halftone halftone-fade pointer-events-none absolute -right-16 -top-16 size-72"
+          />
+        )}
+        <span aria-hidden="true" className="addon-sfx">
+          {variant === "custom" ? "ドン" : "キラッ"}
+        </span>
+
+        <FadeSwap className="relative">
+          <p className="addon-name">{name}</p>
+          <p className="addon-summary mt-1 text-base leading-relaxed">{summary}</p>
+          {variant === "brand" ? (
+            // La paleta del kit: tinta, papel y oro.
+            <span aria-hidden="true" className="mt-4 flex gap-1.5">
+              <span className="size-5 border-2 border-line-strong bg-[#161418]" />
+              <span className="size-5 border-2 border-line-strong bg-[#ece6d8]" />
+              <span className="size-5 border-2 border-line-strong bg-[#e3b341]" />
+            </span>
+          ) : null}
         </FadeSwap>
         <a
           href={buildWhatsappUrl(message)}
           onClick={() => trackWhatsappClick(location, language)}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium text-ink transition-[transform,border-color,color] duration-200 ease-[var(--ease-premium)] hover:border-accent hover:text-accent-ink active:scale-[0.97]"
+          className={cn(
+            "group relative inline-flex min-h-12 shrink-0 items-center justify-center gap-2 px-6 text-sm font-medium transition-[transform,border-color,color] duration-200 ease-[var(--ease-premium)] active:scale-[0.97]",
+            variant === "custom"
+              ? "accent-fill"
+              : "rounded-full border border-line-strong bg-surface text-ink hover:border-accent hover:text-accent-ink",
+          )}
         >
           {cta}
           <ArrowUpRight

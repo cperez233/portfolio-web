@@ -1087,6 +1087,117 @@ html.lenis body {
     rotate: -4deg;
   }
 
+  /*
+    Precios, lo que va aparte. `addon-impact` (app a medida) es la
+    viñeta de impacto del manga: colores invertidos y lineas de
+    velocidad. `addon-brand` (kit de marca) es papel con trama.
+  */
+  .addon-panel {
+    border: 3px solid var(--color-line-strong);
+    box-shadow: 6px 6px 0 0 var(--panel-shadow);
+  }
+
+  .addon-impact {
+    --halftone-dot: color-mix(in srgb, var(--color-canvas) 22%, transparent);
+    background-color: var(--color-ink);
+    color: var(--color-canvas);
+    border-color: var(--color-ink);
+    box-shadow: 6px 6px 0 0 var(--color-accent);
+  }
+
+  .addon-brand {
+    background-color: var(--color-surface);
+  }
+
+  .addon-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    /* Hueco para el SFX de la esquina. */
+    padding-right: 5.5rem;
+  }
+
+  .addon-impact .addon-name {
+    color: var(--color-canvas);
+  }
+
+  .addon-summary {
+    color: var(--color-ink-muted);
+  }
+
+  .addon-impact .addon-summary {
+    color: color-mix(in srgb, var(--color-canvas) 78%, transparent);
+  }
+
+  /* En la vineta invertida la sombra del boton va del color del papel. */
+  .addon-impact .accent-fill {
+    box-shadow: 4px 4px 0 0 var(--color-canvas);
+  }
+
+  /* SFX de la esquina: ドン (golpe) y キラッ (brillo). */
+  .addon-sfx {
+    position: absolute;
+    right: 1rem;
+    top: 0.6rem;
+    font-family: var(--font-jp);
+    font-size: clamp(1.8rem, 1.2rem + 2vw, 2.8rem);
+    line-height: 1;
+    color: var(--color-accent);
+    -webkit-text-stroke: 4px var(--color-ink);
+    paint-order: stroke fill;
+    rotate: 10deg;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .addon-impact .addon-sfx {
+    -webkit-text-stroke-color: var(--color-canvas);
+  }
+
+  .addon-brand .addon-sfx {
+    rotate: -8deg;
+  }
+
+  /*
+    Paginas web publicadas: cada captura es una viñeta. Trazo de tinta,
+    sombra dura y un leve ladeo alterno que se endereza al pasar el
+    raton (rotate, no transform: no choca con el translate del hover).
+  */
+  .site-panel {
+    border: 3px solid var(--color-line-strong);
+    box-shadow: 5px 5px 0 0 var(--panel-shadow);
+    rotate: -1.2deg;
+    transition:
+      rotate 0.35s var(--ease-premium),
+      translate 0.3s var(--ease-premium),
+      box-shadow 0.3s var(--ease-premium);
+  }
+
+  .site-panel.is-even {
+    rotate: 1.2deg;
+  }
+
+  .group:hover .site-panel,
+  .group:focus-visible .site-panel {
+    rotate: 0deg;
+    box-shadow: 8px 8px 0 0 var(--panel-shadow);
+  }
+
+  .site-panel-bar {
+    background-color: var(--color-ink);
+    border-bottom: 3px solid var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-panel,
+    .site-panel.is-even {
+      rotate: 0deg;
+    }
+  }
+
   /* Numero en contorno del panel de Servicios (escritorio). */
   .service-ghost-number {
     font-family: var(--font-display);
@@ -1360,6 +1471,77 @@ html.lenis body {
     background-color: var(--color-surface-2);
     box-shadow: inset 0 0 0 1.5px var(--color-line-strong);
   }
+}
+
+/* ------------------------------------------------------------------
+   Diagramas de Servicios como tira de manga: cartel de tinta arriba,
+   trama de puntos de fondo, nodos como viñetas pequeñas y conexiones
+   como lineas de accion con punta de flecha.
+------------------------------------------------------------------ */
+@layer components {
+  .tech-halftone {
+    background-image: radial-gradient(
+      circle,
+      var(--halftone-dot) 1.1px,
+      transparent 1.2px
+    );
+    background-size: 8px 8px;
+  }
+
+  .tech-panel-bar {
+    background-color: var(--color-ink);
+    border-bottom: 3px solid var(--color-accent);
+  }
+
+  /* Estado del proceso ("200 OK", "indexado") como estallido pequeño. */
+  .tech-status-burst {
+    padding: 0.55em 1em;
+    background-color: var(--color-accent);
+    color: #161418;
+    clip-path: polygon(
+      0% 50%, 7% 12%, 22% 22%, 34% 0%, 48% 18%, 62% 2%, 74% 20%,
+      90% 8%, 94% 38%, 100% 55%, 91% 72%, 95% 96%, 76% 84%, 62% 100%,
+      49% 83%, 35% 100%, 24% 80%, 7% 92%, 8% 66%
+    );
+  }
+
+  .manga-node {
+    border: 2px solid var(--color-line-strong);
+    background-color: var(--color-tech-node);
+    box-shadow: 3px 3px 0 0 var(--panel-shadow);
+  }
+
+  .manga-node-icon {
+    background-color: var(--color-ink);
+    color: var(--color-accent);
+  }
+
+  .manga-terminal {
+    border: 2px solid var(--color-line-strong);
+    box-shadow: 3px 3px 0 0 var(--panel-shadow);
+  }
+}
+
+/*
+  Linea de accion: mas gruesa que el trazo de editor y con punta de
+  flecha, salvo en los flujos de ida y vuelta. Sin capa para ganarle a
+  la utilidad h-px del componente.
+*/
+.action-line {
+  position: relative;
+  height: 3px;
+  opacity: 0.9;
+}
+
+.action-line:not(.is-bidirectional)::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  translate: 0 -50%;
+  border-style: solid;
+  border-width: 5px 0 5px 7px;
+  border-color: transparent transparent transparent var(--color-tech-accent);
 }
 
 /*

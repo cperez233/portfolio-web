@@ -38,7 +38,8 @@ export function TechPanel({
     <div
       aria-hidden={decorative || undefined}
       className={cn(
-        "tech-grid relative flex w-full flex-col overflow-hidden bg-tech-bg text-tech-ink transition-[background-color,border-color,color,box-shadow] duration-500",
+        // Fondo de trama de puntos (screentone) en vez de rejilla de editor.
+        "tech-halftone relative flex w-full flex-col overflow-hidden bg-tech-bg text-tech-ink transition-[background-color,border-color,color,box-shadow] duration-500",
         framed &&
           "rounded-2xl border border-tech-line shadow-[var(--tech-shadow)]",
         className,
@@ -46,22 +47,23 @@ export function TechPanel({
     >
       <div
         className={cn(
-          "flex shrink-0 items-center gap-3 border-b border-tech-line bg-tech-bar px-4 py-2.5 transition-[background-color,border-color,color,box-shadow] duration-500",
+          // Cartel de tinta, como el recuadro del narrador del manga.
+          "tech-panel-bar flex shrink-0 items-center gap-3 px-4 py-2 transition-[background-color,border-color,color,box-shadow] duration-500",
           hideBarOnMobile && "hidden sm:flex",
         )}
       >
-        <span aria-hidden="true" className="flex shrink-0 gap-1.5">
-          <span className="size-2.5 rounded-full bg-tech-dot" />
-          <span className="size-2.5 rounded-full bg-tech-dot" />
-          <span className="size-2.5 rounded-full bg-tech-dot" />
+        <span aria-hidden="true" className="flex shrink-0 gap-1">
+          <span className="size-2 bg-accent" />
+          <span className="size-2 bg-canvas/50" />
+          <span className="size-2 bg-canvas/30" />
         </span>
-        <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-tech-ink-subtle">
+        <p className="min-w-0 flex-1 truncate font-mono text-[11px] text-canvas/75">
           {window}
         </p>
         {status ? (
           // Sin punto que late: el estado se lee en el texto. Mono porque
           // imita la salida de una herramienta, como la barra de la ventana.
-          <span className="shrink-0 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] text-tech-status">
+          <span className="tech-status-burst shrink-0 font-mono text-[11px]">
             {status}
           </span>
         ) : null}

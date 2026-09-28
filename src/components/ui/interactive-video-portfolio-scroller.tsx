@@ -687,11 +687,6 @@ function DesktopScroller() {
             }}
           >
             {/* Panel de detalle: diagrama arriba, texto del servicio abajo. */}
-            {/*
-              Cuadrado por debajo de xl: entre 1024 y 1280px la columna es
-              estrecha y a 5/4 el texto de los servicios largos se salia
-              por abajo del panel.
-            */}
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 60, scale: 0.96 },
@@ -702,8 +697,13 @@ function DesktopScroller() {
                   transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
                 },
               }}
-              className="relative order-2 flex aspect-square flex-col overflow-hidden border-[3px] border-line-strong bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500 xl:aspect-[5/4]">
-              <div className="relative min-h-16 flex-1">
+              className="relative order-2 flex flex-col self-start overflow-hidden border-[3px] border-line-strong bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500">
+              {/*
+                Alto fijo para el diagrama y el panel crece con el texto.
+                Con proporcion fija, un titulo en dos lineas le quitaba
+                sitio al diagrama y los nodos se montaban sobre la barra.
+              */}
+              <div className="relative h-44 shrink-0">
                 {/* Sin modo "wait": el hover cambia rapido de servicio y
                     los diagramas se funden encima en vez de hacer cola. */}
                 <AnimatePresence initial={false}>

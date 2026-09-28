@@ -46,14 +46,19 @@ export function FlowDiagram({
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flow-line-x h-px min-w-3 flex-1",
+                  "flow-line-x action-line h-px min-w-3 flex-1 lg:min-w-3 lg:max-w-8",
                   bidirectional && "is-bidirectional",
                 )}
               />
             ) : null}
-            <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-1 lg:flex-1 lg:gap-1.5">
               {column.map((node) => (
-                <CompactNode key={node.id} node={node} copy={copy} />
+                <CompactNode
+                  key={node.id}
+                  node={node}
+                  copy={copy}
+                  stacked={column.length > 1}
+                />
               ))}
             </div>
           </Fragment>
@@ -97,9 +102,9 @@ function FullNode({ node, copy }: { node: DiagramNode; copy: DiagramCopy }) {
   return (
     <motion.div
       variants={revealItem}
-      className="flow-node flex min-w-0 items-start gap-2.5 rounded-xl border border-tech-line bg-tech-node px-3 py-2.5 transition-[background-color,border-color,color,box-shadow] duration-500"
+      className="flow-node manga-node flex min-w-0 items-start gap-2.5 px-3 py-2.5 transition-[background-color,border-color,color,box-shadow] duration-500"
     >
-      <span className="flow-node-icon inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-tech-accent/25 bg-tech-accent/10 text-tech-accent">
+      <span className="flow-node-icon manga-node-icon inline-flex size-7 shrink-0 items-center justify-center">
         <DiagramIconGlyph icon={node.icon} className="size-3.5" />
       </span>
       <span className="min-w-0">
@@ -119,30 +124,39 @@ function FullNode({ node, copy }: { node: DiagramNode; copy: DiagramCopy }) {
 function CompactNode({
   node,
   copy,
+  stacked = false,
 }: {
   node: DiagramNode;
   copy: DiagramCopy;
+  /**
+   * Nodo de un abanico (varios en la misma columna). Va en fila tambien
+   * en escritorio: apilados con el icono arriba no cabian en el alto.
+   */
+  stacked?: boolean;
 }) {
   const text = copy.nodes?.[node.id];
 
   return (
     <motion.div
       variants={revealItem}
-      className="flex min-w-0 items-center gap-1.5 rounded-lg border border-tech-line bg-tech-node p-1.5 sm:pr-2.5 lg:items-start lg:py-2 transition-[background-color,border-color,color,box-shadow] duration-500"
+      className={cn(
+        "manga-node flex min-w-0 items-center gap-1.5 p-1.5 sm:pr-2.5 transition-[background-color,border-color,color,box-shadow] duration-500",
+        stacked ? "lg:gap-2 lg:py-1.5" : "lg:flex-col lg:gap-1.5 lg:px-1.5 lg:py-2 lg:text-center",
+      )}
     >
-      <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-tech-accent/10 text-tech-accent">
+      <span className="manga-node-icon inline-flex size-6 shrink-0 items-center justify-center">
         <DiagramIconGlyph icon={node.icon} className="size-3.5" />
       </span>
-      {/* En movil solo el icono: el nombre ya esta en el texto de abajo. */}
+      {/*
+        En movil solo el icono: el nombre ya esta en el texto de abajo.
+        En escritorio icono arriba y nombre debajo, entero (en fila se
+        cortaba: "Grabaci...", "Publicac..."). Sin el detalle, que era lo
+        que hacia las fichas demasiado altas; el panel ya lo explica.
+      */}
       <span className="hidden min-w-0 sm:block">
-        <span className="block truncate text-[11px] font-medium leading-tight text-tech-ink lg:text-xs">
+        <span className="block truncate text-[11px] font-medium leading-tight text-tech-ink lg:whitespace-normal lg:text-xs">
           {text?.title ?? node.id}
         </span>
-        {text?.detail ? (
-          <span className="mt-0.5 hidden truncate text-[10px] leading-tight text-tech-ink-subtle lg:block">
-            {text.detail}
-          </span>
-        ) : null}
       </span>
     </motion.div>
   );

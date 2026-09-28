@@ -49,7 +49,7 @@ export function TerminalLog({
   return (
     <ol
       className={cn(
-        "flex flex-col gap-0.5 overflow-hidden rounded-xl border border-tech-line bg-tech-term p-3 font-mono text-[11px] leading-normal sm:p-4 sm:text-xs",
+        "manga-terminal flex flex-col gap-0.5 overflow-hidden bg-tech-term p-3 font-mono text-[11px] leading-normal sm:p-4 sm:text-xs",
         className,
       )}
     >
