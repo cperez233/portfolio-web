@@ -78,8 +78,26 @@ export interface Dictionary {
   services: {
     eyebrow: string;
     title: string;
-    /** Un bloque por servicio, en el orden de `menuItems`. */
-    items: Array<{ name: string; tag: string; description: string }>;
+    /** Boton de cada servicio, a WhatsApp. */
+    cta: string;
+    /** Mensaje de WhatsApp de cada servicio. `{service}` es su nombre. */
+    whatsappMessage: string;
+    /** Etiqueta delante de lo que se entrega ("Recibes"). */
+    deliverableLabel: string;
+    /** Enlace a la revision gratis, en el servicio de revision. */
+    auditLink: string;
+    /**
+     * Un bloque por servicio, en el orden de `menuItems`. `deliverable`
+     * es lo que se lleva el cliente, en su idioma; `auditLink` marca el
+     * servicio que enlaza a la revision gratis.
+     */
+    items: Array<{
+      name: string;
+      tag: string;
+      description: string;
+      deliverable: string;
+      auditLink?: boolean;
+    }>;
   };
   projects: {
     eyebrow: string;
@@ -322,31 +340,41 @@ const en: Dictionary = {
   services: {
     eyebrow: "What I build",
     title: "Services",
+    cta: "Get a quote",
+    whatsappMessage: "Hi Cristian, I'm interested in: {service}.",
+    deliverableLabel: "You get",
+    auditLink: "Start with the free check",
     items: [
       {
         name: "Websites & custom software",
         tag: "Next.js / React / Laravel / PostgreSQL",
         description: "Your website, your online store or the system your team works with, built from scratch.",
+        deliverable: "Published in your name, with the code and a manual. Bigger projects, with the carpy team.",
       },
       {
         name: "Found on Google and AI",
         tag: "Local SEO / Google Maps / ChatGPT",
         description: "You show up when people search Google or Maps, and when they ask ChatGPT.",
+        deliverable: "Your Google Maps profile tuned and your site ready for Google and ChatGPT to understand.",
       },
       {
         name: "Automation & AI for documents",
         tag: "n8n / Python / OCR / AI",
         description: "Repetitive tasks that run on their own, and paperwork turned into data you find in seconds.",
+        deliverable: "The flow running, with a log of every step and an alert if something fails.",
       },
       {
         name: "Review & advisory",
         tag: "Website / Sales / Security",
         description: "I review your website, how you sell online and where your data sits, and tell you what to fix first.",
+        deliverable: "A report with what to fix first, in order of impact.",
+        auditLink: true,
       },
       {
         name: "Brand & video for social media",
         tag: "Logo / Visual identity / Short video",
         description: "Logo, colours and short videos so your brand looks the same on your website and on social media.",
+        deliverable: "Logo, palette, fonts and templates ready for your social media.",
       },
     ],
   },
@@ -748,31 +776,41 @@ const es: Dictionary = {
   services: {
     eyebrow: "Lo que hago",
     title: "Servicios",
+    cta: "Cotizar esto",
+    whatsappMessage: "Hola Cristian, me interesa: {service}.",
+    deliverableLabel: "Recibes",
+    auditLink: "Empieza con la revisión gratis",
     items: [
       {
         name: "Páginas web y software a medida",
         tag: "Next.js / React / Laravel / PostgreSQL",
         description: "Tu página, tu tienda en línea o el sistema con el que trabaja tu equipo, hecho desde cero.",
+        deliverable: "Publicado a tu nombre, con el código y un manual. Los proyectos grandes, con el equipo de carpy.",
       },
       {
         name: "Que te encuentren en Google y en la IA",
         tag: "SEO local / Google Maps / ChatGPT",
         description: "Apareces cuando te buscan en Google o en Maps, y cuando le preguntan a ChatGPT.",
+        deliverable: "Tu perfil de Google Maps afinado y tu página lista para que Google y ChatGPT la entiendan.",
       },
       {
         name: "Automatización e IA para documentos",
         tag: "n8n / Python / OCR / IA",
         description: "Tareas repetitivas que se hacen solas, y papeles que se vuelven datos que encuentras en segundos.",
+        deliverable: "El flujo funcionando, con registro de cada paso y un aviso si algo falla.",
       },
       {
         name: "Revisión y asesoría",
         tag: "Página web / Ventas / Seguridad",
         description: "Reviso tu página, cómo vendes por internet y dónde están tus datos, y te digo qué arreglar primero.",
+        deliverable: "Un informe con qué arreglar primero, en orden de impacto.",
+        auditLink: true,
       },
       {
         name: "Marca y video para redes",
         tag: "Logo / Identidad visual / Video corto",
         description: "Logo, colores y videos cortos para que tu marca se vea igual en tu página y en redes.",
+        deliverable: "Logo, paleta, tipografías y plantillas listas para tus redes.",
       },
     ],
   },

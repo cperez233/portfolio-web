@@ -11,10 +11,12 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
+import { ArrowUp, ArrowUpRight } from "lucide-react";
 import { TechVisual } from "@/components/diagrams";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { DESKTOP_QUERY } from "@/lib/breakpoints";
 import { useLanguage } from "@/lib/language";
+import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { jumpScrollTo, smoothScrollTo } from "@/lib/smooth-scroll";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { FadeIn } from "./FadeIn";
@@ -292,7 +294,7 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
                 willChange: "transform",
               }
         }
-        className="relative overflow-hidden rounded-3xl border border-tech-line bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500"
+        className="relative overflow-hidden border-[3px] border-line-strong bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500"
       >
         {/* Filo de acento: se enciende con la tarjeta en el centro. */}
         <motion.span
@@ -323,12 +325,14 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
 
         <div className="relative px-5 pb-6 pt-4 sm:px-7 sm:pb-7">
           <FadeSwap>
-            <p className="text-sm tabular-nums text-tech-ink-subtle">
-              <span className="text-tech-accent">{item.number}</span>
-              {" / "}
-              {String(total).padStart(2, "0")}
+            {/* Numero de vineta en Anton, como la placa de un capitulo. */}
+            <p className="font-display text-3xl leading-none tabular-nums text-tech-accent">
+              {item.number}
+              <span className="ml-1 text-base text-tech-ink-subtle">
+                / {String(total).padStart(2, "0")}
+              </span>
             </p>
-            <h3 className="mt-2 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-tech-ink sm:text-2xl">
+            <h3 className="mt-3 text-balance text-[1.375rem] font-medium leading-snug tracking-tight text-tech-ink sm:text-2xl">
               {copy.name}
             </h3>
             {/* Tags que entran uno tras otro al llegar la tarjeta. */}
@@ -364,6 +368,7 @@ function ServiceCard({ item, index, total, reduceMotion }: ServiceCardProps) {
               {copy.description}
             </p>
           </FadeSwap>
+          <ServiceActions index={index} />
         </div>
 
         {/*
@@ -697,21 +702,29 @@ function DesktopScroller() {
                   transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 },
                 },
               }}
-              className="relative order-2 flex aspect-square flex-col overflow-hidden xl:aspect-[5/4] rounded-2xl border border-tech-line bg-tech-bg transition-[background-color,border-color,color,box-shadow] duration-500">
+              className="relative order-2 flex aspect-square flex-col overflow-hidden border-[3px] border-line-strong bg-tech-bg shadow-[var(--tech-card-shadow)] transition-[background-color,border-color,color,box-shadow] duration-500 xl:aspect-[5/4]">
               <div className="relative min-h-16 flex-1">
                 {/* Sin modo "wait": el hover cambia rapido de servicio y
                     los diagramas se funden encima en vez de hacer cola. */}
                 <AnimatePresence initial={false}>
+                  {/*
+                    Cambio de vineta: el diagrama entra con un barrido en
+                    diagonal, como se pasa de un panel a otro en el manga.
+                    Mismos cuatro puntos en los dos poligonos para que
+                    interpolen.
+                  */}
                   <motion.div
                     key={active.number}
                     className="absolute inset-0"
                     initial={
-                      shouldReduceMotion ? false : { opacity: 0, scale: 1.04 }
+                      shouldReduceMotion
+                        ? false
+                        : { clipPath: "polygon(0% 0%, 0% 0%, -20% 100%, -20% 100%)" }
                     }
-                    animate={{ opacity: 1, scale: 1 }}
+                    animate={{ clipPath: "polygon(0% 0%, 120% 0%, 100% 100%, -20% 100%)" }}
                     exit={shouldReduceMotion ? undefined : { opacity: 0 }}
                     transition={{
-                      duration: shouldReduceMotion ? 0 : 0.45,
+                      duration: shouldReduceMotion ? 0 : 0.55,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                   >
@@ -722,6 +735,21 @@ function DesktopScroller() {
                     />
                   </motion.div>
                 </AnimatePresence>
+
+                {/*
+                  Golpe de impacto al cambiar de servicio: lineas de
+                  velocidad que estallan desde el centro y se apagan.
+                */}
+                {shouldReduceMotion ? null : (
+                  <motion.div
+                    key={`burst-${active.number}`}
+                    aria-hidden="true"
+                    className="speed-lines pointer-events-none absolute left-1/2 top-1/2 size-[140%] -translate-x-1/2 -translate-y-1/2"
+                    initial={{ opacity: 0.9, scale: 0.7 }}
+                    animate={{ opacity: 0, scale: 1.25 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                )}
 
                 {/* Funde el diagrama con el bloque de texto de debajo. */}
                 <div
@@ -744,24 +772,35 @@ function DesktopScroller() {
                   initial="hidden"
                   animate="show"
                 >
-                  <motion.p
+                  {/*
+                    El numero grande en contorno hace de placa del panel;
+                    las etiquetas tecnicas ya van en la fila de la lista.
+                  */}
+                  <motion.span
+                    aria-hidden="true"
                     variants={shouldReduceMotion ? undefined : panelLineVariants}
-                    className="text-sm text-tech-accent"
+                    className="service-ghost-number absolute right-6 top-2 xl:right-8"
                   >
-                    {activeCopy.tag}
-                  </motion.p>
+                    {active.number}
+                  </motion.span>
                   <motion.p
                     variants={shouldReduceMotion ? undefined : panelLineVariants}
-                    className="mt-2 text-2xl font-medium tracking-tight text-tech-ink xl:text-3xl"
+                    className="relative pr-24 text-2xl font-medium tracking-tight text-tech-ink xl:text-3xl"
                   >
                     {activeCopy.name}
                   </motion.p>
                   <motion.p
                     variants={shouldReduceMotion ? undefined : panelLineVariants}
-                    className="mt-3 max-w-md text-base leading-relaxed text-tech-ink-soft"
+                    className="relative mt-3 max-w-md pr-24 text-base leading-relaxed text-tech-ink-soft xl:pr-28"
                   >
                     {activeCopy.description}
                   </motion.p>
+                  <motion.div
+                    variants={shouldReduceMotion ? undefined : panelLineVariants}
+                    className="relative"
+                  >
+                    <ServiceActions index={shownIndex} />
+                  </motion.div>
                 </motion.div>
               </div>
             </motion.div>
@@ -816,7 +855,7 @@ function DesktopScroller() {
                         <motion.span
                           layoutId="service-marker"
                           aria-hidden="true"
-                          className="absolute -left-4 top-4 bottom-4 w-0.5 rounded-full bg-accent-ink"
+                          className="absolute inset-y-1 -left-4 right-0 border-l-4 border-accent bg-accent-dim"
                           transition={
                             shouldReduceMotion
                               ? { duration: 0 }
@@ -836,9 +875,20 @@ function DesktopScroller() {
                         />
                       ) : null}
 
+                      {/* Numero de vineta de la fila. */}
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "relative w-12 shrink-0 font-display text-2xl transition-colors duration-300",
+                          isActive ? "text-accent-ink" : "text-ink-subtle/70",
+                        )}
+                      >
+                        {item.number}
+                      </span>
+
                       {/* La fila activa avanza un poco: se lee como elegida. */}
                       <motion.span
-                        className="min-w-0 flex-1"
+                        className="relative min-w-0 flex-1"
                         animate={{ x: isActive && !shouldReduceMotion ? 12 : 0 }}
                         transition={{ type: "spring", stiffness: 300, damping: 28 }}
                       >
@@ -870,6 +920,55 @@ function DesktopScroller() {
             </motion.ul>
           </motion.div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Cierre de cada servicio: lo que se lleva el cliente y el boton para
+ * cotizarlo por WhatsApp, con el mensaje ya escrito. El servicio de
+ * revision enlaza ademas a la revision gratis (#audit).
+ */
+function ServiceActions({ index }: { index: number }) {
+  const { t, language } = useLanguage();
+  const copy = t.services.items[index];
+  if (!copy) return null;
+
+  return (
+    <div className="mt-4">
+      <p className="text-sm leading-relaxed text-tech-ink-muted">
+        <span className="mr-2 font-display uppercase tracking-[0.14em] text-tech-accent">
+          {t.services.deliverableLabel}
+        </span>
+        {copy.deliverable}
+      </p>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a
+          href={buildWhatsappUrl(t.services.whatsappMessage.replace("{service}", copy.name))}
+          onClick={() => trackWhatsappClick(`service-${index + 1}`, language)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="accent-fill group inline-flex min-h-10 items-center gap-2 px-4 text-sm"
+        >
+          {t.services.cta}
+          <ArrowUpRight
+            aria-hidden="true"
+            className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+          />
+        </a>
+        {copy.auditLink ? (
+          <a
+            href="#audit"
+            className="group inline-flex min-h-10 items-center gap-1.5 text-sm font-medium text-tech-ink underline decoration-tech-accent/60 underline-offset-4 transition-colors hover:text-tech-accent"
+          >
+            {t.services.auditLink}
+            <ArrowUp
+              aria-hidden="true"
+              className="size-3.5 transition-transform duration-300 group-hover:-translate-y-0.5"
+            />
+          </a>
+        ) : null}
       </div>
     </div>
   );

@@ -413,9 +413,8 @@ function PlanCard({
             {item.name}
           </h3>
           {plan.featured ? (
-            <span className="rounded-full bg-accent-dim px-3 py-1 text-xs font-medium text-accent-ink">
-              {copy.featured}
-            </span>
+            // Estallido de manga (el globo de grito) en vez de pildora.
+            <span className="manga-burst text-xs">{copy.featured}</span>
           ) : null}
         </div>
         <p className="mt-2 text-base leading-relaxed text-ink-muted">{item.summary}</p>

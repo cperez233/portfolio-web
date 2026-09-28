@@ -157,20 +157,28 @@ function ReviewCard({ item }: { item: Testimonial }) {
   const { t } = useLanguage();
 
   return (
-    <figure className="relative flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-surface p-6 shadow-[var(--tech-card-shadow)] transition-colors duration-500 sm:p-7">
-      {/* Comilla grande de fondo, decorativa. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-6 right-4 select-none font-serif text-[9rem] leading-none text-accent-ink opacity-15"
-      >
-        &rdquo;
-      </span>
-      <FadeSwap className="relative flex-1">
-        <blockquote className="text-lg leading-snug tracking-tight text-ink sm:text-xl">
-          <p>&ldquo;{t.testimonials.quotes[item.key]}&rdquo;</p>
-        </blockquote>
-      </FadeSwap>
-      <figcaption className="relative mt-8 flex items-center gap-3">
+    <figure className="relative flex h-full flex-col">
+      {/*
+        La frase va en un globo de dialogo de manga cuyo rabito apunta a
+        quien la dijo, debajo. Mismo contenido; solo cambia la forma.
+      */}
+      <div className="speech-panel relative flex-1 overflow-hidden p-6 sm:p-7">
+        {/* Comilla grande de fondo, decorativa. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-6 right-4 select-none font-serif text-[9rem] leading-none text-accent-ink opacity-15"
+        >
+          &rdquo;
+        </span>
+        <FadeSwap className="relative">
+          <blockquote className="text-lg leading-snug tracking-tight text-ink sm:text-xl">
+            <p>&ldquo;{t.testimonials.quotes[item.key]}&rdquo;</p>
+          </blockquote>
+        </FadeSwap>
+      </div>
+      {/* Rabito del globo: fuera del panel, que recorta la comilla. */}
+      <span aria-hidden="true" className="speech-tail" />
+      <figcaption className="relative mt-7 flex items-center gap-3 pl-2">
         <span
           aria-hidden="true"
           className="accent-fill inline-flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
