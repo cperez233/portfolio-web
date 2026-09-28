@@ -87,7 +87,7 @@ export function Testimonials() {
       </FadeSwap>
       <motion.ul
         ref={listRef}
-        data-lenis-prevent
+        data-lenis-prevent-horizontal
         key={animateFan ? "fan" : "row"}
         initial={animateFan ? "hidden" : false}
         whileInView="show"

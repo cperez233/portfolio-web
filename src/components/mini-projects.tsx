@@ -71,7 +71,7 @@ export function MiniProjectsSection() {
         </FadeIn>
 
         <ul
-          data-lenis-prevent
+          data-lenis-prevent-horizontal
           className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 pb-4 pt-3 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
         >
           {miniProjects.map((project, index) => (

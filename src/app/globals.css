@@ -335,8 +335,14 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+/*
+  Carruseles horizontales: Lenis solo suelta los gestos horizontales y el
+  contain va solo en X. Con `data-lenis-prevent` + contain en ambos ejes,
+  la rueda vertical encima de las resenas no llegaba a la pagina y el
+  scroll se quedaba atascado.
+*/
+.lenis.lenis-smooth [data-lenis-prevent-horizontal] {
+  overscroll-behavior-x: contain;
 }
 
 @layer components {

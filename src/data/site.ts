@@ -322,9 +322,9 @@ export interface Plan {
  * ingles casi siempre esta fuera de Colombia).
  */
 export const plans: Plan[] = [
-  { key: "landing", cop: 690_000, usd: 290 },
-  { key: "web", cop: 1_490_000, usd: 590, featured: true },
-  { key: "panel", cop: 2_890_000, usd: 990 },
+  { key: "landing", cop: 490_000, usd: 220 },
+  { key: "web", cop: 990_000, usd: 440, featured: true },
+  { key: "panel", cop: 1_890_000, usd: 790 },
 ];
 
 /**
@@ -333,12 +333,12 @@ export const plans: Plan[] = [
  * Asi el plan mas barato sigue siendo barato para quien ya tiene logo.
  */
 export const brandKit = {
-  alone: { cop: 390_000, usd: 150 },
-  withPlan: { cop: 290_000, usd: 110 },
+  alone: { cop: 290_000, usd: 120 },
+  withPlan: { cop: 190_000, usd: 85 },
 } as const;
 
 /** Revision completa de un sitio ya publicado (se descuenta si hay proyecto). */
-export const fullAudit = { cop: 190_000, usd: 90 } as const;
+export const fullAudit = { cop: 120_000, usd: 60 } as const;
 
 export const currency: Record<"en" | "es", "USD" | "COP"> = { en: "USD", es: "COP" };
 

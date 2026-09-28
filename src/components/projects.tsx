@@ -333,7 +333,7 @@ function ShotRow({
       <ul
         ref={rowRef}
         // Lenis no debe tragarse el gesto horizontal de la fila.
-        data-lenis-prevent
+        data-lenis-prevent-horizontal
         className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 [scrollbar-width:none] sm:scroll-px-8 sm:px-8 md:scroll-px-10 md:px-10 lg:scroll-px-0 lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
       >
         {shots.map((shot, index) => (
