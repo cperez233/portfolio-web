@@ -88,6 +88,8 @@ export interface Dictionary {
     auditLink: string;
     /** Pista de las vinetas cerradas: se tocan para ver el servicio. */
     openHint: string;
+    /** Boton para cerrar el servicio abierto (solo celular). */
+    close: string;
     /**
      * Un bloque por servicio, en el orden de `menuItems`. `deliverable`
      * es lo que se lleva el cliente, en su idioma; `auditLink` marca el
@@ -274,6 +276,9 @@ export interface Dictionary {
       stats: string[];
       /** Resumen de la grafica para lector de pantalla. */
       chartLabel: string;
+      /** Caja de narrador: que es un Stand, para quien no conoce JoJo. */
+      explainerTitle: string;
+      explainer: string;
     };
     approach: string;
     /** Etiqueta del retrato del hero, que al tocarlo "detiene el tiempo". */
@@ -347,6 +352,7 @@ const en: Dictionary = {
     deliverableLabel: "You get",
     auditLink: "Start with the free check",
     openHint: "See service",
+    close: "Close",
     items: [
       {
         name: "Websites & custom software",
@@ -713,6 +719,9 @@ const en: Dictionary = {
         "Builds software, websites and apps that businesses actually use, and makes content that goes viral. Has a cybersecurity streak: checks the locks before handing over the keys.",
       stats: ["Power", "Speed", "Range", "Stamina", "Precision", "Potential"],
       chartLabel: "Stand stats: Power C, Speed B, Range A, Stamina A, Precision A, Potential A.",
+      explainerTitle: "What's a Stand?",
+      explainer:
+        "In the manga JoJo's Bizarre Adventure, a Stand is someone's spirit turned into a visible power, with its own stats card. This is my take: what I do, in that format.",
     },
     approach: "Oh? You're approaching me?",
     timeStop: "Cristian Pérez — tap to stop time",
@@ -784,6 +793,7 @@ const es: Dictionary = {
     deliverableLabel: "Recibes",
     auditLink: "Empieza con la revisión gratis",
     openHint: "Ver servicio",
+    close: "Cerrar",
     items: [
       {
         name: "Páginas web y software a medida",
@@ -1150,6 +1160,9 @@ const es: Dictionary = {
         "Construye software, páginas web y apps que los negocios usan de verdad, y crea contenido que se vuelve viral. Tiene aires de ciberseguridad: revisa las cerraduras antes de entregar las llaves.",
       stats: ["Poder", "Velocidad", "Alcance", "Resistencia", "Precisión", "Potencial"],
       chartLabel: "Estadísticas del Stand: Poder C, Velocidad B, Alcance A, Resistencia A, Precisión A, Potencial A.",
+      explainerTitle: "¿Qué es un Stand?",
+      explainer:
+        "En el manga JoJo's Bizarre Adventure, un Stand es el espíritu de alguien convertido en un poder visible, con su propia tarjeta de estadísticas. Esta es mi versión: lo que hago, en ese formato.",
     },
     approach: "¿Oh? ¿Te acercas a mí?",
     timeStop: "Cristian Pérez — toca para detener el tiempo",

@@ -140,26 +140,33 @@ function StandRadar() {
                 {stat.grade}
               </text>
             </motion.g>
-            <text
-              x={labelX}
-              y={labelY}
-              textAnchor={anchor}
-              fontFamily="var(--font-jp)"
-              fontSize="17"
-              fill="var(--color-ink)"
-            >
-              {stat.jp}
-            </text>
-            <text
-              x={labelX}
-              y={labelY + 20}
-              textAnchor={anchor}
-              fontFamily="var(--font-sans)"
-              fontSize="15"
-              fill="var(--color-ink-subtle)"
-            >
-              {t.jojo.stand.stats[i]}
-            </text>
+            {/*
+              Etiquetas dentro de la grafica solo desde sm: en un celular
+              la grafica mide ~340px y el texto quedaba en unos 8px, con
+              los kanji ilegibles. Ahi van en la leyenda de debajo.
+            */}
+            <g className="max-sm:hidden">
+              <text
+                x={labelX}
+                y={labelY}
+                textAnchor={anchor}
+                fontFamily="var(--font-jp)"
+                fontSize="17"
+                fill="var(--color-ink)"
+              >
+                {stat.jp}
+              </text>
+              <text
+                x={labelX}
+                y={labelY + 20}
+                textAnchor={anchor}
+                fontFamily="var(--font-sans)"
+                fontSize="15"
+                fill="var(--color-ink-subtle)"
+              >
+                {t.jojo.stand.stats[i]}
+              </text>
+            </g>
           </g>
         );
       })}
@@ -179,6 +186,16 @@ export function StandCard({ className }: { className?: string }) {
 
   return (
     <FadeIn className={cn("relative", className)}>
+      {/*
+        Caja de narrador: explica que es un Stand a quien no conoce JoJo,
+        para que la tarjeta no se lea como algo raro.
+      */}
+      <FadeSwap>
+        <p className="manga-caption mb-6 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+          <span className="manga-caption-tab">{copy.explainerTitle}</span>
+          {copy.explainer}
+        </p>
+      </FadeSwap>
       <div className="grid gap-4 lg:grid-cols-12 lg:gap-0">
         {/* Vineta 1: nombre del Stand y su usuario */}
         <div className="manga-panel manga-panel-cut-right halftone-corner relative lg:col-span-7 lg:-mr-6">
@@ -210,10 +227,22 @@ export function StandCard({ className }: { className?: string }) {
             aria-hidden="true"
             className="speed-lines pointer-events-none absolute left-1/2 top-1/2 size-[160%] -translate-x-1/2 -translate-y-1/2"
           />
-          <div className="relative flex h-full items-center justify-center px-2 py-3 lg:pl-10">
+          <div className="relative flex h-full flex-col items-center justify-center px-2 py-3 lg:pl-10">
             <div className="w-full max-w-[340px]">
               <StandRadar />
             </div>
+            {/* Leyenda en celular: nota, atributo en japones y su nombre. */}
+            <ul aria-hidden="true" className="relative grid w-full grid-cols-2 gap-x-3 gap-y-2 px-3 pb-3 sm:hidden">
+              {standStats.map((stat, i) => (
+                <li key={stat.jp} className="flex items-center gap-2">
+                  <span className="stand-grade">{stat.grade}</span>
+                  <span className="min-w-0 leading-tight">
+                    <span className="block font-jp text-sm text-ink">{stat.jp}</span>
+                    <span className="block text-xs text-ink-subtle">{copy.stats[i]}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

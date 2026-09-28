@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
-import { ArrowUp, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowUp, ArrowUpRight, Plus, X } from "lucide-react";
 import { TechVisual } from "@/components/diagrams";
 import { menuItems, type ServiceItem } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { smoothScrollTo } from "@/lib/smooth-scroll";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { FadeIn } from "./FadeIn";
 import { FadeSwap } from "./FadeSwap";
 import { SectionEdge } from "./section-transition";
@@ -30,10 +31,16 @@ const ease = [0.22, 1, 0.36, 1] as const;
  *
  * Se elige con clic o toque, nunca con hover: el boton "Cotizar esto"
  * siempre es el del servicio abierto. El scroll es 100% nativo.
+ *
+ * En celular la lista arranca cerrada y el abierto se puede cerrar: quien
+ * llega ve los cinco nombres de un vistazo. En escritorio siempre hay uno
+ * abierto (el primero al llegar), porque la vineta grande es la pagina.
  */
 export default function InteractiveVideoScroller() {
   const { t } = useLanguage();
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState<number | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 64rem)");
+  const shown = isDesktop ? (open ?? 0) : open;
   const shouldReduceMotion = Boolean(useReducedMotion());
 
   return (
@@ -70,8 +77,9 @@ export default function InteractiveVideoScroller() {
                 item={item}
                 index={index}
                 total={menuItems.length}
-                isOpen={index === open}
+                isOpen={index === shown}
                 onSelect={() => setOpen(index)}
+                onClose={() => setOpen(null)}
                 reduceMotion={shouldReduceMotion}
               />
             ))}
@@ -88,6 +96,8 @@ interface ServicePanelProps {
   total: number;
   isOpen: boolean;
   onSelect: () => void;
+  /** Cierra el servicio (solo celular: en escritorio siempre hay uno abierto). */
+  onClose: () => void;
   reduceMotion: boolean;
 }
 
@@ -97,6 +107,7 @@ function ServicePanel({
   total,
   isOpen,
   onSelect,
+  onClose,
   reduceMotion,
 }: ServicePanelProps) {
   const { t } = useLanguage();
@@ -152,9 +163,17 @@ function ServicePanel({
                   / {String(total).padStart(2, "0")}
                 </span>
               </span>
-              <span className="hidden min-w-0 truncate font-mono text-xs text-canvas/70 sm:block">
+              <span className="hidden min-w-0 flex-1 truncate text-right font-mono text-xs text-canvas/70 sm:block">
                 {copy.tag}
               </span>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={`${t.services.close}: ${copy.name}`}
+                className="service-panel-close inline-flex size-9 shrink-0 items-center justify-center lg:hidden"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
             </header>
 
             <div className="flex flex-1 flex-col gap-5 p-5 sm:p-6">
