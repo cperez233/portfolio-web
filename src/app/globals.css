@@ -1223,6 +1223,54 @@ html.lenis body {
     border-bottom: 3px solid var(--color-accent);
   }
 
+  /*
+    Servicios como pagina de manga: cada servicio es una viñeta. Las
+    cerradas invitan a tocarlas (al pasar el raton se ladean y crece la
+    sombra); la abierta lleva la sombra dorada.
+  */
+  .service-panel {
+    border: 3px solid var(--color-line-strong);
+    background-color: var(--color-canvas);
+    background-image: radial-gradient(
+      circle at 100% 0,
+      transparent 0,
+      var(--color-canvas) 55%
+    ),
+    radial-gradient(circle, var(--halftone-dot) 1.4px, transparent 1.5px);
+    background-size:
+      100% 100%,
+      9px 9px;
+    box-shadow: 5px 5px 0 0 var(--panel-shadow);
+    transition:
+      box-shadow 0.25s var(--ease-premium),
+      rotate 0.25s var(--ease-premium);
+  }
+
+  .service-panel:not(.is-open):hover {
+    rotate: -0.8deg;
+    box-shadow: 8px 8px 0 0 var(--panel-shadow);
+  }
+
+  .service-panel.is-open {
+    box-shadow: 7px 7px 0 0 var(--color-accent);
+  }
+
+  .service-panel-plus {
+    background-color: var(--color-ink);
+    color: var(--color-accent);
+    transition: rotate 0.25s var(--ease-premium);
+  }
+
+  .service-panel:hover .service-panel-plus {
+    rotate: 90deg;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service-panel:not(.is-open):hover {
+      rotate: 0deg;
+    }
+  }
+
   /* El diagrama va en su propia viñeta dentro de la pagina. */
   .service-diagram {
     border: 2px solid var(--color-line-strong);

@@ -86,6 +86,8 @@ export interface Dictionary {
     deliverableLabel: string;
     /** Enlace a la revision gratis, en el servicio de revision. */
     auditLink: string;
+    /** Pista de las vinetas cerradas: se tocan para ver el servicio. */
+    openHint: string;
     /**
      * Un bloque por servicio, en el orden de `menuItems`. `deliverable`
      * es lo que se lleva el cliente, en su idioma; `auditLink` marca el
@@ -344,6 +346,7 @@ const en: Dictionary = {
     whatsappMessage: "Hi Cristian, I'm interested in: {service}.",
     deliverableLabel: "You get",
     auditLink: "Start with the free check",
+    openHint: "See service",
     items: [
       {
         name: "Websites & custom software",
@@ -780,6 +783,7 @@ const es: Dictionary = {
     whatsappMessage: "Hola Cristian, me interesa: {service}.",
     deliverableLabel: "Recibes",
     auditLink: "Empieza con la revisión gratis",
+    openHint: "Ver servicio",
     items: [
       {
         name: "Páginas web y software a medida",
