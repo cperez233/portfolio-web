@@ -190,7 +190,7 @@ function ReviewCard({ item }: { item: Testimonial }) {
             href={item.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-base font-medium text-ink transition-colors hover:text-accent-ink"
+            className="hit-area-y inline-block py-1 text-base font-medium text-ink transition-colors hover:text-accent-ink"
           >
             {item.author}
             <ArrowUpRight aria-hidden="true" className="ml-1 inline size-3.5 align-baseline opacity-60" />

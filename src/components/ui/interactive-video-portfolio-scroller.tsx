@@ -267,7 +267,7 @@ function ServicePanel({
             >
               <Plus className="size-4" />
             </span>
-            <span className="mt-auto hidden font-display text-xs uppercase tracking-[0.14em] text-accent-ink lg:inline">
+            <span className="mt-auto hidden font-display text-sm uppercase tracking-[0.14em] text-accent-ink lg:inline">
               {t.services.openHint} →
             </span>
           </motion.button>

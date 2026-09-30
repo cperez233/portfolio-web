@@ -246,7 +246,7 @@ export function FloatingNav() {
             variants={logoVariants}
             tabIndex={isExpanded ? undefined : -1}
             aria-label={t.footer.links.home}
-            className="group flex shrink-0 items-center pl-4 pr-1 font-display text-xl tracking-wide text-name transition-colors duration-500"
+            className="hit-area-y group flex shrink-0 items-center self-stretch pl-4 pr-1 font-display text-xl tracking-wide text-name transition-colors duration-500"
           >
             {["C", "P"].map((letter, index) => (
               <span
@@ -286,7 +286,7 @@ export function FloatingNav() {
                   <a
                     href={link.href}
                     tabIndex={isExpanded ? undefined : -1}
-                    className="group relative inline-flex h-9 items-center whitespace-nowrap rounded-full px-3 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
+                    className="hit-area-y group relative inline-flex h-9 items-center whitespace-nowrap rounded-full px-3 text-sm font-medium text-ink-muted transition-colors duration-200 hover:text-ink"
                   >
                     {t.nav[link.key]}
                     {/* Subrayado que se dibuja desde el centro. */}
@@ -312,7 +312,7 @@ export function FloatingNav() {
               aria-expanded={isMenuOpen}
               aria-controls="floating-nav-panel"
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              className="inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
+              className="hit-area inline-flex size-9 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-ink md:hidden"
             >
               <Menu className="size-5" aria-hidden="true" />
             </motion.button>
@@ -332,7 +332,7 @@ export function FloatingNav() {
               type="button"
               tabIndex={isExpanded ? undefined : -1}
               onClick={toggleTheme}
-              className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
+              className="hit-area inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
               aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
               aria-pressed={isDark}
             >

@@ -60,7 +60,7 @@ export function ProjectsSection() {
           </FadeSwap>
         </FadeIn>
 
-        <div className="flex flex-col gap-24 sm:gap-32">
+        <div className="flex flex-col gap-16 sm:gap-32">
           {cases.map((item, index) => (
             <CaseBlock key={item.key} item={item} index={index} />
           ))}
@@ -473,7 +473,7 @@ function MoreWork() {
   const more = t.projects.moreWork;
 
   return (
-    <FadeIn className="mt-24 border-t border-line pt-8 sm:mt-32">
+    <FadeIn className="mt-16 border-t border-line pt-8 sm:mt-32">
       <FadeSwap>
         <ul className="flex flex-col gap-4 text-base sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <li>

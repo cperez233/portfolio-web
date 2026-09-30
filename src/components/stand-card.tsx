@@ -240,18 +240,22 @@ export function StandCard({ className }: { className?: string }) {
             aria-hidden="true"
             className="speed-lines pointer-events-none absolute left-1/2 top-1/2 size-[160%] -translate-x-1/2 -translate-y-1/2"
           />
-          <div className="relative flex h-full flex-col items-center justify-center px-2 py-3 lg:pl-10">
-            <div className="w-full max-w-[340px]">
+          {/*
+            En celular la grafica va al lado de su leyenda, no encima: asi
+            la vineta mide la mitad de alto y la pagina se acorta.
+          */}
+          <div className="relative flex h-full items-center justify-center gap-1 px-2 py-3 sm:flex-col lg:pl-10">
+            <div className="w-[54%] max-w-[340px] shrink-0 sm:w-full">
               <StandRadar />
             </div>
             {/* Leyenda en celular: nota, atributo en japones y su nombre. */}
-            <ul aria-hidden="true" className="relative grid w-full grid-cols-2 gap-x-3 gap-y-2 px-3 pb-3 sm:hidden">
+            <ul aria-hidden="true" className="relative flex min-w-0 flex-1 flex-col gap-1 pr-1 sm:hidden">
               {standStats.map((stat, i) => (
                 <li key={stat.jp} className="flex items-center gap-2">
                   <span className="stand-grade">{stat.grade}</span>
-                  <span className="min-w-0 leading-tight">
-                    <span className="block font-jp text-sm text-ink">{stat.jp}</span>
-                    <span className="block text-xs text-ink-subtle">{copy.stats[i]}</span>
+                  <span className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 leading-tight">
+                    <span className="font-jp text-sm text-ink">{stat.jp}</span>
+                    <span className="text-xs text-ink-subtle">{copy.stats[i]}</span>
                   </span>
                 </li>
               ))}
@@ -262,7 +266,7 @@ export function StandCard({ className }: { className?: string }) {
 
       <Menacing
         size="clamp(1.2rem, 2.2vw, 2rem)"
-        className="absolute -top-7 right-2 z-10 sm:right-5"
+        className="absolute -top-7 right-5 z-10 hidden sm:block"
       />
     </FadeIn>
   );

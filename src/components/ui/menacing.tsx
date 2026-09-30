@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /*
@@ -20,13 +23,27 @@ interface MenacingProps {
 /**
  * El ゴゴゴ de JoJo ("menacing"). Puramente decorativo: aria-hidden y sin
  * eventos, asi que no aporta texto ni cambia el orden de lectura. La
- * animacion (.menacing-glyph) queda quieta con reduced motion.
+ * animacion (.menacing-glyph) queda quieta con reduced motion, y se pausa
+ * cuando el grupo sale de pantalla: hay varios por pagina y seguian
+ * temblando sin que nadie los viera, gastando bateria en celulares.
  */
 export function Menacing({ className, size = "3rem" }: MenacingProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => setPaused(!entry.isIntersecting));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
+      ref={ref}
       aria-hidden="true"
-      className={cn("pointer-events-none select-none", className)}
+      className={cn("pointer-events-none select-none", paused && "is-paused", className)}
       style={{ width: `calc(${size} * 2.2)`, height: `calc(${size} * 3.4)` }}
     >
       {GLYPHS.map((glyph, i) => (

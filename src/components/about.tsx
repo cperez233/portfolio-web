@@ -39,7 +39,7 @@ export function AboutSection() {
   return (
     <section
       id="about"
-      className="manga-separator relative z-10 overflow-x-clip bg-canvas px-5 py-24 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
+      className="manga-separator relative z-10 overflow-x-clip bg-canvas px-5 py-20 transition-colors duration-500 sm:px-8 sm:py-28 md:px-10"
     >
       <SectionEdge />
       <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-16 z-10 hidden sm:block" />

@@ -455,7 +455,7 @@ function PlanCard({
           </h3>
           {plan.featured ? (
             // Estallido de manga (el globo de grito) en vez de pildora.
-            <span className="manga-burst text-xs">{copy.featured}</span>
+            <span className="manga-burst text-[0.8125rem]">{copy.featured}</span>
           ) : null}
         </div>
         <p className="mt-2 text-base leading-relaxed text-ink-muted">{item.summary}</p>
