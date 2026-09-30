@@ -494,7 +494,7 @@ function MoreWork() {
               href={moreWork.repoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-1 font-medium text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent-ink"
+              className="hit-area-y group inline-flex items-center gap-1 font-medium text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent-ink"
             >
               {more.name}
               <ArrowUpRight aria-hidden="true" className="size-3.5" />

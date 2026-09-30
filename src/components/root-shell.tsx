@@ -5,6 +5,7 @@ import { dictionaries, type Language } from "@/data/content";
 import { LanguageProvider } from "@/lib/language";
 import { LANGUAGE_PATHS } from "@/lib/language-detection";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
+import { PauseOffscreenLoops } from "@/components/ui/pause-offscreen-loops";
 import { FloatingNav } from "@/components/ui/floating-nav";
 import { JsonLd } from "@/components/json-ld";
 import { THEME_STORAGE_KEY } from "@/lib/theme-storage";
@@ -204,6 +205,7 @@ export function RootShell({
           {skipLabel[language]}
         </a>
         <SmoothScroll />
+        <PauseOffscreenLoops />
         <LanguageProvider initialLanguage={language}>
           <FloatingNav />
           {children}

@@ -1773,7 +1773,8 @@ html.motion-fallback [style*="transform"] {
   Area tactil de 44px sin cambiar el dibujo: el boton sigue midiendo lo
   mismo y un ::after invisible agranda la zona que se puede tocar.
   hit-area-y solo crece en vertical, para controles pegados de lado
-  (EN | ES), donde crecer hacia los lados pisaria al vecino.
+  (EN | ES), donde crecer hacia los lados pisaria al vecino, y para
+  enlaces bajos dentro de un parrafo (crece 11px arriba y abajo).
 */
 .hit-area,
 .hit-area-y {
@@ -1786,5 +1787,11 @@ html.motion-fallback [style*="transform"] {
   inset: -5px;
 }
 .hit-area-y::after {
-  inset: -5px 0;
+  inset: -11px 0;
+}
+
+/* Bucles de una seccion fuera de pantalla: quietos (ver PauseOffscreenLoops). */
+.is-offscreen,
+.is-offscreen * {
+  animation-play-state: paused !important;
 }

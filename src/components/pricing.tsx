@@ -168,7 +168,7 @@ export function PricingSection() {
               {copy.auditNote.replace("{price}", formatPrice(fullAudit, language))}{" "}
               <a
                 href="#audit"
-                className="group inline-flex items-center gap-1 font-medium text-accent-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent-ink"
+                className="hit-area-y group inline-flex items-center gap-1 font-medium text-accent-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent-ink"
               >
                 {copy.auditLink}
                 <ArrowUp

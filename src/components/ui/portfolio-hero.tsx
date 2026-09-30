@@ -53,7 +53,7 @@ function riseDelay(index: number): React.CSSProperties {
 }
 
 const linkPillClass =
-  "inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-surface-2/60 px-4 text-sm text-ink-muted transition-colors duration-300 hover:border-accent hover:text-accent-ink";
+  "hit-area-y inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-surface-2/60 px-4 text-sm text-ink-muted transition-colors duration-300 hover:border-accent hover:text-accent-ink";
 
 interface PortfolioHeroProps {
   /** Ruta del CV, o null si el PDF no esta en /public (ver page.tsx). */

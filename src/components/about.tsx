@@ -167,7 +167,7 @@ export function AboutSection() {
                   {fact.href ? (
                     <a
                       href={fact.href}
-                      className="group inline-flex items-center gap-1 py-1 text-sm font-medium text-accent-ink"
+                      className="hit-area-y group inline-flex items-center gap-1 py-1 text-sm font-medium text-accent-ink"
                     >
                       {t.about.facts.sitesLink}
                       <ArrowUp
