@@ -172,7 +172,11 @@ export default function Footer() {
           </motion.div>
           <p className="shrink-0 text-right text-base font-bold text-ink">
             {t.jojo.farewell}
-            <span className="block text-sm font-normal text-ink-subtle">— Cris</span>
+            {/* Firma con una linea delante, sin raya larga (se lee como texto de IA). */}
+            <span className="flex items-center justify-end gap-2 text-sm font-normal text-ink-subtle">
+              <span aria-hidden="true" className="h-px w-5 bg-current" />
+              Cris
+            </span>
           </p>
         </motion.div>
       </div>
