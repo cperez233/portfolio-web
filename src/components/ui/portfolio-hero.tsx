@@ -25,8 +25,8 @@ interface BlurTextProps {
  * globals.css): arranca en el primer pintado, sin esperar a React.
  */
 function BlurText({ text, delay = 50, className = "" }: BlurTextProps) {
-  // <span> y no <p>: el nombre va dentro del <h1> del hero, y un <p> no
-  // puede ir dentro de un encabezado.
+  // <span> y no <p>: el nombre va dentro de un <p> del hero, y un <p> no
+  // puede ir dentro de otro.
   return (
     <span className={`inline-flex ${className}`}>
       {text.split("").map((letter, i) => (
@@ -180,24 +180,28 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           className="absolute -top-[62%] right-[4%] z-20 sm:-bottom-[12%] sm:top-auto sm:right-[3%]"
         />
         {/*
-          El nombre es el <h1> de la pagina: sin el, el HTML no tenia
-          ningun encabezado principal. aria-label porque las letras van en
-          spans sueltos y algun lector de pantalla las deletrearia; el
-          espacio entre las dos lineas es para quien lee el texto plano
-          (buscadores), que si no veria "CRISTIANPEREZ".
+          El nombre es la marca, no el <h1>: el h1 es la frase de abajo,
+          que dice que se vende (Google y las IAs le dan mas peso a esa
+          linea; el nombre ya va en el title). Las letras van en spans
+          sueltos y algun lector de pantalla las deletrearia, de ahi el
+          aria-hidden y el nombre entero en sr-only. El espacio entre las
+          dos lineas es para quien lee el texto plano.
         */}
-        <h1 aria-label={site.name}>
-          <BlurText
-            text={hero.firstName}
+        <p>
+          <span className="sr-only">{site.name}</span>
+          <span aria-hidden="true">
+            <BlurText
+              text={hero.firstName}
               delay={90}
               className={firstNameClassName}
-          />{" "}
-          <BlurText
-            text={hero.lastName}
+            />{" "}
+            <BlurText
+              text={hero.lastName}
               delay={90}
               className={nameClassName}
-          />
-        </h1>
+            />
+          </span>
+        </p>
 
         {/*
           z-10 a proposito: el retrato es un medallon incrustado sobre el
@@ -254,9 +258,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       >
         <div className="hero-rise w-full" style={riseDelay(0)}>
           <FadeSwap>
-            <p className="text-xl font-medium tracking-tight text-ink sm:text-2xl md:text-3xl">
+            {/* El h1 de la pagina: la oferta. Sin Anton ni mayusculas
+                (los h1 las heredan de globals.css): se ve igual que antes. */}
+            <h1 className="font-sans text-xl font-medium normal-case tracking-tight text-ink [font-synthesis:weight] sm:text-2xl md:text-3xl">
               {t.hero.tagline}
-            </p>
+            </h1>
           </FadeSwap>
         </div>
 

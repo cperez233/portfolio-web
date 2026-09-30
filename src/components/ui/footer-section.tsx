@@ -178,7 +178,7 @@ export default function Footer() {
       </div>
 
       {/*
-        Decorativo (aria-hidden): el nombre ya es el h1 del hero. Ancho
+        Decorativo (aria-hidden): el nombre ya sale en el hero. Ancho
         completo, fuera del contenedor de 6xl, y recortado por abajo por
         el overflow del footer para que asome desde el borde.
       */}
