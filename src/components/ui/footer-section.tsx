@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { invisibleSignature } from "@/lib/signature";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight } from "lucide-react";
@@ -61,7 +62,7 @@ export default function Footer() {
         >
           <div className="w-full max-w-xl min-w-0 shrink-0 lg:max-w-md">
             <FadeSwap>
-              <p data-part={`${t.jojo.part} 8`} className="jojo-eyebrow text-accent-ink">
+              <p data-part={`${t.jojo.part} 9`} className="jojo-eyebrow text-accent-ink">
                 {t.footer.eyebrow}
               </p>
               {/* El "¿Oh? ¿Te acercas?" de Dio, en globo de manga. */}
@@ -140,6 +141,7 @@ export default function Footer() {
           <FadeSwap>
             <p>
               &copy; {year} {site.name}. {t.footer.rights}
+              {invisibleSignature}
             </p>
           </FadeSwap>
           <p>{site.location}</p>

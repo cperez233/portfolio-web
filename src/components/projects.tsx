@@ -48,7 +48,7 @@ export function ProjectsSection() {
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <FadeIn className="mb-14 sm:mb-20">
           <FadeSwap>
-            <p data-part={`${t.jojo.part} 5`} className="jojo-eyebrow mb-4 text-accent-ink">
+            <p data-part={`${t.jojo.part} 6`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.projects.eyebrow}
             </p>
             <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -389,7 +389,7 @@ function ShotRow({
 
       {/* Capa flotante: contador y, con raton, flechas. */}
       <div className="pointer-events-none absolute left-8 top-3 sm:left-11 md:left-13 lg:left-4 lg:top-4">
-        <span className="rounded-full bg-black/60 px-2.5 py-1 font-mono text-[11px] tabular-nums text-white backdrop-blur-sm">
+        <span className="rounded-full bg-black/60 px-2.5 py-1 font-mono text-[13px] tabular-nums text-white backdrop-blur-sm">
           {active + 1} / {shots.length}
         </span>
       </div>
@@ -432,7 +432,7 @@ function ArrowButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex size-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-[opacity,transform,background-color] duration-200 hover:bg-black/80 active:scale-95 disabled:opacity-30"
+      className="flex size-11 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-[opacity,transform,background-color] duration-200 hover:bg-black/80 active:scale-95 disabled:opacity-30"
     >
       {children}
     </button>

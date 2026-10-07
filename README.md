@@ -17,6 +17,7 @@ Bilingual (EN / ES), dark and light themes, scroll-driven motion.
 | Framework | Next.js 16 (App Router) · React 19 · TypeScript |
 | Styling | Tailwind CSS v4 (`@theme` tokens, no config file) |
 | Motion | Framer Motion 13 · Lenis (inertial scroll) |
+| 3D | three.js (GitHub board only, loaded on demand) |
 | Icons | lucide-react |
 | Fonts | Geist + Fira Code, self-hosted via `next/font` |
 | OG image | `next/og` (`ImageResponse`), generated at build time |
@@ -47,6 +48,7 @@ src/
 │  ├─ llms.txt/       plain-text summary for AI assistants, built from content.ts
 │  ├─ api/audit/      free site check behind the #audit form (SSRF-guarded)
 │  ├─ og-image.png/   route that renders the 1200x630 share card
+│  ├─ global-not-found.tsx  the 404 (King Crimson erased this page)
 │  └─ globals.css     design tokens (@theme) + theme overrides
 ├─ components/
 │  ├─ root-shell.tsx  <html>/<body>, fonts, metadata per language, analytics
@@ -58,6 +60,8 @@ src/
 │  ├─ pricing.tsx     three plans with "from" prices + custom quote row
 │  ├─ audit.tsx       free 6-point check with a WhatsApp hook
 │  ├─ faq.tsx         <details> FAQ, mirrored as FAQPage in JSON-LD
+│  ├─ github-arena/   GitHub contributions as a 3D manga board (three.js)
+│  ├─ easter-eggs.tsx keyboard easter eggs (see below)
 │  ├─ diagrams/       code-drawn architecture / pipeline / terminal panels
 │  └─ ui/             primitives and the larger composed pieces
 ├─ data/
@@ -96,6 +100,33 @@ shared. Title and description per language live in `content.ts`
 
 WhatsApp clicks are sent to Vercel Analytics as `whatsapp_click` (custom
 events need a Pro plan; page views work on Hobby).
+
+## GitHub board
+
+`lib/github-contributions.ts` reads the public contribution calendar from
+github-contributions-api.jogruber.de (GitHub has no token-free endpoint)
+and the home page revalidates it once a day. If the request fails, it
+falls back to `data/github-snapshot.json`, so a build never breaks and the
+section never renders empty. Only public contributions are counted unless
+"Private contributions" is switched on in the GitHub profile settings.
+
+The server renders a flat 53 x 7 calendar. `components/github-arena/scene.ts`
+(plain three.js: two `InstancedMesh`, toon shading, inverted-hull ink
+outlines, fog) is imported only when the section is 600px away, draws on
+top, and the flat calendar fades out. No WebGL, no JS: the flat one stays.
+The render loop stops off-screen.
+
+## Easter eggs
+
+- Tap the hero portrait: ZA WARUDO.
+- Hit columns on the GitHub board: オラ (無駄 on an empty day); six quick
+  hits fire a barrage.
+- Type `ora` or `muda` anywhere outside a form field.
+- Konami code: sepia freeze frame with the "To Be Continued" arrow.
+- Switch tabs: the title goes ゴゴゴゴ.
+- The console says hi and gives the hints.
+
+All motion-only eggs are skipped under `prefers-reduced-motion`.
 
 ## Prices and testimonials
 

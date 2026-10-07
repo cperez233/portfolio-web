@@ -214,7 +214,7 @@ export function StandCard({ className }: { className?: string }) {
         <div className="manga-panel manga-panel-cut-right halftone-corner relative lg:col-span-7 lg:-mr-6">
           <div className="relative px-6 py-6 sm:px-8 sm:py-7 lg:pr-16">
             <FadeSwap>
-              <p className="font-display text-xs uppercase tracking-[0.3em] text-ink-subtle">
+              <p className="font-display text-sm uppercase tracking-[0.3em] text-ink-subtle">
                 {copy.label}
               </p>
               <h3 className="stand-name relative mt-2 inline-block px-4 font-display text-4xl font-normal uppercase leading-[0.95] tracking-[0.01em] text-ink sm:text-5xl">
@@ -255,7 +255,7 @@ export function StandCard({ className }: { className?: string }) {
                   <span className="stand-grade">{stat.grade}</span>
                   <span className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 leading-tight">
                     <span className="font-jp text-sm text-ink">{stat.jp}</span>
-                    <span className="text-xs text-ink-subtle">{copy.stats[i]}</span>
+                    <span className="text-[13px] text-ink-subtle">{copy.stats[i]}</span>
                   </span>
                 </li>
               ))}

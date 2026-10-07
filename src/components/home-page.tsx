@@ -3,6 +3,7 @@ import path from "node:path";
 import { AboutSection } from "@/components/about";
 import { AuditSection } from "@/components/audit";
 import { FaqSection } from "@/components/faq";
+import { GithubSection } from "@/components/github-arena/github-section";
 import { PricingSection } from "@/components/pricing";
 import { MiniProjectsSection } from "@/components/mini-projects";
 import { ProjectsSection } from "@/components/projects";
@@ -10,6 +11,7 @@ import Footer from "@/components/ui/footer-section";
 import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
 import PortfolioHero from "@/components/ui/portfolio-hero";
 import { site } from "@/data/site";
+import { getContributionYear } from "@/lib/github-contributions";
 
 /**
  * El CV solo se enlaza si el PDF esta en /public. La pagina es estatica,
@@ -29,7 +31,9 @@ function resolveCvHref(): string | null {
  * Los orbes ambientales solo quedan en Trabajo reciente, justo bajo el
  * hero: repetidos en cada seccion eran manchas de luz sin motivo.
  */
-export function HomePage() {
+export async function HomePage() {
+  const contributions = await getContributionYear();
+
   return (
     <main id="content" className="flex-1 overflow-x-clip">
       <PortfolioHero cvHref={resolveCvHref()} />
@@ -37,6 +41,8 @@ export function HomePage() {
       {/* La revision gratis va arriba: es el mejor gancho para quien aun no escribe. */}
       <AuditSection />
       <AboutSection />
+      {/* Despues del Stand: lo que dice la tarjeta, con datos de GitHub. */}
+      <GithubSection data={contributions} />
       <InteractiveVideoScroller />
       <ProjectsSection />
       <PricingSection />

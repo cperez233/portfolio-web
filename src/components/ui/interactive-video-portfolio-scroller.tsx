@@ -54,7 +54,7 @@ export default function InteractiveVideoScroller() {
       <div className="mx-auto w-full max-w-6xl">
         <FadeIn>
           <FadeSwap>
-            <p data-part={`${t.jojo.part} 4`} className="jojo-eyebrow mb-4 text-accent-ink">
+            <p data-part={`${t.jojo.part} 5`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.services.eyebrow}
             </p>
             <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
@@ -210,7 +210,7 @@ function ServicePanel({
                     {copy.tag.split(" / ").map((tag) => (
                       <li
                         key={tag}
-                        className="border border-accent-ink/40 bg-accent-dim px-2 py-0.5 text-xs text-accent-ink"
+                        className="border border-accent-ink/40 bg-accent-dim px-2 py-0.5 text-[13px] text-accent-ink"
                       >
                         {tag}
                       </li>

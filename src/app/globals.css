@@ -183,6 +183,9 @@ html.dark {
     color-scheme: light;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* Bloquear el scroll (menu abierto) ya no ensancha la pagina en
+       Windows/Linux al quitar la barra: el hueco queda reservado. */
+    scrollbar-gutter: stable;
   }
 
   html.dark {
@@ -1794,4 +1797,295 @@ html.motion-fallback [style*="transform"] {
 .is-offscreen,
 .is-offscreen * {
   animation-play-state: paused !important;
+}
+
+/* ------------------------------------------------------------------
+   Tablero 3D de GitHub (components/github-arena).
+------------------------------------------------------------------ */
+
+/*
+  pan-y: en tactil el gesto vertical sigue siendo scroll de la pagina y
+  solo el horizontal gira el tablero. Sin esto el tablero se tragaba el
+  scroll al pasar el dedo por encima.
+*/
+.arena-canvas {
+  touch-action: pan-y;
+}
+
+/* ゴ sobre los dias mas fuertes. La escena pone opacidad 1 al colocarlo. */
+.arena-glyph {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-premium);
+  will-change: transform;
+}
+.arena-glyph > span {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-family: var(--font-jp);
+  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+  line-height: 1;
+  color: var(--color-accent);
+  -webkit-text-stroke: 4px var(--color-canvas);
+  paint-order: stroke fill;
+  animation: anim-arena-rise 3.3s ease-in-out infinite;
+}
+
+@keyframes anim-arena-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) rotate(-12deg) scale(0.8);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-30%, -70px) rotate(-4deg) scale(1.15);
+  }
+}
+
+/* Ficha del dia: un globo de manga sobre la columna. */
+.arena-tip {
+  translate: -50% calc(-100% - 14px);
+  padding: 0.45rem 0.8rem;
+  background: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  box-shadow: 4px 4px 0 0 var(--panel-shadow);
+  will-change: transform;
+}
+
+/* オラ! / 無駄!: onomatopeya que salta del golpe y se desvanece. */
+.arena-sfx > span {
+  display: block;
+  translate: -50% -100%;
+  font-family: var(--font-jp);
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-accent);
+  -webkit-text-stroke: 5px var(--color-ink);
+  paint-order: stroke fill;
+  animation: arena-sfx 0.8s var(--ease-premium) forwards;
+}
+
+@keyframes arena-sfx {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(var(--sfx-rotate, 0deg));
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.25) rotate(var(--sfx-rotate, 0deg));
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-36px) scale(1) rotate(var(--sfx-rotate, 0deg));
+  }
+}
+
+/* Rafaga: tres lineas de オラ que cruzan la vineta. */
+.arena-barrage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2em;
+  overflow: hidden;
+  font-family: var(--font-jp);
+  font-size: clamp(2.2rem, 7vw, 4.6rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+.arena-barrage > span {
+  color: var(--color-accent);
+  -webkit-text-stroke: 6px var(--color-ink);
+  paint-order: stroke fill;
+  animation: arena-barrage 1.4s var(--ease-premium) both;
+}
+.arena-barrage > span:nth-child(2) {
+  align-self: flex-end;
+  animation-name: arena-barrage-reverse;
+}
+
+@keyframes arena-barrage {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%) skewX(-12deg);
+  }
+  20%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40%) skewX(-12deg);
+  }
+}
+@keyframes arena-barrage-reverse {
+  0% {
+    opacity: 0;
+    transform: translateX(60%) skewX(-12deg);
+  }
+  20%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-40%) skewX(-12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-glyph > span {
+    animation: none;
+    transform: translate(-50%, -10px) rotate(-10deg);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Easter eggs (components/easter-eggs.tsx).
+------------------------------------------------------------------ */
+
+/* "ora" / "muda": rafaga a pantalla completa. */
+.egg-barrage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15em;
+  overflow: hidden;
+  cursor: pointer;
+  font-family: var(--font-jp);
+  font-size: clamp(2.6rem, 9vw, 8rem);
+  line-height: 1;
+  white-space: nowrap;
+  background: radial-gradient(closest-side, var(--color-accent-dim), transparent);
+}
+.egg-barrage > span {
+  -webkit-text-stroke: 8px var(--color-ink);
+  paint-order: stroke fill;
+  animation: arena-barrage 1.6s var(--ease-premium) both;
+}
+.egg-barrage > span:nth-child(even) {
+  align-self: flex-end;
+  animation-name: arena-barrage-reverse;
+}
+.egg-barrage-ora > span {
+  color: var(--color-accent);
+}
+/* DIO: el amarillo de su chaqueta pasa a un violeta palido, otro Stand. */
+.egg-barrage-muda > span {
+  color: #c9a7ff;
+}
+
+/* Konami: el congelado sepia del final de cada episodio. */
+.egg-freeze {
+  cursor: pointer;
+  -webkit-backdrop-filter: sepia(0.85) saturate(1.4) contrast(1.05);
+  backdrop-filter: sepia(0.85) saturate(1.4) contrast(1.05);
+  animation: egg-freeze 4.2s linear both;
+}
+.egg-tbc {
+  animation: egg-tbc 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+@keyframes egg-freeze {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes egg-tbc {
+  from {
+    transform: translateX(-120vw);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ------------------------------------------------------------------
+   404 (app/global-not-found.tsx): King Crimson se come un fotograma.
+------------------------------------------------------------------ */
+html[lang="es"] .nf-copy[data-lang="en"],
+html[lang="en"] .nf-copy[data-lang="es"] {
+  display: none;
+}
+
+.nf-digits {
+  display: flex;
+  justify-content: center;
+  text-shadow: 6px 6px 0 var(--panel-shadow);
+}
+.nf-digits > span {
+  display: inline-block;
+}
+.nf-digits > span:first-child {
+  animation: anim-nf-jump-left 6s steps(1, end) infinite;
+}
+.nf-digits > span:last-child {
+  animation: anim-nf-jump-right 6s steps(1, end) infinite;
+}
+.nf-skip {
+  animation: anim-nf-skip 6s steps(1, end) infinite;
+}
+
+/* El 0 desaparece 0.6 s y los 4 se juntan: un salto, sin transicion. */
+@keyframes anim-nf-skip {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  72%,
+  82% {
+    opacity: 0;
+  }
+}
+@keyframes anim-nf-jump-left {
+  0%,
+  70% {
+    transform: none;
+  }
+  72%,
+  82% {
+    transform: translateX(0.28em) rotate(-4deg);
+  }
+}
+@keyframes anim-nf-jump-right {
+  0%,
+  70% {
+    transform: none;
+  }
+  72%,
+  82% {
+    transform: translateX(-0.28em) rotate(5deg);
+  }
+}
+
+.nf-kanji {
+  position: absolute;
+  right: 4%;
+  top: -6%;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 1;
+  color: var(--color-accent);
+  -webkit-text-stroke: 5px var(--color-canvas);
+  paint-order: stroke fill;
+  transform: rotate(-12deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-digits > span,
+  .nf-skip {
+    animation: none;
+  }
 }

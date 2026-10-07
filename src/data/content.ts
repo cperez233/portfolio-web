@@ -258,6 +258,28 @@ export interface Dictionary {
     /** Una linea por sitio, en el orden de `miniProjects`. */
     items: string[];
   };
+  /** Tablero 3D de contribuciones de GitHub (seccion #github). */
+  github: {
+    eyebrow: string;
+    title: string;
+    intro: string;
+    /** Pista sobre el tablero: con raton y en tactil. */
+    hintPointer: string;
+    hintTouch: string;
+    total: string;
+    activeDays: string;
+    /** "{count}" y "{date}" se rellenan. */
+    best: string;
+    years: string;
+    note: string;
+    profile: string;
+    /** Etiqueta de un dia: "{count}" se rellena. */
+    contributions: string;
+    contributionsOne: string;
+    contributionsNone: string;
+    /** Resumen para lector de pantalla: "{total}" y "{active}". */
+    chartLabel: string;
+  };
   /**
    * Guinos a JoJo, los mismos del README de perfil: la tarjeta de Stand,
    * el "¿Oh? ¿Te acercas?" del contacto y el "To Be Continued" del final.
@@ -708,6 +730,23 @@ const en: Dictionary = {
       "Liquor store · 24/7 delivery in Floridablanca",
     ],
   },
+  github: {
+    eyebrow: "On GitHub",
+    title: "A year of code, punch by punch",
+    intro: "Every gold column is a day I pushed code. Spin the board and hit a column to see the day.",
+    hintPointer: "Drag to spin",
+    hintTouch: "Swipe to spin",
+    total: "contributions in the last year",
+    activeDays: "days with commits",
+    best: "on my best day, {date}",
+    years: "Per year",
+    note: "Public repositories only. Client code lives in private ones.",
+    profile: "See my GitHub profile",
+    contributions: "{count} contributions",
+    contributionsOne: "1 contribution",
+    contributionsNone: "No commits",
+    chartLabel: "GitHub contributions board: {total} contributions over {active} days in the last year.",
+  },
   jojo: {
     part: "Part",
     stand: {
@@ -1148,6 +1187,23 @@ const es: Dictionary = {
       "Peluquería canina · citas por WhatsApp",
       "Licorera · domicilio 24/7 en Floridablanca",
     ],
+  },
+  github: {
+    eyebrow: "En GitHub",
+    title: "Un año de código, golpe a golpe",
+    intro: "Cada columna dorada es un día en el que subí código. Gira el tablero y golpea una columna para ver el día.",
+    hintPointer: "Arrastra para girar",
+    hintTouch: "Desliza para girar",
+    total: "contribuciones en el último año",
+    activeDays: "días con commits",
+    best: "en mi mejor día, el {date}",
+    years: "Por año",
+    note: "Solo cuenta repositorios públicos. El código de clientes vive en privados.",
+    profile: "Ver mi perfil en GitHub",
+    contributions: "{count} contribuciones",
+    contributionsOne: "1 contribución",
+    contributionsNone: "Sin commits",
+    chartLabel: "Tablero de contribuciones de GitHub: {total} contribuciones en {active} días durante el último año.",
   },
   jojo: {
     part: "Parte",

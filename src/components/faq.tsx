@@ -54,7 +54,7 @@ export function FaqSection() {
           <div className="lg:sticky lg:top-28">
             <FadeIn>
               <FadeSwap>
-                <p data-part={`${t.jojo.part} 7`} className="jojo-eyebrow mb-4 text-accent-ink">{t.faq.eyebrow}</p>
+                <p data-part={`${t.jojo.part} 8`} className="jojo-eyebrow mb-4 text-accent-ink">{t.faq.eyebrow}</p>
                 <h2
                   id="faq-title"
                   className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-5xl"

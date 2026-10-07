@@ -20,7 +20,8 @@ interface RevealWordsProps {
  * Cada palabra se recorta con overflow-hidden. El padding arriba y
  * abajo, compensado con margen negativo, da aire a las tildes de las
  * mayusculas ("MÍ") y a los descendentes, que si no quedarian cortados
- * con el leading apretado de los titulos.
+ * con el leading apretado de los titulos. Arriba 0.3em: con 0.14em la
+ * tilde de la O y la virgulilla de la Ñ en Anton salian recortadas.
  *
  * La key por texto hace que al cambiar de idioma el titulo nuevo vuelva
  * a entrar en lugar de aparecer de golpe.
@@ -40,7 +41,7 @@ export function RevealWords({ text, delay = 0 }: RevealWordsProps) {
     <span key={text} className="inline">
       {words.map((word, i) => (
         <Fragment key={`${word}-${i}`}>
-          <span className="-my-[0.14em] inline-block overflow-hidden py-[0.14em] align-bottom">
+          <span className="-mb-[0.14em] -mt-[0.3em] inline-block overflow-hidden pb-[0.14em] pt-[0.3em] align-bottom">
             <motion.span
               className="inline-block"
               initial={{ y: "110%" }}

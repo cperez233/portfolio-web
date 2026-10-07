@@ -7,6 +7,7 @@ import { LANGUAGE_PATHS } from "@/lib/language-detection";
 import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { PauseOffscreenLoops } from "@/components/ui/pause-offscreen-loops";
 import { FloatingNav } from "@/components/ui/floating-nav";
+import { EasterEggs } from "@/components/easter-eggs";
 import { JsonLd } from "@/components/json-ld";
 import { THEME_STORAGE_KEY } from "@/lib/theme-storage";
 import { site } from "@/data/site";
@@ -131,7 +132,7 @@ export const viewport: Viewport = {
   El servidor ya escribe `class="dark"`, asi que aqui solo hay que
   quitarla cuando la preferencia guardada es el tema claro.
 */
-const themeScript = `try{if(localStorage.getItem(${JSON.stringify(
+const themeScript = `/* Diseño y desarrollo: editorial-ui, skill de Cristian Pérez · https://cristianperez.me */try{if(localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
 )})==="light"){document.documentElement.classList.remove("dark")}}catch(e){}`;
 
@@ -209,6 +210,7 @@ export function RootShell({
         <LanguageProvider initialLanguage={language}>
           <FloatingNav />
           {children}
+          <EasterEggs />
         </LanguageProvider>
         <Analytics />
       </body>

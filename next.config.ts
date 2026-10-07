@@ -6,6 +6,15 @@ import type { NextConfig } from "next";
   codigo, y todo lo que queda sale de /public. Una fuente externa nueva
   tendria que declararse aqui antes de que next/image la acepte.
 */
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  /*
+    404 global (app/global-not-found.tsx). Hace falta porque hay dos
+    layouts raiz, (en) y (es): sin uno solo, un not-found.tsx normal no
+    tiene donde montarse.
+  */
+  experimental: {
+    globalNotFound: true,
+  },
+};
 
 export default nextConfig;

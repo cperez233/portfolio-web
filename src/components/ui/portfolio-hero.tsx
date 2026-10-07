@@ -370,7 +370,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         <a
           href="#about"
           style={riseDelay(5)}
-          className="hero-rise mt-2 hidden text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
+          className="hero-rise mt-1 hidden size-11 items-center justify-center text-ink-subtle transition-colors duration-300 hover:text-accent-ink sm:inline-flex"
           aria-label={t.hero.scrollLabel}
         >
           <ChevronDown className="h-6 w-6 animate-bounce" />
