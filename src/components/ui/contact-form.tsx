@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { emitStandEvent } from "@/lib/stand-events";
 import { ArrowUpRight, Check } from "lucide-react";
 import { site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
@@ -44,6 +45,7 @@ export function ContactForm() {
       if (!response.ok || !result.success) throw new Error("web3forms");
       form.reset();
       setStatus("success");
+      emitStandEvent("sent");
     } catch {
       setStatus("error");
     }

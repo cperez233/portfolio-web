@@ -44,7 +44,7 @@ const HEAD = [
   "..kcvvvvvvvvvvvck.",
 ];
 
-export type Frame = "idle" | "blink" | "look" | "punch" | "sleep" | "happy" | "shock";
+export type Frame = "idle" | "blink" | "look" | "punch" | "sleep" | "happy" | "shock" | "pose";
 
 function eyes(frame: Frame, look: number) {
   const L = [6, 7];
@@ -102,7 +102,20 @@ const TAILS = [
 
 function rows(frame: Frame, tail: number, look: number) {
   const body = frame === "punch" ? BODY_PUNCH : BODY_IDLE;
-  return [...HEAD, ...eyes(frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
+  const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
+  if (frame !== "pose") return map;
+  /*
+    Pose JoJo: el puno izquierdo sube junto al visor (filas 8-11) y el
+    hueco que deja en el torso se vacia.
+  */
+  const fist = [".kk.", "kggk", "kggk", ".kk."];
+  const bodyStart = HEAD.length + 3 + NECK.length;
+  return map.map((row, r) => {
+    if (r >= bodyStart && r < bodyStart + 4) return "...." + row.slice(4);
+    const i = r - 8;
+    if (i >= 0 && i < 4) return fist[i] + row.slice(4);
+    return row;
+  });
 }
 
 export const SPRITE_H = rows("idle", 0, 0).length;

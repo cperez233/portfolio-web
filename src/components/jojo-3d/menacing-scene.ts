@@ -23,36 +23,41 @@ export interface MenacingScene {
   dispose: () => void;
 }
 
-function goShape() {
-  // コ: borde exterior y hueco abierto hacia la izquierda.
+/** コ: corchete abierto a la izquierda, centrado en su origen. */
+function koShape() {
   const s = new Shape();
-  s.moveTo(0, 0);
-  s.lineTo(1.05, 0);
-  s.lineTo(1.05, -1.15);
-  s.lineTo(0, -1.15);
-  s.lineTo(0, -0.88);
-  s.lineTo(0.76, -0.88);
-  s.lineTo(0.76, -0.27);
-  s.lineTo(0, -0.27);
+  s.moveTo(-0.52, 0.56);
+  s.lineTo(0.52, 0.56);
+  s.lineTo(0.52, -0.6);
+  s.lineTo(-0.56, -0.6);
+  s.lineTo(-0.56, -0.33);
+  s.lineTo(0.24, -0.33);
+  s.lineTo(0.24, 0.29);
+  s.lineTo(-0.52, 0.29);
   s.closePath();
   return s;
 }
 
-function dakuten(x: number) {
+/** Una rayita del dakuten (゛), inclinada, centrada en su origen. */
+function tickShape() {
   const s = new Shape();
-  s.moveTo(x, 0.42);
-  s.lineTo(x + 0.14, 0.42);
-  s.lineTo(x + 0.26, 0.08);
-  s.lineTo(x + 0.12, 0.08);
+  s.moveTo(-0.02, 0.2);
+  s.lineTo(0.13, 0.2);
+  s.lineTo(0.06, -0.2);
+  s.lineTo(-0.09, -0.2);
   s.closePath();
   return s;
 }
 
+/*
+  Columna en zigzag como el ゴゴゴ del manga. Profundidades alternas: con
+  todas en el mismo plano, dos ゴ vecinas se atravesaban al temblar.
+*/
 const GLYPHS = [
-  { x: -0.9, y: 1.6, size: 0.85, rot: -0.22, phase: 0 },
-  { x: 0.55, y: 0.55, size: 1.05, rot: -0.12, phase: 1.3 },
-  { x: -0.55, y: -0.75, size: 1.25, rot: -0.28, phase: 2.1 },
-  { x: 0.7, y: -2.05, size: 0.95, rot: -0.16, phase: 3.4 },
+  { x: -0.55, y: 2.55, z: 0, size: 0.8, rot: -0.2, phase: 0 },
+  { x: 0.5, y: 0.9, z: -0.7, size: 0.95, rot: -0.1, phase: 1.3 },
+  { x: -0.45, y: -0.8, z: 0, size: 1.1, rot: -0.26, phase: 2.1 },
+  { x: 0.55, y: -2.6, z: -0.7, size: 0.9, rot: -0.14, phase: 3.4 },
 ];
 
 export function createMenacingScene({
@@ -76,20 +81,31 @@ export function createMenacingScene({
   const ramp = toonRamp();
   const ink = inkMaterial();
   const gold = toon("#e3b341", ramp);
-  const geometry = new ExtrudeGeometry([goShape(), dakuten(0.92), dakuten(1.22)], {
-    depth: 0.38,
-    bevelEnabled: true,
-    bevelSize: 0.04,
-    bevelThickness: 0.04,
-    bevelSegments: 1,
-  });
-  geometry.center();
+  const extrude = { depth: 0.34, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 1 };
+  // Cada pieza con su propia geometria centrada: el contorno de tinta se
+  // escala desde el centro de la pieza y queda pegado a ella. Con todo en
+  // una sola geometria las rayitas quedaban con el contorno corrido.
+  const koGeo = new ExtrudeGeometry(koShape(), extrude);
+  koGeo.center();
+  const tickGeo = new ExtrudeGeometry(tickShape(), extrude);
+  tickGeo.center();
+
+  function makeGo() {
+    const group = new Group();
+    group.add(inked(koGeo, gold, ink, 1.05));
+    for (const x of [0.6, 0.92]) {
+      const tick = inked(tickGeo, gold, ink, 1.18);
+      tick.position.set(x, 0.62, 0);
+      group.add(tick);
+    }
+    return group;
+  }
 
   const root = new Group();
   scene.add(root);
   const glyphs = GLYPHS.map((g) => {
-    const mesh = inked(geometry, gold, ink, 1.07);
-    mesh.position.set(g.x, g.y, 0);
+    const mesh = makeGo();
+    mesh.position.set(g.x, g.y, g.z);
     mesh.scale.setScalar(g.size);
     mesh.rotation.z = g.rot;
     root.add(mesh);
@@ -105,8 +121,8 @@ export function createMenacingScene({
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     const tan = Math.tan((camera.fov * Math.PI) / 360);
-    // Columna de ~3.2 x 5.6 unidades.
-    camera.position.z = Math.max(5.8 / (2 * tan), 3.4 / (2 * tan * camera.aspect)) + 0.6;
+    // Columna de ~3 x 7 unidades.
+    camera.position.z = Math.max(7.2 / (2 * tan), 3.2 / (2 * tan * camera.aspect)) + 0.8;
     camera.updateProjectionMatrix();
   }
   const observer = new ResizeObserver(resize);
@@ -144,8 +160,8 @@ export function createMenacingScene({
     for (const g of glyphs) {
       // Temblor: dos senos rapidos a destiempo, como el ゴ del manga.
       const shake = reducedMotion ? 0 : Math.sin(now / 70 + g.phase * 5) * Math.sin(now / 900 + g.phase);
-      g.mesh.rotation.z = g.rot + shake * 0.06;
-      g.mesh.position.x = g.x + shake * 0.04;
+      g.mesh.rotation.z = g.rot + shake * 0.05;
+      g.mesh.position.x = g.x + shake * 0.03;
       const beat = sincePulse >= 0 && sincePulse < 1 ? Math.sin(Math.min(1, sincePulse + g.phase * 0.05) * Math.PI) * 0.35 : 0;
       g.mesh.scale.setScalar(g.size * (1 + beat));
     }
@@ -174,7 +190,8 @@ export function createMenacingScene({
       observer.disconnect();
       window.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("pointerdown", pulse);
-      geometry.dispose();
+      koGeo.dispose();
+      tickGeo.dispose();
       gold.dispose();
       ink.dispose();
       ramp.dispose();

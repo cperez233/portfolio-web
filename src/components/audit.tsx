@@ -13,6 +13,7 @@ import { FadeSwap } from "@/components/ui/FadeSwap";
 import { SectionEdge } from "@/components/ui/section-transition";
 import { RevealWords } from "@/components/ui/reveal-words";
 import { cn } from "@/lib/utils";
+import { emitStandEvent } from "@/lib/stand-events";
 
 const CHECK_ORDER: AuditCheckId[] = ["https", "mobile", "meta", "indexable", "schema", "preview"];
 
@@ -39,6 +40,7 @@ export function AuditSection() {
     event.preventDefault();
     if (state.status === "loading") return;
     setState({ status: "loading" });
+    emitStandEvent("audit");
     try {
       const response = await fetch("/api/audit", {
         method: "POST",
