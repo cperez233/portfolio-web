@@ -119,8 +119,14 @@ export interface Dictionary {
     /** Pie de la seccion con el proyecto tecnico que no va como caso. */
     moreWork: { lead: string; name: string; detail: string };
     /** Por caso, en el orden de `cases` (site.ts). */
+    /** Pestana de capitulos: "Next chapter" / "Siguiente capitulo". */
+    nextCase: string;
+    /** Nombre de la lista de capitulos, para lector de pantalla. */
+    tabsLabel: string;
     items: Array<{
       client: string;
+      /** Nombre corto en la pestana del capitulo. */
+      tab: string;
       category: string;
       title: string;
       problem: string;
@@ -271,7 +277,6 @@ export interface Dictionary {
     /** "{count}" y "{date}" se rellenan. */
     best: string;
     years: string;
-    note: string;
     profile: string;
     /** Etiqueta de un dia: "{count}" se rellena. */
     contributions: string;
@@ -417,6 +422,8 @@ const en: Dictionary = {
     liveCta: "Visit the site",
     repoCta: "Code on GitHub",
     askCta: "I want something like this",
+    nextCase: "Next chapter",
+    tabsLabel: "Case studies",
     moreSites: "Plus {n} websites live for businesses",
     moreWork: {
       lead: "More on GitHub:",
@@ -426,6 +433,7 @@ const en: Dictionary = {
     items: [
       {
         client: "carpy",
+        tab: "carpy",
         category: "My software studio · co-founder",
         title: "carpy: a team for the projects that need more than one person",
         problem:
@@ -438,6 +446,7 @@ const en: Dictionary = {
       },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "FCV",
         category: "Document AI · cybersecurity team",
         title: "The FCV's paper records, searchable in seconds",
         problem:
@@ -454,6 +463,7 @@ const en: Dictionary = {
       },
       {
         client: "criscx1905",
+        tab: "Video",
         category: "Content & video",
         title: "Video that explains and sells",
         problem:
@@ -740,7 +750,6 @@ const en: Dictionary = {
     activeDays: "days with commits",
     best: "on my best day, {date}",
     years: "Per year",
-    note: "Public repositories only. Client code lives in private ones.",
     profile: "See my GitHub profile",
     contributions: "{count} contributions",
     contributionsOne: "1 contribution",
@@ -875,6 +884,8 @@ const es: Dictionary = {
     liveCta: "Ver la página",
     repoCta: "Código en GitHub",
     askCta: "Quiero algo así",
+    nextCase: "Siguiente capítulo",
+    tabsLabel: "Casos",
     moreSites: "Y {n} páginas web en línea para negocios",
     moreWork: {
       lead: "Más en GitHub:",
@@ -884,6 +895,7 @@ const es: Dictionary = {
     items: [
       {
         client: "carpy",
+        tab: "carpy",
         category: "Mi estudio de software · cofundador",
         title: "carpy: un equipo para los proyectos que piden más de una persona",
         problem:
@@ -896,6 +908,7 @@ const es: Dictionary = {
       },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "FCV",
         category: "IA documental · equipo de ciberseguridad",
         title: "Las actas de la FCV, encontradas en segundos",
         problem:
@@ -912,6 +925,7 @@ const es: Dictionary = {
       },
       {
         client: "criscx1905",
+        tab: "Video",
         category: "Contenido y video",
         title: "Video que explica y vende",
         problem:
@@ -1198,7 +1212,6 @@ const es: Dictionary = {
     activeDays: "días con commits",
     best: "en mi mejor día, el {date}",
     years: "Por año",
-    note: "Solo cuenta repositorios públicos. El código de clientes vive en privados.",
     profile: "Ver mi perfil en GitHub",
     contributions: "{count} contribuciones",
     contributionsOne: "1 contribución",

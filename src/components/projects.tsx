@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
+  AnimatePresence,
   motion,
   useScroll,
   useTransform,
@@ -19,6 +20,7 @@ import { CountUp } from "@/components/ui/count-up";
 import { SectionEdge } from "@/components/ui/section-transition";
 import { RevealWords } from "@/components/ui/reveal-words";
 import { cn } from "@/lib/utils";
+import { smoothScrollTo } from "@/lib/smooth-scroll";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -37,6 +39,47 @@ const ease = [0.22, 1, 0.36, 1] as const;
  */
 export function ProjectsSection() {
   const { t } = useLanguage();
+  const shouldReduceMotion = useReducedMotion();
+  const [active, setActive] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  /*
+    Un capitulo a la vez. Apilados, los tres casos median 4.4 pantallas
+    en celular; con pestanas la seccion mide lo que mide un caso, y el
+    cambio es el mejor momento de animacion: la pagina pasa hacia el lado
+    al que vas, como un manga.
+  */
+  function select(index: number, { scroll = false, focus = false } = {}) {
+    if (index === active) return;
+    setDirection(index > active ? 1 : -1);
+    setActive(index);
+    if (focus) tabRefs.current[index]?.focus({ preventScroll: true });
+    const tabs = tabsRef.current;
+    if (scroll && tabs) {
+      smoothScrollTo(tabs.getBoundingClientRect().top + window.scrollY - 96);
+    }
+  }
+
+  function onTabKey(event: React.KeyboardEvent) {
+    const last = cases.length - 1;
+    const next =
+      event.key === "ArrowRight"
+        ? (active + 1) % cases.length
+        : event.key === "ArrowLeft"
+          ? (active - 1 + cases.length) % cases.length
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? last
+              : -1;
+    if (next < 0) return;
+    event.preventDefault();
+    select(next, { focus: true });
+  }
+
+  const next = (active + 1) % cases.length;
 
   return (
     <section
@@ -46,7 +89,7 @@ export function ProjectsSection() {
       <SectionEdge />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <FadeIn className="mb-14 sm:mb-20">
+        <FadeIn className="mb-10 sm:mb-14">
           <FadeSwap>
             <p data-part={`${t.jojo.part} 6`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.projects.eyebrow}
@@ -60,17 +103,130 @@ export function ProjectsSection() {
           </FadeSwap>
         </FadeIn>
 
-        <div className="flex flex-col gap-16 sm:gap-32">
-          {cases.map((item, index) => (
-            <CaseBlock key={item.key} item={item} index={index} />
-          ))}
+        {/* Capitulos: 第1話, 第2話... La placa dorada se desliza a la elegida. */}
+        <FadeIn y={20}>
+          <div
+            ref={tabsRef}
+            role="tablist"
+            aria-label={t.projects.tabsLabel}
+            onKeyDown={onTabKey}
+            className="mb-10 grid grid-cols-3 gap-2 sm:mb-14 sm:flex sm:gap-3"
+          >
+            {cases.map((item, index) => {
+              const selected = index === active;
+              return (
+                <button
+                  key={item.key}
+                  ref={(node) => {
+                    tabRefs.current[index] = node;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`case-tab-${item.key}`}
+                  aria-selected={selected}
+                  aria-controls="case-panel"
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => select(index)}
+                  className={cn(
+                    "chapter-tab relative flex min-h-14 flex-col items-start justify-center px-3 text-left transition-[color,transform] duration-200 active:scale-[0.97] sm:min-w-40 sm:px-5",
+                    selected ? "text-on-accent" : "text-ink-muted hover:text-ink",
+                  )}
+                >
+                  {selected ? (
+                    <motion.span
+                      layoutId="chapter-plate"
+                      aria-hidden="true"
+                      className="chapter-plate absolute inset-0 -z-0"
+                      transition={
+                        shouldReduceMotion ? { duration: 0 } : { type: "spring", bounce: 0, duration: 0.45 }
+                      }
+                    />
+                  ) : null}
+                  <span aria-hidden="true" className="relative font-jp text-[13px] leading-none">
+                    第{index + 1}話
+                  </span>
+                  <span className="relative mt-1 font-display text-xl uppercase leading-none tracking-wide sm:text-2xl">
+                    <FadeSwap>{t.projects.items[index].tab}</FadeSwap>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </FadeIn>
+
+        <div
+          id="case-panel"
+          role="tabpanel"
+          aria-labelledby={`case-tab-${cases[active].key}`}
+          className="relative"
+        >
+          <AnimatePresence mode="popLayout" initial={false} custom={direction}>
+            <motion.div
+              key={cases[active].key}
+              custom={direction}
+              variants={shouldReduceMotion ? undefined : pageTurn}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="w-full"
+            >
+              <CaseBlock item={cases[active]} index={active} />
+              <div className="mt-12 flex justify-end border-t border-line pt-6">
+                <button
+                  type="button"
+                  onClick={() => select(next, { scroll: true })}
+                  className="group inline-flex min-h-12 items-center gap-3 text-right"
+                >
+                  <span className="flex flex-col items-end">
+                    <span className="text-sm text-ink-subtle">
+                      <FadeSwap>{t.projects.nextCase}</FadeSwap>
+                    </span>
+                    <span className="font-display text-2xl uppercase tracking-wide text-ink transition-colors group-hover:text-accent-ink">
+                      第{next + 1}話 · <FadeSwap className="inline-grid">{t.projects.items[next].tab}</FadeSwap>
+                    </span>
+                  </span>
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="size-6 shrink-0 text-accent-ink transition-transform duration-300 ease-[var(--ease-premium)] group-hover:translate-x-1"
+                  />
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
+
+        {/*
+          Los otros capitulos tambien van en el HTML, ocultos: buscadores
+          y extractores los leen sin tener que pulsar pestanas.
+        */}
+        {cases.map((item, index) =>
+          index === active ? null : (
+            <div key={item.key} hidden>
+              <h3>{t.projects.items[index].title}</h3>
+              <p>{t.projects.items[index].problem}</p>
+              <p>{t.projects.items[index].solution}</p>
+              <p>{t.projects.items[index].result}</p>
+            </div>
+          ),
+        )}
 
         <MoreWork />
       </div>
     </section>
   );
 }
+
+/** Cambio de capitulo: la pagina entra por el lado al que vas y sale por el otro. */
+const pageTurn = {
+  enter: (direction: number) => ({ opacity: 0, x: direction * 90, rotate: direction * 1.2 }),
+  center: { opacity: 1, x: 0, rotate: 0, transition: { duration: 0.55, ease } },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction * -90,
+    rotate: direction * -1.2,
+    transition: { duration: 0.35, ease },
+  }),
+};
 
 function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
   const { t, language } = useLanguage();
@@ -473,7 +629,7 @@ function MoreWork() {
   const more = t.projects.moreWork;
 
   return (
-    <FadeIn className="mt-16 border-t border-line pt-8 sm:mt-32">
+    <FadeIn className="mt-12 border-t border-line pt-8 sm:mt-16">
       <FadeSwap>
         <ul className="flex flex-col gap-4 text-base sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <li>

@@ -12,6 +12,7 @@ import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
+import { emitStandEvent } from "@/lib/stand-events";
 
 interface BlurTextProps {
   text: string;
@@ -81,6 +82,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const stickyEl = stickyRef.current;
     if (!portraitEl || !stickyEl) return;
 
+    emitStandEvent("timestop");
     const portraitBox = portraitEl.getBoundingClientRect();
     const stickyBox = stickyEl.getBoundingClientRect();
     setTimeStop({

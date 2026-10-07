@@ -62,6 +62,7 @@ src/
 │  ├─ faq.tsx         <details> FAQ, mirrored as FAQPage in JSON-LD
 │  ├─ github-arena/   GitHub contributions as a 3D manga board (three.js)
 │  ├─ easter-eggs.tsx keyboard easter eggs (see below)
+│  ├─ mini-stand/     the floating mini Stand companion and its lines
 │  ├─ diagrams/       code-drawn architecture / pipeline / terminal panels
 │  └─ ui/             primitives and the larger composed pieces
 ├─ data/
@@ -115,6 +116,25 @@ The server renders a flat 53 x 7 calendar. `components/github-arena/scene.ts`
 outlines, fog) is imported only when the section is 600px away, draws on
 top, and the flat calendar fades out. No WebGL, no JS: the flat one stays.
 The render loop stops off-screen.
+
+## Moving around
+
+- **Section curtain** (`ui/section-curtain.tsx`): an anchor link more than
+  1.3 screens away no longer scrolls through the whole page. A gold and
+  ink slab cover the screen, the jump happens behind them, and the
+  "Part N · Section" title card shows before they open. Closer anchors
+  still glide with Lenis, which now has `anchors: false` so it does not
+  catch the click too. Skipped under reduced motion.
+- **Projects** are chapters (第1話, 第2話…): one case at a time, tabs with
+  arrow-key support, and the page turns toward the side you go. The
+  other cases stay in the HTML, hidden, for crawlers.
+- **Mini Stand** (`mini-stand/`): Paranoid Android in small, floating in
+  the corner. Its eyes follow the pointer, it says one line per section,
+  punches when tapped and hands out the easter-egg hints on later taps.
+  It reacts to ZA WARUDO, the board barrage and the keyboard eggs through
+  a `jojo:event` CustomEvent (`lib/stand-events.ts`), falls asleep after
+  40 s idle, tucks away while a form field has focus, and can be put away
+  for the visit from its speech bubble.
 
 ## Easter eggs
 

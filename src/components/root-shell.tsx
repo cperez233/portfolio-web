@@ -8,6 +8,8 @@ import { SmoothScroll } from "@/components/ui/SmoothScroll";
 import { PauseOffscreenLoops } from "@/components/ui/pause-offscreen-loops";
 import { FloatingNav } from "@/components/ui/floating-nav";
 import { EasterEggs } from "@/components/easter-eggs";
+import { SectionCurtain } from "@/components/ui/section-curtain";
+import { MiniStand } from "@/components/mini-stand/mini-stand";
 import { JsonLd } from "@/components/json-ld";
 import { THEME_STORAGE_KEY } from "@/lib/theme-storage";
 import { site } from "@/data/site";
@@ -211,6 +213,8 @@ export function RootShell({
           <FloatingNav />
           {children}
           <EasterEggs />
+          <SectionCurtain />
+          <MiniStand />
         </LanguageProvider>
         <Analytics />
       </body>

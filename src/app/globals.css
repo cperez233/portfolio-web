@@ -2089,3 +2089,273 @@ html[lang="en"] .nf-copy[data-lang="es"] {
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------
+   Capitulos de Proyectos: pestanas como placas de manga.
+------------------------------------------------------------------ */
+.chapter-tab {
+  isolation: isolate;
+  border: 2px solid var(--color-line-strong);
+  background-color: var(--color-surface);
+}
+.chapter-tab[aria-selected="true"] {
+  border-color: var(--color-ink);
+}
+.chapter-plate {
+  z-index: -1;
+  background-color: var(--color-accent);
+  box-shadow: 4px 4px 0 0 var(--color-ink);
+}
+html.dark .chapter-plate {
+  box-shadow: 4px 4px 0 0 #060507;
+}
+
+/* ------------------------------------------------------------------
+   Telon entre secciones (components/ui/section-curtain.tsx).
+------------------------------------------------------------------ */
+.curtain-slab {
+  position: absolute;
+  inset: -10% -25%;
+  transform-origin: center;
+  will-change: transform;
+}
+/* Inclinadas como un corte de vineta: skew en el hijo, no en el que se mueve. */
+.curtain-slab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: skewX(-14deg);
+}
+.curtain-slab-gold::before {
+  background-color: var(--color-accent);
+}
+.curtain-slab-ink {
+  overflow: hidden;
+}
+.curtain-slab-ink::before {
+  background-color: #111013;
+  box-shadow: -10px 0 0 0 #060507;
+}
+.curtain-slab-ink .speed-lines {
+  z-index: 1;
+}
+
+.curtain-card {
+  z-index: 2;
+}
+.curtain-part {
+  display: inline-block;
+  padding: 0.2em 0.8em 0.15em;
+  background-color: var(--color-accent);
+  color: #161418;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  font-style: italic;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 0 #060507;
+  rotate: -3deg;
+}
+.curtain-title {
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 1.5rem + 8vw, 9rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: #ece6d8;
+  text-shadow: 6px 6px 0 #e3b341;
+  text-wrap: balance;
+}
+
+/* ------------------------------------------------------------------
+   Mini Stand (components/mini-stand).
+------------------------------------------------------------------ */
+.mini-stand {
+  transition: translate 0.35s var(--ease-premium), opacity 0.35s var(--ease-premium);
+}
+/* Mientras se escribe en un campo se esconde bajo el borde. */
+.mini-stand.is-tucked {
+  translate: 0 140%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mini-stand svg {
+  filter: drop-shadow(3px 3px 0 rgba(6, 5, 7, 0.55));
+}
+
+.anim-stand-float {
+  animation: anim-stand-float 3.4s ease-in-out infinite;
+}
+@keyframes anim-stand-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -7px;
+  }
+}
+
+.stand-antenna {
+  transform-origin: 40px 10px;
+  animation: anim-stand-antenna 2.6s ease-in-out infinite;
+}
+@keyframes anim-stand-antenna {
+  0%,
+  100% {
+    rotate: -8deg;
+  }
+  50% {
+    rotate: 8deg;
+  }
+}
+
+/* Los punos flotan a destiempo del cuerpo. */
+.stand-fist {
+  animation: anim-stand-fist 2.8s ease-in-out infinite;
+}
+.stand-fist-right {
+  animation-delay: -1.4s;
+}
+@keyframes anim-stand-fist {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+/* Parpadeo cada pocos segundos. */
+.stand-eyes {
+  transform-origin: 40px 30px;
+  animation: anim-stand-blink 5.2s steps(1, end) infinite;
+}
+@keyframes anim-stand-blink {
+  0%,
+  94% {
+    scale: 1 1;
+  }
+  95%,
+  98% {
+    scale: 1 0.1;
+  }
+}
+
+.stand-core {
+  animation: anim-stand-core 2s ease-in-out infinite;
+}
+@keyframes anim-stand-core {
+  0%,
+  100% {
+    fill: #161418;
+  }
+  50% {
+    fill: #e3b341;
+  }
+}
+
+.stand-zzz {
+  animation: anim-stand-zzz 2.4s ease-in-out infinite;
+}
+.stand-zzz > span {
+  display: inline-block;
+  font-size: 0.75em;
+  translate: 2px -6px;
+}
+@keyframes anim-stand-zzz {
+  0% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 6px -10px;
+  }
+}
+
+.stand-ora {
+  pointer-events: none;
+  white-space: nowrap;
+  color: var(--color-accent);
+  -webkit-text-stroke: 4px #161418;
+  paint-order: stroke fill;
+  animation: arena-sfx 0.8s var(--ease-premium) forwards;
+}
+
+/* Globo de manga con su cola hacia el Stand. */
+.stand-bubble {
+  padding: 0.7rem 0.9rem;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 0 var(--panel-shadow);
+}
+.stand-bubble::after {
+  content: "";
+  position: absolute;
+  right: 26px;
+  bottom: -10px;
+  width: 16px;
+  height: 16px;
+  background-color: var(--color-surface);
+  border-right: 2px solid var(--color-ink);
+  border-bottom: 2px solid var(--color-ink);
+  transform: skewY(30deg) rotate(30deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-stand-float,
+  .stand-antenna,
+  .stand-fist,
+  .stand-eyes,
+  .stand-core,
+  .stand-zzz {
+    animation: none;
+  }
+}
+
+/*
+  Placa "Parte N": cae como un sello cuando entra en pantalla. Animacion
+  ligada al scroll (view timeline), sin JS; donde el navegador no la
+  soporta la placa simplemente esta quieta.
+*/
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .jojo-eyebrow[data-part] {
+      view-timeline: --part-plate block;
+    }
+    .jojo-eyebrow[data-part]::before {
+      animation: part-stamp linear both;
+      animation-timeline: --part-plate;
+      animation-range: entry 0% entry 90%;
+    }
+  }
+}
+@keyframes part-stamp {
+  0% {
+    opacity: 0;
+    transform: skewX(-10deg) scale(2.2) rotate(-14deg);
+  }
+  55% {
+    opacity: 1;
+    transform: skewX(-10deg) scale(0.9) rotate(2deg);
+  }
+  75% {
+    transform: skewX(-10deg) scale(1.06) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: skewX(-10deg) scale(1) rotate(0deg);
+  }
+}
+
+/* Sin tablero visible, los ゴ quietos (ver github-section.tsx). */
+.arena-panel:not(.is-live) .arena-glyph > span {
+  animation-play-state: paused;
+}

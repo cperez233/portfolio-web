@@ -32,12 +32,12 @@ export function SmoothScroll() {
       smoothWheel: true,
       autoRaf: true,
       /*
-        Sin esto los enlaces ancla del menu no llegan a ninguna parte.
-        Lenis reescribe la posicion de scroll en cada frame, asi que el
-        salto nativo del navegador se deshace al frame siguiente. Con
-        `anchors` los gestiona Lenis y el salto se respeta.
+        Los enlaces ancla los gestiona SectionCurtain: cerca, desliza con
+        esta misma instancia; lejos, salta detras de un telon. Con
+        `anchors: true` Lenis tambien los capturaria y recorreria la
+        pagina entera.
       */
-      anchors: true,
+      anchors: false,
     });
 
     registerLenis(lenis);

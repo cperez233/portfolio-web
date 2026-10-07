@@ -14,6 +14,7 @@ import { SectionEdge } from "@/components/ui/section-transition";
 import { CountUp } from "@/components/ui/count-up";
 import { GithubMark } from "@/components/ui/github-mark";
 import { cn } from "@/lib/utils";
+import { emitStandEvent } from "@/lib/stand-events";
 import type { Arena, ArenaColors, ArenaDay } from "./scene";
 
 /** Tres ゴ sobre los tres dias mas fuertes. */
@@ -126,6 +127,8 @@ export function GithubSection({ data }: { data: ContributionYear }) {
     const visibility = new IntersectionObserver(
       ([entry]) => {
         arenaRef.current?.setVisible(entry.isIntersecting);
+        // Los ゴ solo flotan con el tablero en pantalla.
+        panel.classList.toggle("is-live", entry.isIntersecting);
         if (entry.intersectionRatio > 0.35 && !risen && arenaRef.current) {
           risen = true;
           arenaRef.current.rise();
@@ -171,6 +174,7 @@ export function GithubSection({ data }: { data: ContributionYear }) {
                 combo.count = 0;
                 arenaRef.current?.barrage();
                 setBarrage((value) => value + 1);
+                emitStandEvent("barrage");
               }
             },
             onReady: () => setReady(true),
@@ -396,14 +400,11 @@ export function GithubSection({ data }: { data: ContributionYear }) {
                 </div>
               ) : null}
             </dl>
-            <FadeSwap>
-              <p className="border-t border-line pt-4 text-[15px] leading-relaxed text-ink-subtle sm:pt-5">{copy.note}</p>
-            </FadeSwap>
             <a
               href={site.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group mt-3 inline-flex min-h-11 items-center gap-2 text-base font-semibold text-accent-ink"
+              className="group inline-flex min-h-11 items-center gap-2 text-base font-semibold text-accent-ink"
             >
               <GithubMark className="size-4 shrink-0" />
               <FadeSwap>{copy.profile}</FadeSwap>

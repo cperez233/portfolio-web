@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/language";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { emitStandEvent } from "@/lib/stand-events";
 
 /**
  * Easter eggs de JoJo, todos con teclado y sin nada visible que los
@@ -58,6 +59,7 @@ export function EasterEggs() {
   // Teclado: "ora", "muda" y Konami.
   useEffect(() => {
     function fire(kind: Egg["kind"]) {
+      emitStandEvent(kind);
       if (reducedMotion && kind !== "tbc") return;
       setEgg({ id: Date.now(), kind });
     }
