@@ -2,7 +2,7 @@
  * Bus minimo para que el mini Stand reaccione a lo que pasa en la pagina
  * sin acoplar componentes: quien dispara solo emite un CustomEvent.
  */
-export type StandEvent = "timestop" | "ora" | "muda" | "tbc" | "barrage";
+export type StandEvent = "timestop" | "ora" | "muda" | "tbc" | "barrage" | "arrow";
 
 export function emitStandEvent(kind: StandEvent) {
   if (typeof window === "undefined") return;

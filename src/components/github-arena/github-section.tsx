@@ -15,6 +15,7 @@ import { CountUp } from "@/components/ui/count-up";
 import { GithubMark } from "@/components/ui/github-mark";
 import { cn } from "@/lib/utils";
 import { emitStandEvent } from "@/lib/stand-events";
+import { unlockSecret } from "@/lib/secrets";
 import type { Arena, ArenaColors, ArenaDay } from "./scene";
 
 /** Tres ゴ sobre los tres dias mas fuertes. */
@@ -175,6 +176,7 @@ export function GithubSection({ data }: { data: ContributionYear }) {
                 arenaRef.current?.barrage();
                 setBarrage((value) => value + 1);
                 emitStandEvent("barrage");
+                unlockSecret("barrage");
               }
             },
             onReady: () => setReady(true),
@@ -239,6 +241,7 @@ export function GithubSection({ data }: { data: ContributionYear }) {
             <div
               ref={panelRef}
               role="img"
+              data-spot="github"
               aria-label={chartLabel}
               className="manga-panel arena-panel relative h-[320px] overflow-hidden sm:h-[420px]"
             >

@@ -13,6 +13,7 @@ import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
 import { emitStandEvent } from "@/lib/stand-events";
+import { unlockSecret } from "@/lib/secrets";
 
 interface BlurTextProps {
   text: string;
@@ -83,6 +84,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     if (!portraitEl || !stickyEl) return;
 
     emitStandEvent("timestop");
+    unlockSecret("timestop");
     const portraitBox = portraitEl.getBoundingClientRect();
     const stickyBox = stickyEl.getBoundingClientRect();
     setTimeStop({
@@ -139,7 +141,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const nameClassName = `${nameBaseClassName} text-name`;
 
   return (
-    <div ref={heroRef} className="relative z-0 h-svh min-h-[600px]">
+    <div ref={heroRef} data-stand-hero className="relative z-0 h-svh min-h-[600px]">
       <div
         ref={stickyRef}
         data-time-stopped={timeStop ? "true" : undefined}
@@ -224,6 +226,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
           <button
             ref={portraitRef}
+            data-stand-home
             type="button"
             onClick={stopTime}
             aria-label={t.jojo.timeStop}

@@ -61,7 +61,7 @@ export function PricingSection() {
         <FadeIn className="mb-10 sm:mb-14">
           <FadeSwap>
             <p data-part={`${t.jojo.part} 7`} className="jojo-eyebrow mb-4 text-accent-ink">{copy.eyebrow}</p>
-            <h2
+            <h2 data-spot="pricing"
               id="pricing-title"
               className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl"
             >

@@ -57,7 +57,7 @@ export default function InteractiveVideoScroller() {
             <p data-part={`${t.jojo.part} 5`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.services.eyebrow}
             </p>
-            <h2 className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
+            <h2 data-spot="services" className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-6xl">
               <RevealWords text={t.services.title} />
             </h2>
           </FadeSwap>

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { invisibleSignature } from "@/lib/signature";
+import { SecretsCounter } from "@/components/secrets";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight } from "lucide-react";
@@ -13,7 +14,7 @@ import { FadeSwap } from "./FadeSwap";
 import { Magnetic } from "./magnetic";
 import { RevealWords } from "./reveal-words";
 import { SectionEdge } from "./section-transition";
-import { Menacing } from "@/components/ui/menacing";
+import { Menacing3D } from "@/components/jojo-3d/menacing-3d";
 
 /**
  * Import desde `framer-motion`, no desde `motion/react`: este proyecto
@@ -44,7 +45,11 @@ export default function Footer() {
       className="relative z-40 overflow-x-clip border-t border-line bg-canvas px-5 pb-0 pt-20 transition-colors duration-500 sm:px-8 md:px-10"
     >
       <SectionEdge />
-      <Menacing size="clamp(1.6rem, 3vw, 2.8rem)" className="absolute right-[4%] top-10 z-10 hidden lg:block" />
+      {/* ゴゴゴ en 3D junto al "¿Te acercas?": tiembla, sigue al puntero y late al tocarlo. */}
+      <Menacing3D
+        fallbackSize="clamp(1.4rem, 3vw, 2.8rem)"
+        className="absolute right-[3%] top-6 z-10 h-36 w-24 sm:h-56 sm:w-36 lg:top-10 lg:h-72 lg:w-44"
+      />
       <div
         aria-hidden="true"
         className="glow-accent pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(48rem,120vw)] -translate-x-1/2"
@@ -66,7 +71,7 @@ export default function Footer() {
                 {t.footer.eyebrow}
               </p>
               {/* El "¿Oh? ¿Te acercas?" de Dio, en globo de manga. */}
-              <p className="jojo-bubble mt-6">{t.jojo.approach}</p>
+              <p data-spot="contact" className="jojo-bubble mt-6">{t.jojo.approach}</p>
               <p className="mt-5 text-2xl font-medium tracking-tight text-ink sm:text-3xl">
                 <RevealWords text={t.footer.headline} />
               </p>
@@ -144,7 +149,10 @@ export default function Footer() {
               {invisibleSignature}
             </p>
           </FadeSwap>
-          <p>{site.location}</p>
+          <div className="flex items-center justify-between gap-6">
+            <SecretsCounter />
+            <p>{site.location}</p>
+          </div>
         </div>
 
         {/*
@@ -168,6 +176,7 @@ export default function Footer() {
               show: { x: 0, opacity: 1 },
             }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            data-spot="tbc"
             className="tbc-arrow ml-1"
           >
             <span className="tbc-arrow-text">{t.jojo.toBeContinued}</span>

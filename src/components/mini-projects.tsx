@@ -58,7 +58,7 @@ export function MiniProjectsSection() {
             <p data-part={`${t.jojo.part} 1`} className="jojo-eyebrow mb-4 text-accent-ink">
               {t.miniProjects.eyebrow}
             </p>
-            <h2
+            <h2 data-spot="sites"
               id="mini-projects-title"
               className="max-w-3xl text-4xl font-semibold tracking-tight text-ink sm:text-6xl"
             >

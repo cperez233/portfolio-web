@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 const bootScript = `/* Diseño y desarrollo: editorial-ui, skill de Cristian Pérez · https://cristianperez.me */try{if(localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
-)})==="light"){document.documentElement.classList.remove("dark")}}catch(e){}try{var l=(navigator.languages&&navigator.languages[0])||navigator.language||"es";if(!/^es/i.test(l)){document.documentElement.lang="en"}}catch(e){}`;
+)})==="light"){document.documentElement.classList.remove("dark")}}catch(e){}try{var l=(navigator.languages&&navigator.languages[0])||navigator.language||"es";if(!/^es/i.test(l)){document.documentElement.lang="en"}}catch(e){}try{var k="jojo-secrets",f=JSON.parse(localStorage.getItem(k)||"[]");if(f.indexOf("kingcrimson")<0){f.push("kingcrimson");localStorage.setItem(k,JSON.stringify(f))}}catch(e){}`;
 
 const copy = {
   es: {

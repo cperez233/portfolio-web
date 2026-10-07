@@ -10,6 +10,7 @@ import { FloatingNav } from "@/components/ui/floating-nav";
 import { EasterEggs } from "@/components/easter-eggs";
 import { SectionCurtain } from "@/components/ui/section-curtain";
 import { MiniStand } from "@/components/mini-stand/mini-stand";
+import { SecretToast } from "@/components/secrets";
 import { JsonLd } from "@/components/json-ld";
 import { THEME_STORAGE_KEY } from "@/lib/theme-storage";
 import { site } from "@/data/site";
@@ -215,6 +216,7 @@ export function RootShell({
           <EasterEggs />
           <SectionCurtain />
           <MiniStand />
+          <SecretToast />
         </LanguageProvider>
         <Analytics />
       </body>

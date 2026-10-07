@@ -128,13 +128,25 @@ The render loop stops off-screen.
 - **Projects** are chapters (第1話, 第2話…): one case at a time, tabs with
   arrow-key support, and the page turns toward the side you go. The
   other cases stay in the HTML, hidden, for crawlers.
-- **Mini Stand** (`mini-stand/`): Paranoid Android in small, floating in
-  the corner. Its eyes follow the pointer, it says one line per section,
-  punches when tapped and hands out the easter-egg hints on later taps.
-  It reacts to ZA WARUDO, the board barrage and the keyboard eggs through
-  a `jojo:event` CustomEvent (`lib/stand-events.ts`), falls asleep after
-  40 s idle, tucks away while a form field has focus, and can be put away
-  for the visit from its speech bubble.
+- **Mini Stand** (`mini-stand/`): Paranoid Android as a pixel-art sprite
+  on a small canvas, moved with spring physics. It lives on the hero
+  portrait (`data-stand-home`), flies out when the hero scrolls away and
+  perches on whatever is being read (`data-spot` elements, nearest to the
+  top third; with a mouse, the one under the pointer). Each spot has a
+  few short lines in `lines.ts`, shuffled and not repeated until they run
+  out. It falls asleep after 12 s idle, reacts to the page through a
+  `jojo:event` CustomEvent (`lib/stand-events.ts`) and, when tapped, plays
+  rock-paper-scissors (`janken.tsx`, a nod to Boy II Man). It never
+  explains the secrets.
+- **Secrets** (`lib/secrets.ts`, `components/secrets.tsx`): eleven, stored
+  per visitor in localStorage, counted in the footer ("Secrets 3/11") and
+  announced when found. Names show only once found.
+- **3D props** (`jojo-3d/`): the Stand Arrow next to the Stand card (drag
+  to spin, tap to throw it at the card) and a 3D ゴゴゴ in the contact
+  section. Same toon shading and ink outlines as the GitHub board, loaded
+  on demand through `use-lazy-scene.ts`.
+- **Page changes between documents** (404 → home, a language link):
+  cross-document View Transitions in `globals.css`, a diagonal reveal.
 
 ## Easter eggs
 
@@ -146,7 +158,8 @@ The render loop stops off-screen.
 - Switch tabs: the title goes ゴゴゴゴ.
 - The console says hi and gives the hints.
 
-All motion-only eggs are skipped under `prefers-reduced-motion`.
+All motion-only eggs are skipped under `prefers-reduced-motion`. The
+full list is deliberately not written here either.
 
 ## Prices and testimonials
 

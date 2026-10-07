@@ -50,7 +50,7 @@ export function AboutSection() {
             <p data-part={`${t.jojo.part} 3`} className="jojo-eyebrow mb-5 text-accent-ink">
               {t.about.eyebrow}
             </p>
-            <h2 className="max-w-3xl text-section font-semibold uppercase text-ink">
+            <h2 data-spot="about" className="max-w-3xl text-section font-semibold uppercase text-ink">
               <RevealWords text={t.about.title} />
             </h2>
           </FadeSwap>

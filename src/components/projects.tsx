@@ -51,10 +51,27 @@ export function ProjectsSection() {
     cambio es el mejor momento de animacion: la pagina pasa hacia el lado
     al que vas, como un manga.
   */
-  function select(index: number, { scroll = false, focus = false } = {}) {
+  /*
+    Cambio de capitulo: una franja de oro y tinta barre la vineta hacia el
+    lado al que vas, con el 第N話 del capitulo nuevo, y la pagina nueva
+    entra detras. "Siguiente capitulo" siempre va hacia adelante, tambien
+    del 3 al 1.
+  */
+  const [wipe, setWipe] = useState<{ key: number; dir: number; chapter: number } | null>(null);
+  const wipeTimer = useRef(0);
+  const wipeCount = useRef(0);
+
+  function select(index: number, { scroll = false, focus = false, dir = 0 } = {}) {
     if (index === active) return;
-    setDirection(index > active ? 1 : -1);
+    const nextDir = dir || (index > active ? 1 : -1);
+    setDirection(nextDir);
     setActive(index);
+    if (!shouldReduceMotion) {
+      const key = ++wipeCount.current;
+      setWipe({ key, dir: nextDir, chapter: index });
+      window.clearTimeout(wipeTimer.current);
+      wipeTimer.current = window.setTimeout(() => setWipe(null), 950);
+    }
     if (focus) tabRefs.current[index]?.focus({ preventScroll: true });
     const tabs = tabsRef.current;
     if (scroll && tabs) {
@@ -108,6 +125,7 @@ export function ProjectsSection() {
           <div
             ref={tabsRef}
             role="tablist"
+            data-spot="projects"
             aria-label={t.projects.tabsLabel}
             onKeyDown={onTabKey}
             className="mb-10 grid grid-cols-3 gap-2 sm:mb-14 sm:flex sm:gap-3"
@@ -154,6 +172,26 @@ export function ProjectsSection() {
           </div>
         </FadeIn>
 
+        <div className="relative">
+        {wipe ? (
+          <motion.div
+            key={wipe.key}
+            aria-hidden="true"
+            className={cn(
+              "chapter-wipe pointer-events-none absolute -inset-y-6 left-[-40%] z-20 w-[180%] justify-center",
+              // El filo dorado va delante, en el sentido del barrido.
+              wipe.dir > 0 && "flex-row-reverse",
+            )}
+            initial={{ x: wipe.dir > 0 ? "-75%" : "75%" }}
+            animate={{ x: wipe.dir > 0 ? "75%" : "-75%" }}
+            transition={{ duration: 0.85, ease: [0.65, 0, 0.35, 1] }}
+          >
+            <span className="chapter-wipe-gold" />
+            <span className="chapter-wipe-ink">
+              <span className="chapter-wipe-label font-jp">第{wipe.chapter + 1}話</span>
+            </span>
+          </motion.div>
+        ) : null}
         <div
           id="case-panel"
           role="tabpanel"
@@ -174,7 +212,7 @@ export function ProjectsSection() {
               <div className="mt-12 flex justify-end border-t border-line pt-6">
                 <button
                   type="button"
-                  onClick={() => select(next, { scroll: true })}
+                  onClick={() => select(next, { scroll: true, dir: 1 })}
                   className="group inline-flex min-h-12 items-center gap-3 text-right"
                 >
                   <span className="flex flex-col items-end">
@@ -193,6 +231,7 @@ export function ProjectsSection() {
               </div>
             </motion.div>
           </AnimatePresence>
+        </div>
         </div>
 
         {/*
@@ -218,13 +257,14 @@ export function ProjectsSection() {
 
 /** Cambio de capitulo: la pagina entra por el lado al que vas y sale por el otro. */
 const pageTurn = {
-  enter: (direction: number) => ({ opacity: 0, x: direction * 90, rotate: direction * 1.2 }),
-  center: { opacity: 1, x: 0, rotate: 0, transition: { duration: 0.55, ease } },
+  enter: (direction: number) => ({ opacity: 0, x: direction * 160, rotate: direction * 2 }),
+  // Entra cuando la franja ya paso por el centro.
+  center: { opacity: 1, x: 0, rotate: 0, transition: { duration: 0.6, ease, delay: 0.3 } },
   exit: (direction: number) => ({
     opacity: 0,
-    x: direction * -90,
-    rotate: direction * -1.2,
-    transition: { duration: 0.35, ease },
+    x: direction * -160,
+    rotate: direction * -2,
+    transition: { duration: 0.3, ease },
   }),
 };
 

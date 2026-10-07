@@ -9,6 +9,7 @@ import { Menacing } from "@/components/ui/menacing";
 import { standStats } from "@/data/site";
 import { useLanguage } from "@/lib/language";
 import { cn } from "@/lib/utils";
+import { StandArrow } from "@/components/jojo-3d/stand-arrow";
 
 /*
   Geometria del radar. Seis ejes empezando arriba y en sentido horario,
@@ -203,13 +204,20 @@ export function StandCard({ className }: { className?: string }) {
         Caja de narrador: explica que es un Stand a quien no conoce JoJo,
         para que la tarjeta no se lea como algo raro.
       */}
-      <FadeSwap>
-        <p className="manga-caption mb-6 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
-          <span className="manga-caption-tab">{copy.explainerTitle}</span>
-          {copy.explainer}
-        </p>
-      </FadeSwap>
-      <div className="grid gap-4 lg:grid-cols-12 lg:gap-0">
+      {/*
+        La caja de narrador y, al lado, la Flecha en 3D apuntando a la
+        tarjeta: en JoJo es la que despierta los Stands.
+      */}
+      <div className="mb-6 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-8">
+        <FadeSwap className="lg:flex-1">
+          <p className="manga-caption max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+            <span className="manga-caption-tab">{copy.explainerTitle}</span>
+            {copy.explainer}
+          </p>
+        </FadeSwap>
+        <StandArrow className="h-28 w-full sm:h-32 lg:h-36 lg:w-[42%]" />
+      </div>
+      <div data-spot="standcard" className="grid gap-4 lg:grid-cols-12 lg:gap-0">
         {/* Vineta 1: nombre del Stand y su usuario */}
         <div className="manga-panel manga-panel-cut-right halftone-corner relative lg:col-span-7 lg:-mr-6">
           <div className="relative px-6 py-6 sm:px-8 sm:py-7 lg:pr-16">

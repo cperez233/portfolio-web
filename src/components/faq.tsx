@@ -55,7 +55,7 @@ export function FaqSection() {
             <FadeIn>
               <FadeSwap>
                 <p data-part={`${t.jojo.part} 8`} className="jojo-eyebrow mb-4 text-accent-ink">{t.faq.eyebrow}</p>
-                <h2
+                <h2 data-spot="faq"
                   id="faq-title"
                   className="text-4xl font-semibold uppercase tracking-tight text-ink sm:text-5xl"
                 >

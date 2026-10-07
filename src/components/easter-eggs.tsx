@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/language";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { emitStandEvent } from "@/lib/stand-events";
+import { unlockSecret } from "@/lib/secrets";
 
 /**
  * Easter eggs de JoJo, todos con teclado y sin nada visible que los
@@ -60,6 +61,7 @@ export function EasterEggs() {
   useEffect(() => {
     function fire(kind: Egg["kind"]) {
       emitStandEvent(kind);
+      unlockSecret(kind);
       if (reducedMotion && kind !== "tbc") return;
       setEgg({ id: Date.now(), kind });
     }
@@ -129,10 +131,11 @@ export function EasterEggs() {
       "font-weight:700;color:#e3b341;font-size:14px",
       "",
     );
+    // Leer la consola ya es un secreto: solo se dice como invocar al Stand.
     console.info(
       language === "es"
-        ? "¿Oh? ¿Te acercas? Escribe \"ora\" o \"muda\" en la página. Y prueba el código Konami."
-        : "Oh? You're approaching me? Type \"ora\" or \"muda\" on the page. And try the Konami code.",
+        ? "¿Lees la consola? Respeto. Invoca al Stand: stand()"
+        : "Reading the console? Respect. Summon the Stand: stand()",
     );
   }, [language]);
 
