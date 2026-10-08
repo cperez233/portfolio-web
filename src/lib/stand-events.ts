@@ -19,7 +19,14 @@ export type StandEvent =
   | "stare"
   | "audit"
   | "sent"
-  | "bottom";
+  | "bottom"
+  | "chapter"
+  | "faq"
+  | "hesitate"
+  | "typing"
+  | "resize"
+  | "thrown"
+  | "dropped";
 
 export function emitStandEvent(kind: StandEvent) {
   if (typeof window === "undefined") return;

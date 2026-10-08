@@ -5,7 +5,8 @@ import type { PowerId } from "./lines";
 /**
  * Poderes prestados que el mini Stand usa sobre la pagina. Todos son
  * efectos visuales encima del contenido (capas fijas, clases que se
- * quitan solas): nada se borra ni se mueve de verdad, salvo los dos que
+ * quitan solas, siempre en un finally): nada se borra ni se mueve de
+ * verdad, salvo los dos que
  * llevan a otra parte de la pagina (Bites the Dust y King Crimson), y
  * esos solo cuando quien visita lo pide en la conversacion.
  *
@@ -18,8 +19,6 @@ export interface PowerContext {
   x: number;
   y: number;
   reducedMotion: boolean;
-  /** Elemento sobre el que esta posado (Crazy Diamond lo usa). */
-  target: Element | null;
   /** Donde estaba el scroll hace unos segundos (Bites the Dust). */
   pastScroll: number;
 }
@@ -78,38 +77,281 @@ async function zaWarudo(ctx: PowerContext) {
   blend?.remove();
 }
 
-/** Crazy Diamond: lo rompe a golpes y lo deja como nuevo. */
+/**
+ * Elementos de la pagina que se ven ahora mismo (sin menu ni dialogos),
+ * sin repetir uno que ya este dentro de otro elegido.
+ */
+function onScreen(selector: string, max: number) {
+  const h = window.innerHeight;
+  const picked: HTMLElement[] = [];
+  for (const el of document.querySelectorAll<HTMLElement>(selector)) {
+    if (picked.length >= max) break;
+    if (el.closest("header, nav, [role='dialog'], .stand-layer, [aria-hidden='true']")) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 24 || r.height < 12 || r.bottom < 70 || r.top > h - 30) continue;
+    if (picked.some((other) => other.contains(el) || el.contains(other))) continue;
+    picked.push(el);
+  }
+  return picked;
+}
+
+/** Onomatopeya suelta en un punto de la pantalla. */
+function pop(text: string, x: number, y: number, className = "power-pop-word", life = 900) {
+  const node = layer(className);
+  node.textContent = text;
+  node.style.left = `${x}px`;
+  node.style.top = `${y}px`;
+  node.style.setProperty("--pop-rotate", `${Math.round(Math.random() * 24 - 12)}deg`);
+  window.setTimeout(() => node.remove(), life);
+  return node;
+}
+
+/** Sacude el contenido (no la capa del Stand, que es fija). */
+function quake(ms: number, reducedMotion: boolean) {
+  const main = document.querySelector("main");
+  if (!main || reducedMotion) return;
+  main.classList.add("power-quake");
+  window.setTimeout(() => main.classList.remove("power-quake"), ms);
+}
+
+/** Telarana de grietas desde un punto, hasta los bordes de la pantalla. */
+function crackWeb(x: number, y: number) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const reach = Math.hypot(w, h);
+  const branches = 11;
+  const rays: [number, number][][] = [];
+  const paths: string[] = [];
+  for (let i = 0; i < branches; i++) {
+    const angle = (i / branches) * Math.PI * 2 + Math.random() * 0.35;
+    const points: [number, number][] = [[x, y]];
+    let r = 0;
+    while (r < reach) {
+      r += 50 + Math.random() * 90;
+      const jitter = (Math.random() - 0.5) * 0.28;
+      points.push([x + Math.cos(angle + jitter) * r, y + Math.sin(angle + jitter) * r]);
+    }
+    rays.push(points);
+    paths.push(`M${points.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" L")}`);
+  }
+  // Anillos entre ramas vecinas: lo que hace que parezca vidrio roto.
+  for (const ring of [1, 2, 4]) {
+    for (let i = 0; i < branches; i++) {
+      const a = rays[i][ring];
+      const b = rays[(i + 1) % branches][ring];
+      if (a && b && Math.random() < 0.75) paths.push(`M${a[0].toFixed(1)},${a[1].toFixed(1)} L${b[0].toFixed(1)},${b[1].toFixed(1)}`);
+    }
+  }
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${paths
+    .map((d, i) => `<path d="${d}" pathLength="1" style="animation-delay:${i < branches ? 0 : 0.25}s"/>`)
+    .join("")}</svg>`;
+}
+
+/**
+ * Crazy Diamond: rompe a golpes lo que tienes en pantalla (una telarana
+ * de grietas sobre todo y los elementos visibles saltando en pedazos) y
+ * lo deja como nuevo. Antes rompia solo el titulo donde estaba posado, y
+ * si ese titulo no estaba a la vista no se veia nada.
+ */
 async function crazyDiamond(ctx: PowerContext) {
-  const target = (ctx.target ?? document.querySelector("main h2")) as HTMLElement | null;
-  if (!target) return;
-  const rect = target.getBoundingClientRect();
+  const pieces = onScreen("main h2, main h3, main p, main img, main a.accent-fill, main li, main button, footer h2, footer p", 12);
+  const h = window.innerHeight;
+  // El golpe cae donde esta el Stand, pero dentro de la pantalla.
+  const ix = Math.min(window.innerWidth - 40, Math.max(40, ctx.x));
+  const iy = Math.min(h - 60, Math.max(90, ctx.y));
   const node = layer("power-cd");
-  Object.assign(node.style, {
-    left: `${rect.left}px`,
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`,
+  node.innerHTML = crackWeb(ix, iy);
+
+  // Rafaga de DORA alrededor del impacto.
+  if (!ctx.reducedMotion) {
+    for (let i = 0; i < 7; i++) {
+      window.setTimeout(() => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 40 + Math.random() * 120;
+        pop("ドラ", ix + Math.cos(angle) * dist, iy + Math.sin(angle) * dist * 0.6, "power-pop-word is-pink", 700);
+      }, i * 90);
+    }
+  }
+  quake(900, ctx.reducedMotion);
+
+  const main = document.querySelector("main");
+  try {
+    await wait(ctx.reducedMotion ? 150 : 520);
+    pop("ドラァ!", ix, iy - 40, "power-pop-word is-pink is-big", 1300);
+    if (!ctx.reducedMotion) {
+      main?.classList.add("power-cd-broken");
+      for (const el of pieces) {
+        const r = el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - ix;
+        const dy = r.top + r.height / 2 - iy;
+        const d = Math.max(60, Math.hypot(dx, dy));
+        const push = 18 + Math.random() * 26;
+        el.style.setProperty("--cd-x", `${((dx / d) * push).toFixed(1)}px`);
+        el.style.setProperty("--cd-y", `${((dy / d) * push + 6).toFixed(1)}px`);
+        el.style.setProperty("--cd-r", `${(Math.random() * 10 - 5).toFixed(1)}deg`);
+        el.classList.add("power-broken");
+      }
+    }
+    await wait(1300);
+    // Arreglado: todo vuelve a su sitio con un brillo rosa.
+    node.classList.add("is-healing");
+    for (const el of pieces) {
+      el.classList.remove("power-broken");
+      if (!ctx.reducedMotion) el.classList.add("power-healed");
+    }
+    main?.classList.remove("power-cd-broken");
+    if (!ctx.reducedMotion) {
+      pieces.slice(0, 6).forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        window.setTimeout(() => pop("✦", r.left + r.width * Math.random(), r.top + r.height / 2, "power-sparkle", 900), i * 70);
+      });
+    }
+    await wait(900);
+  } finally {
+    main?.classList.remove("power-cd-broken");
+    for (const el of pieces) {
+      el.classList.remove("power-broken", "power-healed");
+      el.style.removeProperty("--cd-x");
+      el.style.removeProperty("--cd-y");
+      el.style.removeProperty("--cd-r");
+    }
+    node.remove();
+  }
+}
+
+/** Star Platinum: rafaga de punos desde el Stand. */
+async function starPlatinum(ctx: PowerContext) {
+  const node = layer("power-sp");
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  // Golpea hacia el centro de la pantalla.
+  const aim = Math.atan2(h / 2 - ctx.y, w / 2 - ctx.x);
+  const count = ctx.reducedMotion ? 6 : 28;
+  for (let i = 0; i < count; i++) {
+    const fist = document.createElement("span");
+    fist.className = "power-fist";
+    const angle = aim + (Math.random() - 0.5) * 1.1;
+    const dist = 90 + Math.random() * Math.min(260, w * 0.35);
+    fist.style.left = `${ctx.x}px`;
+    fist.style.top = `${ctx.y}px`;
+    fist.style.setProperty("--fx", `${(Math.cos(angle) * dist).toFixed(0)}px`);
+    fist.style.setProperty("--fy", `${(Math.sin(angle) * dist).toFixed(0)}px`);
+    fist.style.setProperty("--fa", `${angle.toFixed(2)}rad`);
+    fist.style.animationDelay = `${i * 48}ms`;
+    node.appendChild(fist);
+  }
+  const text = document.createElement("span");
+  text.className = "power-sp-text";
+  text.textContent = "オラオラオラオラ!";
+  node.appendChild(text);
+  quake(count * 48 + 300, ctx.reducedMotion);
+  await wait(count * 48 + 450);
+  pop("オラァ!", w / 2, h * 0.42, "power-pop-word is-big", 1100);
+  await wait(700);
+  node.classList.add("is-leaving");
+  await wait(400);
+  node.remove();
+}
+
+/** Gold Experience: le da vida a la pagina (hojas y mariquitas). */
+async function goldExperience(ctx: PowerContext) {
+  const sources = onScreen("main img, main h2, main h3, main p, main a.accent-fill, footer h2", 8);
+  const origins = sources.length
+    ? sources.map((el) => el.getBoundingClientRect())
+    : [new DOMRect(ctx.x - 20, ctx.y - 20, 40, 40)];
+  const node = layer("power-ge");
+  const kinds = ["power-leaf", "power-bug", "power-leaf", "power-flower"];
+  origins.forEach((r, i) => {
+    for (let j = 0; j < 5; j++) {
+      const item = document.createElement("span");
+      item.className = kinds[(i + j) % kinds.length];
+      item.style.left = `${r.left + r.width * (0.15 + Math.random() * 0.7)}px`;
+      item.style.top = `${r.top + r.height * (0.3 + Math.random() * 0.5)}px`;
+      item.style.setProperty("--gx", `${Math.round((Math.random() - 0.5) * 120)}px`);
+      item.style.setProperty("--gy", `${Math.round(-60 - Math.random() * 120)}px`);
+      item.style.setProperty("--gr", `${Math.round((Math.random() - 0.5) * 540)}deg`);
+      item.style.animationDelay = ctx.reducedMotion ? "0s" : `${i * 110 + j * 70}ms`;
+      node.appendChild(item);
+    }
   });
-  // Grietas desde un punto de impacto, dibujadas en SVG.
-  const ix = rect.width * 0.62;
-  const iy = rect.height * 0.5;
-  const cracks = Array.from({ length: 7 }, (_, i) => {
-    const angle = (i / 7) * Math.PI * 2 + 0.4;
-    const len = Math.max(rect.width, rect.height) * (0.35 + (i % 3) * 0.12);
-    const mx = ix + Math.cos(angle) * len * 0.5 + (i % 2 ? 8 : -8);
-    const my = iy + Math.sin(angle) * len * 0.5;
-    return `M${ix},${iy} L${mx},${my} L${ix + Math.cos(angle) * len},${iy + Math.sin(angle) * len}`;
-  });
-  node.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 ${rect.width} ${rect.height}" preserveAspectRatio="none">${cracks
-    .map((d) => `<path d="${d}" pathLength="1"/>`)
-    .join("")}</svg><span class="power-cd-sfx">ドラララ!</span>`;
-  if (!ctx.reducedMotion) target.classList.add("power-shatter");
-  await wait(1300);
-  target.classList.remove("power-shatter");
-  node.classList.add("is-healing");
-  if (!ctx.reducedMotion) target.classList.add("power-healed");
-  await wait(800);
-  target.classList.remove("power-healed");
+  await wait(ctx.reducedMotion ? 1500 : 2900);
+  node.classList.add("is-leaving");
+  await wait(450);
+  node.remove();
+}
+
+/**
+ * Soft & Wet: burbujas que suben por la pantalla y se revientan al
+ * tocarlas. Devuelve true si no se escapo ninguna.
+ */
+async function softWet(ctx: PowerContext) {
+  const node = layer("power-sw");
+  const w = window.innerWidth;
+  const total = w < 640 ? 6 : 9;
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  let popped = 0;
+  let finish: (all: boolean) => void = () => {};
+  const done = new Promise<boolean>((resolve) => (finish = resolve));
+  for (let i = 0; i < total; i++) {
+    const bubble = document.createElement("span");
+    bubble.className = "power-bubble";
+    const size = 46 + Math.random() * 40;
+    bubble.style.width = `${size}px`;
+    bubble.style.height = `${size}px`;
+    bubble.style.left = `${((i + 0.5) / total) * (w - size) + (Math.random() - 0.5) * 30}px`;
+    bubble.style.setProperty("--sway", `${Math.round((Math.random() - 0.5) * 80)}px`);
+    bubble.style.animationDelay = ctx.reducedMotion ? "0s" : `${Math.round(Math.random() * 1400)}ms`;
+    bubble.style.animationDuration = `${6 + Math.random() * 2.5}s`;
+    const burst = () => {
+      if (bubble.classList.contains("is-popped")) return;
+      const r = bubble.getBoundingClientRect();
+      bubble.classList.add("is-popped");
+      pop("パチン", r.left + r.width / 2, r.top + r.height / 2, "power-pop-word is-blue", 700);
+      window.setTimeout(() => bubble.remove(), 300);
+      popped += 1;
+      if (popped === total) finish(true);
+    };
+    bubble.addEventListener("pointerdown", burst);
+    if (fine) bubble.addEventListener("pointerenter", burst);
+    node.appendChild(bubble);
+  }
+  const timer = window.setTimeout(() => finish(false), 9200);
+  const all = await done;
+  window.clearTimeout(timer);
+  node.classList.add("is-leaving");
+  await wait(400);
+  node.remove();
+  return all;
+}
+
+/** Made in Heaven: el tiempo acelera; todas las animaciones van a 5x. */
+async function madeInHeaven(ctx: PowerContext) {
+  const node = layer("power-mih");
+  node.innerHTML = `<span class="power-mih-lines"></span><span class="power-mih-clock"><i></i><i></i></span><span class="power-mih-text">時は加速する</span>`;
+  const sped = new Set<Animation>();
+  const speedUp = () => {
+    for (const animation of document.getAnimations()) {
+      const target = (animation.effect as KeyframeEffect | null)?.target;
+      if (target && node.contains(target)) continue;
+      animation.playbackRate = 5;
+      sped.add(animation);
+    }
+  };
+  let interval = 0;
+  if (!ctx.reducedMotion) {
+    speedUp();
+    interval = window.setInterval(speedUp, 250);
+  }
+  try {
+    await wait(ctx.reducedMotion ? 1400 : 3400);
+  } finally {
+    window.clearInterval(interval);
+    sped.forEach((animation) => {
+      animation.playbackRate = 1;
+    });
+  }
+  node.classList.add("is-leaving");
+  await wait(400);
   node.remove();
 }
 
@@ -184,11 +426,16 @@ async function kingCrimson(ctx: PowerContext) {
   node.remove();
 }
 
-const POWERS: Record<PowerId, (ctx: PowerContext) => Promise<void>> = {
+/** Cada poder termina cuando acaba su efecto; true si salio "redondo". */
+const POWERS: Record<PowerId, (ctx: PowerContext) => Promise<boolean | void>> = {
   zawarudo: zaWarudo,
+  starplatinum: starPlatinum,
   crazydiamond: crazyDiamond,
+  goldexperience: goldExperience,
   echoes,
+  softwet: softWet,
   hermit,
+  madeinheaven: madeInHeaven,
   bitesthedust: bitesTheDust,
   kingcrimson: kingCrimson,
 };

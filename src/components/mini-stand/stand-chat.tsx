@@ -4,24 +4,29 @@ import { useEffect, useRef, useState, type Ref } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
-import type { PowerId, StandLines } from "./lines";
+import type { GuideId, PowerId, StandLines } from "./lines";
 import { POWER_IDS } from "./powers";
 
 /**
  * Conversacion con el Stand, en vineta de manga: el Stand habla (letra a
  * letra, como en un globo que se va llenando) y quien visita responde
- * con opciones. Desde aqui se piden los poderes y el jan-ken.
+ * con opciones. Desde aqui se piden los poderes, el jan-ken, datos de
+ * JoJo o que te lleve a una parte de la pagina.
  */
 
 type Message = { id: number; from: "stand" | "you"; text: string };
-type Choice = "who" | "cris" | "power" | "janken" | "bye";
+type Choice = "who" | "cris" | "guide" | "trivia" | "power" | "janken" | "bye";
+const GUIDE_IDS: GuideId[] = ["projects", "sites", "pricing", "contact"];
 
 interface Props {
   ref?: Ref<HTMLDivElement>;
   lines: StandLines["chat"];
   powers: StandLines["powers"];
+  /** Ya hablaron antes en esta visita: saluda distinto. */
+  again: boolean;
   onClose: () => void;
   onPower: (id: PowerId) => void;
+  onGuide: (id: GuideId) => void;
   onJanken: () => void;
   /** El Stand gesticula mientras habla. */
   onTalk: () => void;
@@ -64,14 +69,15 @@ function Typed({ text, onDone }: { text: string; onDone?: () => void }) {
   );
 }
 
-export function StandChat({ ref, lines, powers, onClose, onPower, onJanken, onTalk }: Props) {
+export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide, onJanken, onTalk }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [queue, setQueue] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
-  const [mode, setMode] = useState<"menu" | "powers">("menu");
+  const [mode, setMode] = useState<"menu" | "powers" | "guide">("menu");
   // Cada "¿quien eres?" cuenta otra version; los datos de el no se repiten seguidos.
   const [whoTurn, setWhoTurn] = useState(0);
   const [lastCris, setLastCris] = useState<string | undefined>(undefined);
+  const [lastTrivia, setLastTrivia] = useState<string | undefined>(undefined);
   const firstOption = useRef<HTMLButtonElement>(null);
 
   // El Stand dice las frases de la cola una tras otra.
@@ -90,7 +96,7 @@ export function StandChat({ ref, lines, powers, onClose, onPower, onJanken, onTa
   useEffect(() => {
     // Saludo al abrir: es la primera linea de la conversacion.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setQueue([pick(lines.greet)]);
+    setQueue([pick(again ? lines.greetAgain : lines.greet)]);
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -115,6 +121,13 @@ export function StandChat({ ref, lines, powers, onClose, onPower, onJanken, onTa
       const fact = pick(lines.cris, lastCris);
       setLastCris(fact);
       setQueue([fact]);
+    } else if (choice === "trivia") {
+      const fact = pick(lines.trivia, lastTrivia);
+      setLastTrivia(fact);
+      setQueue([fact]);
+    } else if (choice === "guide") {
+      setMode("guide");
+      setQueue([pick(lines.guidePrompt)]);
     } else if (choice === "power") {
       setMode("powers");
       setQueue([pick(lines.powerPrompt)]);
@@ -187,7 +200,30 @@ export function StandChat({ ref, lines, powers, onClose, onPower, onJanken, onTa
                   {lines.options[choice]}
                 </button>
               ))
-            : (
+            : mode === "guide"
+              ? (
+                <>
+                  {GUIDE_IDS.map((id, index) => (
+                    <button
+                      key={id}
+                      ref={index === 0 ? firstOption : undefined}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => {
+                        you(lines.guide[id].label);
+                        onGuide(id);
+                      }}
+                      className="stand-chat-option"
+                    >
+                      {lines.guide[id].label}
+                    </button>
+                  ))}
+                  <button type="button" disabled={busy} onClick={() => setMode("menu")} className="stand-chat-back stand-chat-option">
+                    {lines.back}
+                  </button>
+                </>
+              )
+              : (
               <>
                 {POWER_IDS.map((id, index) => (
                   <button

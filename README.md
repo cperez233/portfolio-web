@@ -134,18 +134,29 @@ The render loop stops off-screen.
   perches on whatever is being read (`data-spot` elements). Its own
   JoJo character: it lands with a ドン, gives off ゴ while still, strikes
   poses, and its speech bubbles type themselves out. Each spot has several
-  lines in `lines.ts`, shuffled and not repeated. It reacts to the page
-  (theme and language switches, WhatsApp clicks, copying, coming back to
-  the tab, scrolling too fast, being stared at, the forms, reaching the
-  end, the easter eggs) through listeners and the `jojo:event` bus, and
-  sleeps after 12 s idle. Tapping it opens a manga chat
-  (`stand-chat.tsx`): who it is, facts about Cristian taken from the page,
-  jan-ken (`janken.tsx`) or a borrowed Stand power (`powers.ts`):
-  ZA WARUDO (inverts the page and freezes every loop), Crazy Diamond
-  (cracks and repairs the element it sits on), Echoes (sticks sound
-  effects on the page), Hermit Purple (reads your visit: time, parts
-  read, secrets), Bites the Dust (rewinds your scroll) and King Crimson
-  (skips to the next section). All visual, nothing is removed.
+  lines in `lines.ts`, shuffled and not repeated. It greets by time of
+  day and counts visits; while perched it does little bits on its own
+  (pose, twirl, shadow-boxing, yawning, looking around) and thinks out
+  loud when it has been quiet for a while. Shouts get a gold bubble,
+  sleep a thought bubble. It can be grabbed and thrown: it flies, bounces
+  off the edges and ends up dizzy, leaving afterimages when it moves
+  fast. It reacts to the page (theme and language switches, WhatsApp
+  clicks or hovering on it, copying, coming back to the tab, scrolling
+  too fast, being stared at, changing project chapter, opening a FAQ,
+  typing in a form, sending it, reaching the end, the easter eggs)
+  through listeners and the `jojo:event` bus, and sleeps after 12 s
+  idle. Tapping it opens a manga chat (`stand-chat.tsx`): who it is,
+  facts about Cristian taken from the page, JoJo trivia, a guided jump
+  to a section (through the section curtain), jan-ken (`janken.tsx`) or
+  a borrowed Stand power (`powers.ts`): ZA WARUDO (inverts the page and
+  freezes every loop), Star Platinum (ORA barrage of fists), Crazy
+  Diamond (shatters the whole screen and what is on it, then repairs
+  it), Gold Experience (leaves, flowers and ladybugs sprout), Echoes
+  (sticks sound effects on the page), Soft & Wet (bubbles you can pop),
+  Hermit Purple (reads your visit: time, parts read, secrets), Made in
+  Heaven (every animation runs at 5x), Bites the Dust (rewinds your
+  scroll) and King Crimson (skips to the next section). All visual,
+  nothing is removed, and one power at a time.
 - **Secrets** (`lib/secrets.ts`, `components/secrets.tsx`): eleven, stored
   per visitor in localStorage, counted in the footer ("Secrets 3/11") and
   announced when found. Names show only once found.

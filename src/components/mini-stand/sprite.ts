@@ -44,7 +44,7 @@ const HEAD = [
   "..kcvvvvvvvvvvvck.",
 ];
 
-export type Frame = "idle" | "blink" | "look" | "punch" | "sleep" | "happy" | "shock" | "pose";
+export type Frame = "idle" | "blink" | "look" | "punch" | "sleep" | "happy" | "shock" | "pose" | "dizzy";
 
 function eyes(frame: Frame, look: number) {
   const L = [6, 7];
@@ -54,6 +54,10 @@ function eyes(frame: Frame, look: number) {
   }
   if (frame === "happy") {
     return [put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e"), VISOR];
+  }
+  if (frame === "dizzy") {
+    // Ojos en X: lo lanzaron por la pagina.
+    return [put(VISOR, [5, 7, 10, 12], "e"), put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e")];
   }
   if (frame === "shock") {
     return [
@@ -131,18 +135,25 @@ export interface DrawOptions {
   /** Hacia donde mira la pupila: -1 atras, 0 frente, 1 adelante. */
   look?: number;
   tilt?: number;
+  /** Giro completo alrededor del centro del cuerpo (piruetas). */
+  spin?: number;
   /** Contorno de pegatina alrededor de la silueta (null: sin contorno). */
   rim?: string | null;
 }
 
 export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
-  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, rim = null } = options;
+  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, spin = 0, rim = null } = options;
   const map = rows(frame, tail, look);
   const w = SPRITE_W * scale;
   const h = map.length * scale;
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.rotate(tilt);
+  if (spin) {
+    ctx.translate(0, -h / 2);
+    ctx.rotate(spin);
+    ctx.translate(0, h / 2);
+  }
   ctx.scale(face, 1);
   ctx.translate(-w / 2, -h);
   if (rim) {
