@@ -68,8 +68,8 @@ let uid = 0;
  * vive en mini-stand, porque tambien pasa con el toque del retrato.
  */
 async function zaWarudo(ctx: PowerContext) {
-  const ms = ctx.reducedMotion ? 1600 : 4800;
-  const resumed = stopTime(ms);
+  const ms = ctx.reducedMotion ? 1600 : 3600;
+  const resumed = stopTime(ms, "stand");
   /*
     Dos capas: la esfera mezcla en "difference" con la pagina, y para eso
     la mezcla va en la propia capa fija (una capa con z-index aisla a sus
@@ -211,7 +211,7 @@ async function starFinger(ctx: PowerContext, target: HTMLElement) {
 /** Star Platinum: The World: tiempo detenido, golpes que caen al reanudarse. */
 async function starWorld(ctx: PowerContext, target: HTMLElement) {
   const r = target.getBoundingClientRect();
-  const resumed = stopTime(ctx.reducedMotion ? 900 : 2200);
+  const resumed = stopTime(ctx.reducedMotion ? 900 : 2200, "platinum");
   const tint = layer("power-spw", true);
   tint.innerHTML = `<span class="power-spw-text">スタープラチナ・ザ・ワールド</span>`;
   const node = layer("power-sp", true);
@@ -381,98 +381,184 @@ async function crazyDiamond(ctx: PowerContext) {
 /* Gold Experience                                                     */
 /* ------------------------------------------------------------------ */
 
-const FROG = `<svg viewBox="0 0 64 52" width="112" height="91"><g stroke="#161418" stroke-width="3" stroke-linejoin="round"><path d="M8 44 Q2 50 14 50 L20 44Z" fill="#4f9e44"/><path d="M56 44 Q62 50 50 50 L44 44Z" fill="#4f9e44"/><ellipse cx="32" cy="34" rx="24" ry="15" fill="#6fbf5b"/><circle cx="19" cy="17" r="9" fill="#6fbf5b"/><circle cx="45" cy="17" r="9" fill="#6fbf5b"/><circle cx="19" cy="16" r="5" fill="#ece6d8"/><circle cx="45" cy="16" r="5" fill="#ece6d8"/></g><circle cx="20" cy="16" r="2.4" fill="#161418"/><circle cx="46" cy="16" r="2.4" fill="#161418"/><path d="M22 36 Q32 42 42 36" fill="none" stroke="#161418" stroke-width="2.5" stroke-linecap="round"/><circle cx="25" cy="31" r="1.6" fill="#161418"/><circle cx="39" cy="31" r="1.6" fill="#161418"/></svg>`;
+/*
+  Dibujos de Gold Experience: tinta de 2-3 px, dos tonos (base y sombra)
+  y un brillo, como pegatinas de manga. Todo en SVG en linea.
+*/
+const INK = `stroke="#161418" stroke-linejoin="round" stroke-linecap="round"`;
 
-const BUTTERFLY = (a: string, b: string) =>
-  `<svg viewBox="0 0 40 32" width="58" height="46"><g stroke="#161418" stroke-width="2" stroke-linejoin="round"><g class="wing-l"><path d="M20 16 Q6 0 3 8 Q0 18 20 18Z" fill="${a}"/><path d="M20 18 Q6 30 9 24 Q4 20 20 18Z" fill="${b}"/></g><g class="wing-r"><path d="M20 16 Q34 0 37 8 Q40 18 20 18Z" fill="${a}"/><path d="M20 18 Q34 30 31 24 Q36 20 20 18Z" fill="${b}"/></g></g><rect x="18.5" y="9" width="3" height="16" rx="1.5" fill="#161418"/></svg>`;
+const LEAF = `<svg viewBox="0 0 32 32" width="30" height="30"><path d="M4 28 C4 12 14 4 28 4 C28 18 20 28 4 28Z" fill="#6fbf5b" ${INK} stroke-width="2.5"/><path d="M4 28 C18 26 26 18 28 4 C24 18 16 24 4 28Z" fill="#4f9e44"/><path d="M5 27 C12 21 20 13 27 5" fill="none" stroke="#2f6b2a" stroke-width="2" stroke-linecap="round"/><path d="M11 21 l1 -6 M16 16 l1 -6 M12 21 l6 -1 M17 16 l6 -1" stroke="#2f6b2a" stroke-width="1.4" stroke-linecap="round"/><path d="M8 22 C9 15 14 10 20 8" fill="none" stroke="#b6eda0" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+const FLOWER = (petal: string, shade: string) =>
+  `<svg viewBox="0 0 40 40" width="34" height="34"><g ${INK} stroke-width="2.2">${[0, 72, 144, 216, 288]
+    .map((a) => `<ellipse cx="20" cy="9.5" rx="6.5" ry="9" fill="${petal}" transform="rotate(${a} 20 20)"/>`)
+    .join("")}</g>${[0, 72, 144, 216, 288]
+    .map((a) => `<ellipse cx="20" cy="12" rx="2.6" ry="5" fill="${shade}" transform="rotate(${a} 20 20)"/>`)
+    .join("")}<circle cx="20" cy="20" r="6" fill="#e3b341" ${INK} stroke-width="2.2"/><circle cx="18" cy="18" r="1.6" fill="#fff3c4"/><circle cx="22" cy="21.5" r="1" fill="#a87a1f"/><circle cx="19" cy="22.5" r="1" fill="#a87a1f"/></svg>`;
+
+const LADYBUG = `<svg viewBox="0 0 36 32" width="32" height="28"><g ${INK} stroke-width="2"><path d="M7 21 l-4 3 M7 15 l-5 0 M29 21 l4 3 M29 15 l5 0" fill="none"/><path d="M13 7 Q10 2 7 3 M23 7 Q26 2 29 3" fill="none"/><circle cx="18" cy="9" r="6" fill="#161418"/><ellipse cx="18" cy="19" rx="12" ry="11" fill="#d8443c"/></g><path d="M18 9 V30" stroke="#161418" stroke-width="2"/><path d="M7 21 A12 11 0 0 0 29 21 A14 8 0 0 1 7 21Z" fill="#a8302a"/><circle cx="12" cy="16" r="2.6" fill="#161418"/><circle cx="24" cy="16" r="2.6" fill="#161418"/><circle cx="13" cy="24" r="2.2" fill="#161418"/><circle cx="23" cy="24" r="2.2" fill="#161418"/><path d="M10 13 Q12 10 15 10" stroke="#ffb3a8" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="7" r="1.3" fill="#ece6d8"/><circle cx="20" cy="7" r="1.3" fill="#ece6d8"/></svg>`;
+
+const FROG = `<svg viewBox="0 0 80 66" width="120" height="99"><g ${INK} stroke-width="3">
+  <path d="M10 56 Q2 62 8 64 Q14 66 20 60Z" fill="#4f9e44"/><path d="M70 56 Q78 62 72 64 Q66 66 60 60Z" fill="#4f9e44"/>
+  <path d="M8 46 Q8 24 40 24 Q72 24 72 46 Q72 62 40 62 Q8 62 8 46Z" fill="#6fbf5b"/>
+  <circle cx="24" cy="22" r="11" fill="#6fbf5b"/><circle cx="56" cy="22" r="11" fill="#6fbf5b"/>
+  <circle cx="24" cy="21" r="7" fill="#fbf7ec"/><circle cx="56" cy="21" r="7" fill="#fbf7ec"/>
+  <path d="M22 56 q-2 6 -8 6 q4 -1 4 -5 M58 56 q2 6 8 6 q-4 -1 -4 -5" fill="#86d16f"/>
+  </g>
+  <path d="M10 48 Q12 60 40 61 Q68 60 70 48 Q60 56 40 56 Q20 56 10 48Z" fill="#4f9e44"/>
+  <ellipse cx="40" cy="50" rx="16" ry="8" fill="#d9f2c5" stroke="#161418" stroke-width="2"/>
+  <circle class="pupil" cx="25" cy="21.5" r="3.6" fill="#161418"/><circle class="pupil" cx="57" cy="21.5" r="3.6" fill="#161418"/>
+  <circle cx="26.5" cy="19.5" r="1.4" fill="#fff"/><circle cx="58.5" cy="19.5" r="1.4" fill="#fff"/>
+  <ellipse cx="20" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".85"/><ellipse cx="60" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".85"/>
+  <path d="M30 37 Q35 42 40 38 Q45 42 50 37" fill="none" stroke="#161418" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="30" cy="31" r="2.2" fill="#4f9e44"/><circle cx="52" cy="30" r="1.8" fill="#4f9e44"/><circle cx="45" cy="28" r="1.4" fill="#4f9e44"/>
+  <path d="M16 30 Q20 27 26 28" stroke="#b6eda0" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M27 12 Q31 11 33 14" stroke="#b6eda0" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>`;
+
+const BUTTERFLY = (id: string, a: string, b: string) =>
+  `<svg viewBox="0 0 60 48" width="62" height="50"><defs><radialGradient id="${id}" cx="0.5" cy="0.5" r="0.6"><stop offset="0.25" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></radialGradient></defs>
+  <g class="wing-l"><path d="M30 22 Q20 2 6 4 Q-2 8 6 20 Q12 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q14 28 10 38 Q12 46 22 40 Q28 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="13" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="18" cy="36" r="2" fill="#161418"/><path d="M29 22 L12 9 M29 23 L8 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>
+  <g class="wing-r"><path d="M30 22 Q40 2 54 4 Q62 8 54 20 Q48 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q46 28 50 38 Q48 46 38 40 Q32 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="47" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="42" cy="36" r="2" fill="#161418"/><path d="M31 22 L48 9 M31 23 L52 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>
+  <path d="M28 10 Q24 2 20 4 M32 10 Q36 2 40 4" fill="none" stroke="#161418" stroke-width="1.8" stroke-linecap="round"/><circle cx="20" cy="4" r="1.6" fill="#161418"/><circle cx="40" cy="4" r="1.6" fill="#161418"/>
+  <rect x="27.5" y="10" width="5" height="26" rx="2.5" fill="#2a2530" stroke="#161418" stroke-width="1.6"/><path d="M28 17 h4 M28 22 h4 M28 27 h4" stroke="#6b6070" stroke-width="1"/>
+</svg>`;
+
+/** Destello de vida dorado: lo que hace Giorno antes de que algo brote. */
+function lifeBurst(x: number, y: number, size = 1) {
+  const ring = layer("power-life", true);
+  ring.style.left = `${x}px`;
+  ring.style.top = `${y}px`;
+  ring.style.setProperty("--life", String(size));
+  for (let i = 0; i < 6; i++) {
+    const spark = document.createElement("i");
+    const a = (i / 6) * Math.PI * 2 + rand(-0.3, 0.3);
+    spark.style.setProperty("--sx", `${Math.round(Math.cos(a) * rand(40, 80) * size)}px`);
+    spark.style.setProperty("--sy", `${Math.round(Math.sin(a) * rand(40, 80) * size)}px`);
+    ring.appendChild(spark);
+  }
+  window.setTimeout(() => ring.remove(), 900);
+}
+
+function sprout(node: HTMLElement, html: string, className: string, x: number, y: number, vars: Record<string, string>, delay: number) {
+  const item = document.createElement("span");
+  item.className = className;
+  item.innerHTML = html;
+  item.style.left = `${x}px`;
+  item.style.top = `${y}px`;
+  for (const [key, value] of Object.entries(vars)) item.style.setProperty(key, value);
+  item.style.animationDelay = `${delay}ms`;
+  node.appendChild(item);
+  return item;
+}
 
 /** Jardin: hojas, flores y mariquitas que brotan de lo que se ve. */
 async function geGarden(ctx: PowerContext) {
-  const sources = onScreen("main img, main h2, main h3, main p, main a.accent-fill, footer h2", 8);
+  const sources = onScreen("main img, main h2, main h3, main p, main a.accent-fill, footer h2", 7);
   const origins = sources.length ? sources.map((el) => el.getBoundingClientRect()) : [new DOMRect(ctx.x - 20, ctx.y - 20, 40, 40)];
   const node = layer("power-ge", true);
-  const kinds = ["power-leaf", "power-bug", "power-leaf", "power-flower"];
+  const art = [LEAF, FLOWER("#f4c6e0", "#e891c4"), LEAF, LADYBUG, FLOWER("#fbf7ec", "#e3d6b8"), LEAF];
   origins.forEach((r, i) => {
+    const x0 = r.left + r.width * rand(0.2, 0.8);
+    const y0 = r.top + r.height * 0.5;
+    window.setTimeout(() => lifeBurst(x0, y0, 0.7), ctx.reducedMotion ? 0 : i * 120);
     for (let j = 0; j < 5; j++) {
-      const item = document.createElement("span");
-      item.className = kinds[(i + j) % kinds.length];
-      item.style.left = `${r.left + r.width * rand(0.15, 0.85)}px`;
-      item.style.top = `${r.top + r.height * rand(0.3, 0.8)}px`;
-      item.style.setProperty("--gx", `${Math.round(rand(-60, 60))}px`);
-      item.style.setProperty("--gy", `${Math.round(rand(-180, -60))}px`);
-      item.style.setProperty("--gr", `${Math.round(rand(-270, 270))}deg`);
-      item.style.animationDelay = ctx.reducedMotion ? "0s" : `${i * 110 + j * 70}ms`;
-      node.appendChild(item);
+      sprout(
+        node,
+        art[(i + j) % art.length],
+        "power-ge-item",
+        x0 + rand(-r.width * 0.3, r.width * 0.3),
+        y0 + rand(-10, 10),
+        {
+          "--gx": `${Math.round(rand(-70, 70))}px`,
+          "--gy": `${Math.round(rand(-190, -70))}px`,
+          "--gr": `${Math.round(rand(-200, 200))}deg`,
+        },
+        ctx.reducedMotion ? 0 : i * 120 + 150 + j * 70,
+      );
     }
   });
-  await wait(ctx.reducedMotion ? 1500 : 2900);
+  await wait(ctx.reducedMotion ? 1500 : 3200);
   node.classList.add("is-leaving");
   await wait(450);
   node.remove();
 }
 
-/** Un arbol entero que crece desde el borde de abajo. */
+/** Un arbol entero que crece desde el borde de abajo y se mece. */
 async function geTree(ctx: PowerContext) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const node = layer("power-ge", true);
   const tree = document.createElement("div");
   tree.className = "power-tree";
-  const size = Math.min(h * 0.72, 520);
+  const size = Math.min(h * 0.74, 540);
   tree.style.height = `${size}px`;
-  tree.style.width = `${size * 0.8}px`;
+  tree.style.width = `${size * 0.85}px`;
   // Del lado contrario al Stand, para que el lo mire crecer.
-  const side = ctx.x > w / 2 ? rand(0.12, 0.3) : rand(0.6, 0.82);
-  tree.style.left = `${w * side - size * 0.4}px`;
-  const leaves = [
-    [160, 120, 62, "#6fbf5b"],
-    [100, 165, 50, "#4f9e44"],
-    [225, 160, 52, "#4f9e44"],
-    [80, 100, 40, "#86d16f"],
-    [250, 95, 42, "#86d16f"],
-    [165, 60, 46, "#6fbf5b"],
-    [130, 215, 36, "#6fbf5b"],
-    [205, 220, 36, "#86d16f"],
+  const side = ctx.x > w / 2 ? rand(0.14, 0.3) : rand(0.6, 0.8);
+  tree.style.left = `${w * side - size * 0.425}px`;
+  const blob = (x: number, y: number, r: number, fill: string, delay: number, stroke = true) =>
+    `<circle class="crown" cx="${x}" cy="${y}" r="${r}" fill="${fill}" ${stroke ? `${INK} stroke-width="4"` : ""} style="animation-delay:${delay}s"/>`;
+  const crown = [
+    [170, 130, 70],
+    [100, 165, 56],
+    [245, 165, 58],
+    [70, 110, 44],
+    [270, 100, 46],
+    [170, 62, 52],
+    [120, 85, 46],
+    [222, 82, 46],
   ];
+  const back = crown.map(([x, y, r], i) => blob(x + 4, y + 8, r, "#3b7a33", 0.95 + i * 0.07)).join("");
+  const mid = crown.map(([x, y, r], i) => blob(x, y, r - 4, "#5daf4c", 1 + i * 0.07, false)).join("");
+  const light = crown
+    .slice(0, 6)
+    .map(([x, y, r], i) => `<ellipse class="crown" cx="${x - r * 0.3}" cy="${y - r * 0.35}" rx="${r * 0.35}" ry="${r * 0.22}" fill="#9be07f" style="animation-delay:${1.2 + i * 0.06}s"/>`)
+    .join("");
   const fruits = [
-    [120, 130],
-    [200, 120],
-    [160, 85],
-    [95, 175],
-    [235, 175],
-  ];
-  tree.innerHTML = `<svg viewBox="0 0 320 400" preserveAspectRatio="xMidYMax meet">
-    <g class="trunk" fill="none" stroke-linecap="round">
-      <path d="M160 400 C152 330 170 270 160 200 M160 280 C190 260 215 230 228 180 M158 250 C130 230 110 205 100 170 M162 215 C150 170 158 120 165 80" stroke="#161418" stroke-width="26" pathLength="1"/>
-      <path d="M160 400 C152 330 170 270 160 200 M160 280 C190 260 215 230 228 180 M158 250 C130 230 110 205 100 170 M162 215 C150 170 158 120 165 80" stroke="#8a5a34" stroke-width="18" pathLength="1"/>
+    [130, 135],
+    [210, 125],
+    [170, 80],
+    [90, 180],
+    [250, 180],
+    [140, 60],
+  ]
+    .map(
+      ([x, y], i) =>
+        `<g class="fruit" style="animation-delay:${1.7 + i * 0.12}s"><circle cx="${x}" cy="${y}" r="10" fill="#e3b341" ${INK} stroke-width="3"/><circle cx="${x - 3}" cy="${y - 3}" r="3" fill="#fff3c4"/><path d="M${x} ${y - 10} q2 -6 7 -6" stroke="#161418" stroke-width="2.5" fill="none"/><path d="M${x + 2} ${y - 12} q6 -4 10 0 q-6 3 -10 0Z" fill="#6fbf5b" stroke="#161418" stroke-width="1.5"/></g>`,
+    )
+    .join("");
+  tree.innerHTML = `<svg viewBox="0 0 340 420" preserveAspectRatio="xMidYMax meet">
+    <defs><linearGradient id="ge-bark" x1="0" x2="1"><stop offset="0" stop-color="#6b4429"/><stop offset="0.55" stop-color="#9a6a42"/><stop offset="1" stop-color="#5a3922"/></linearGradient></defs>
+    <g class="trunk">
+      <path d="M140 420 Q132 404 118 400 L222 400 Q208 404 200 420Z" fill="#5a3922" ${INK} stroke-width="4"/>
+      <path d="M146 404 C150 330 156 270 150 200 L188 200 C184 270 190 330 194 404Z" fill="url(#ge-bark)" ${INK} stroke-width="4"/>
+      <path d="M160 380 q-4 -20 2 -40 M176 350 q4 -16 -2 -34 M164 300 q-3 -14 1 -26" stroke="#4a2f1c" stroke-width="3" fill="none" stroke-linecap="round"/>
     </g>
-    ${leaves
-      .map(
-        ([x, y, r, c], i) =>
-          `<circle class="crown" cx="${x}" cy="${y}" r="${r}" fill="${c}" stroke="#161418" stroke-width="4" style="animation-delay:${0.9 + i * 0.09}s"/>`,
-      )
-      .join("")}
-    ${fruits
-      .map(
-        ([x, y], i) =>
-          `<g class="fruit" style="animation-delay:${1.6 + i * 0.12}s"><circle cx="${x}" cy="${y}" r="9" fill="#e3b341" stroke="#161418" stroke-width="3"/><path d="M${x} ${y - 9} l2 -5" stroke="#161418" stroke-width="2"/></g>`,
-      )
-      .join("")}
+    <g class="branches" fill="none" stroke-linecap="round">
+      <path d="M168 270 C200 250 225 220 240 175 M166 240 C135 220 112 200 100 165 M170 215 C165 170 170 120 172 75" stroke="#161418" stroke-width="20" pathLength="1"/>
+      <path d="M168 270 C200 250 225 220 240 175 M166 240 C135 220 112 200 100 165 M170 215 C165 170 170 120 172 75" stroke="#8a5a34" stroke-width="13" pathLength="1"/>
+    </g>
+    <g class="sway">${back}${mid}${light}${fruits}</g>
+    <g class="fruit" style="animation-delay:2.2s"><g transform="translate(176 330) rotate(-80) scale(0.55)">${LADYBUG.replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g></g>
   </svg>`;
   node.appendChild(tree);
-  window.setTimeout(() => pop("ニョキ", w * side, h - size * 0.9, "power-pop-word is-green", 900), 600);
-  await wait(ctx.reducedMotion ? 1200 : 3200);
+  lifeBurst(w * side, h - 20, 1.4);
+  window.setTimeout(() => pop("ニョキニョキ", w * side, h - size * 0.92, "power-pop-word is-green", 1000), 700);
+  await wait(ctx.reducedMotion ? 1200 : 3400);
   // Caen unas hojas antes de que el arbol vuelva a la tierra.
   for (let i = 0; i < 10; i++) {
-    const leaf = document.createElement("span");
-    leaf.className = "power-leaf is-falling";
-    leaf.style.left = `${w * side + rand(-size * 0.35, size * 0.35)}px`;
-    leaf.style.top = `${h - size * rand(0.55, 0.95)}px`;
-    leaf.style.setProperty("--gx", `${Math.round(rand(-80, 80))}px`);
-    leaf.style.animationDelay = `${i * 80}ms`;
-    node.appendChild(leaf);
+    sprout(
+      node,
+      LEAF,
+      "power-ge-item is-falling",
+      w * side + rand(-size * 0.35, size * 0.35),
+      h - size * rand(0.55, 0.95),
+      { "--gx": `${Math.round(rand(-90, 90))}px` },
+      i * 90,
+    );
   }
-  await wait(900);
+  await wait(1000);
   tree.classList.add("is-leaving");
   await wait(700);
   node.remove();
@@ -490,37 +576,42 @@ async function geFrog(ctx: PowerContext) {
   const node = layer("power-ge", true);
   const frog = document.createElement("span");
   frog.className = "power-frog";
-  frog.innerHTML = FROG;
+  frog.innerHTML = `<span class="power-frog-body">${FROG}</span>`;
   let fx = r.left + r.width / 2;
   let fy = r.top + r.height / 2;
   frog.style.transform = `translate(${fx}px, ${fy}px)`;
   try {
-    pop("ゴールド・E", fx, fy - 30, "power-pop-word is-gold", 900);
+    lifeBurst(fx, fy, 1.3);
     target.classList.add("power-ge-morph");
     await wait(450);
     node.appendChild(frog);
-    // Tres saltos por la pantalla, y de vuelta.
+    pop("ケロッ", fx + 40, fy - 60, "power-pop-word is-green", 800);
+    await wait(500);
+    // Saltos por la pantalla, y de vuelta.
     const w = window.innerWidth;
     const hops = 4;
     for (let i = 0; i < hops; i++) {
       const back = i === hops - 1;
-      const nx = back ? r.left + r.width / 2 : Math.min(w - 50, Math.max(50, fx + rand(-220, 220)));
-      const ny = back ? r.top + r.height / 2 : Math.min(window.innerHeight - 60, Math.max(110, fy + rand(-90, 90)));
+      const nx = back ? r.left + r.width / 2 : Math.min(w - 70, Math.max(70, fx + rand(-240, 240)));
+      const ny = back ? r.top + r.height / 2 : Math.min(window.innerHeight - 70, Math.max(120, fy + rand(-90, 90)));
+      const flip = nx < fx ? -1 : 1;
       frog.animate(
         [
-          { transform: `translate(${fx}px, ${fy}px) scale(1.1, 0.85)` },
-          { transform: `translate(${(fx + nx) / 2}px, ${Math.min(fy, ny) - 90}px) scale(0.9, 1.15)`, offset: 0.5 },
-          { transform: `translate(${nx}px, ${ny}px) scale(1.15, 0.85)` },
+          { transform: `translate(${fx}px, ${fy}px) scale(${1.15 * flip}, 0.8)` },
+          { transform: `translate(${(fx + nx) / 2}px, ${Math.min(fy, ny) - 110}px) scale(${0.9 * flip}, 1.15) rotate(${-8 * flip}deg)`, offset: 0.45 },
+          { transform: `translate(${nx}px, ${ny}px) scale(${1.2 * flip}, 0.82)`, offset: 0.85 },
+          { transform: `translate(${nx}px, ${ny}px) scale(${flip}, 1)` },
         ],
-        { duration: ctx.reducedMotion ? 1 : 520, easing: "ease-in-out", fill: "forwards" },
+        { duration: ctx.reducedMotion ? 1 : 600, easing: "cubic-bezier(0.3, 0, 0.4, 1)", fill: "forwards" },
       );
-      await wait(ctx.reducedMotion ? 120 : 560);
+      await wait(ctx.reducedMotion ? 120 : 640);
       fx = nx;
       fy = ny;
-      if (!back) pop("ケロ", fx, fy - 40, "power-pop-word is-green", 700);
-      await wait(180);
+      if (!back) pop(i % 2 ? "ピョン" : "ケロ", fx, fy - 60, "power-pop-word is-green", 700);
+      await wait(220);
     }
     frog.classList.add("is-leaving");
+    lifeBurst(fx, fy, 1);
     target.classList.remove("power-ge-morph");
     target.classList.add("power-healed-soft");
     await wait(600);
@@ -536,27 +627,32 @@ async function geButterflies(ctx: PowerContext) {
   const origins = sources.length ? sources.map((el) => el.getBoundingClientRect()) : [new DOMRect(ctx.x - 20, ctx.y - 20, 40, 40)];
   const node = layer("power-ge", true);
   const colors = [
-    ["#e3b341", "#e891c4"],
-    ["#8fd3f4", "#e3b341"],
-    ["#e891c4", "#b388eb"],
-    ["#86d16f", "#e3b341"],
+    ["#e3b341", "#fff3c4"],
+    ["#8fd3f4", "#ece6d8"],
+    ["#e891c4", "#fbe1ef"],
+    ["#b388eb", "#ece6d8"],
   ];
+  origins.forEach((r) => lifeBurst(r.left + r.width / 2, r.top + r.height / 2, 0.9));
   for (let i = 0; i < 14; i++) {
     const r = origins[i % origins.length];
     const [a, b] = colors[i % colors.length];
-    const fly = document.createElement("span");
-    fly.className = "power-butterfly";
-    fly.innerHTML = BUTTERFLY(a, b);
-    fly.style.left = `${r.left + r.width * rand(0.2, 0.8)}px`;
-    fly.style.top = `${r.top + r.height * rand(0.2, 0.8)}px`;
-    fly.style.setProperty("--b1x", `${Math.round(rand(-120, 120))}px`);
-    fly.style.setProperty("--b1y", `${Math.round(rand(-140, -40))}px`);
-    fly.style.setProperty("--b2x", `${Math.round(rand(-260, 260))}px`);
-    fly.style.setProperty("--b2y", `${Math.round(rand(-420, -220))}px`);
-    fly.style.animationDelay = ctx.reducedMotion ? "0s" : `${i * 90}ms`;
-    node.appendChild(fly);
+    sprout(
+      node,
+      BUTTERFLY(`bf${++uid}`, a, b),
+      "power-butterfly",
+      r.left + r.width * rand(0.2, 0.8),
+      r.top + r.height * rand(0.2, 0.8),
+      {
+        "--b1x": `${Math.round(rand(-120, 120))}px`,
+        "--b1y": `${Math.round(rand(-140, -40))}px`,
+        "--b2x": `${Math.round(rand(-260, 260))}px`,
+        "--b2y": `${Math.round(rand(-420, -220))}px`,
+        "--tilt": `${Math.round(rand(-25, 25))}deg`,
+      },
+      ctx.reducedMotion ? 0 : i * 90,
+    );
   }
-  await wait(ctx.reducedMotion ? 1400 : 3600);
+  await wait(ctx.reducedMotion ? 1400 : 3800);
   node.classList.add("is-leaving");
   await wait(400);
   node.remove();
@@ -570,18 +666,36 @@ async function geSnake(ctx: PowerContext) {
   const node = layer("power-ge", true);
   const snake = document.createElement("span");
   snake.className = "power-snake";
-  const len = Math.min(window.innerWidth * 0.5, Math.max(220, r.width * 0.6));
-  const wave = Array.from({ length: 9 }, (_, i) => `${(i * len) / 8},${i % 2 ? 10 : 30}`).join(" ");
-  snake.innerHTML = `<svg width="${len + 40}" height="44" viewBox="0 0 ${len + 40} 44"><polyline points="${wave}" fill="none" stroke="#161418" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><polyline points="${wave}" fill="none" stroke="#6fbf5b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 6"/><circle cx="${len + 8}" cy="20" r="13" fill="#6fbf5b" stroke="#161418" stroke-width="3"/><circle cx="${len + 13}" cy="16" r="3" fill="#161418"/><path d="M${len + 20} 24 l12 2 l-4 -4 m4 4 l-4 4" stroke="#d8443c" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
+  const len = Math.min(window.innerWidth * 0.5, Math.max(240, r.width * 0.6));
+  const id = `sn${++uid}`;
+  // Cuerpo en ondas suaves (curvas, no zigzag).
+  const waves = 4;
+  const seg = len / waves;
+  let d = `M0 26`;
+  for (let i = 0; i < waves; i++) d += ` q${seg / 2} ${i % 2 ? 22 : -22} ${seg} 0`;
+  snake.innerHTML = `<svg width="${len + 60}" height="56" viewBox="0 0 ${len + 60} 56">
+    <defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="#4f9e44"/><stop offset="1" stop-color="#86d16f"/></linearGradient></defs>
+    <path d="${d}" fill="none" stroke="#161418" stroke-width="20" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="url(#${id})" stroke-width="13" stroke-linecap="round"/>
+    <path class="scales" d="${d}" fill="none" stroke="#2f6b2a" stroke-width="5" stroke-dasharray="3 9" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="#c6efb0" stroke-width="2.5" stroke-dasharray="14 10" transform="translate(0 -3)" stroke-linecap="round"/>
+    <g transform="translate(${len} 26)">
+      <path class="tongue" d="M24 2 l12 0 l4 -4 m-4 4 l4 4" stroke="#d8443c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M-6 -11 Q16 -16 28 0 Q16 16 -6 11Z" fill="#6fbf5b" ${INK} stroke-width="3"/>
+      <ellipse cx="12" cy="-5" rx="4.5" ry="3.6" fill="#e3b341" stroke="#161418" stroke-width="1.6"/><rect x="11" y="-8" width="2" height="6" rx="1" fill="#161418"/>
+      <path d="M22 3 l2 0" stroke="#161418" stroke-width="2"/>
+    </g>
+  </svg>`;
   snake.style.left = `${r.left}px`;
-  snake.style.top = `${r.bottom - 26}px`;
+  snake.style.top = `${r.bottom - 34}px`;
   snake.style.setProperty("--travel", `${Math.round(r.width + 60)}px`);
-  snake.style.setProperty("--start", `${Math.round(-len - 40)}px`);
+  snake.style.setProperty("--start", `${Math.round(-len - 60)}px`);
+  lifeBurst(r.left + r.width / 2, r.top + r.height / 2, 1.1);
   node.appendChild(snake);
   target.classList.add("power-ge-wave");
-  pop("シャー", r.left + r.width * 0.7, r.top - 10, "power-pop-word is-green", 1000);
+  pop("シャーッ", r.left + r.width * 0.7, r.top - 10, "power-pop-word is-green", 1000);
   try {
-    await wait(ctx.reducedMotion ? 1200 : 3000);
+    await wait(ctx.reducedMotion ? 1200 : 3200);
   } finally {
     target.classList.remove("power-ge-wave");
   }

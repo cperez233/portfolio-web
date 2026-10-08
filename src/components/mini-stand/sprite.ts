@@ -6,7 +6,8 @@
  * mirar a la izquierda se espeja.
  *
  * Paleta: . vacio · k tinta · c crema · s sombra crema · g oro ·
- * d oro oscuro · v visor · e ojo · p pupila · w brillo
+ * d oro oscuro · v visor · e ojo · p pupila · w brillo · r enojo ·
+ * b sudor y lagrimas
  *
  * El nucleo del pecho es un diamante: Diamond is Unbreakable.
  */
@@ -23,6 +24,8 @@ const PALETTE: Record<string, string> = {
   e: "#ece6d8",
   p: "#e3b341",
   w: "#ffffff",
+  r: "#e2483b",
+  b: "#8fd3f4",
 };
 
 const VISOR = "..kcvvvvvvvvvvvck.";
@@ -44,7 +47,21 @@ const HEAD = [
   "..kcvvvvvvvvvvvck.",
 ];
 
-export type Frame = "idle" | "blink" | "look" | "punch" | "sleep" | "happy" | "shock" | "pose" | "dizzy";
+export type Frame =
+  | "idle"
+  | "blink"
+  | "look"
+  | "punch"
+  | "sleep"
+  | "happy"
+  | "shock"
+  | "pose"
+  | "dizzy"
+  | "smug"
+  | "angry"
+  | "sweat"
+  | "starry"
+  | "sad";
 
 function eyes(frame: Frame, look: number) {
   const L = [6, 7];
@@ -54,6 +71,20 @@ function eyes(frame: Frame, look: number) {
   }
   if (frame === "happy") {
     return [put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e"), VISOR];
+  }
+  if (frame === "smug") {
+    // Parpado a media asta: el que sabe algo que tu no.
+    return [VISOR, put(VISOR, [5, 6, 7, 10, 11, 12], "e"), put(VISOR, [6, 7, 11, 12], "p")];
+  }
+  if (frame === "angry") {
+    // Cejas en V hacia adentro, en rojo.
+    return [put(VISOR, [5, 12], "r"), put(VISOR, [6, 7, 10, 11], "r"), VISOR];
+  }
+  if (frame === "sad") {
+    return [VISOR, put(VISOR, [6, 7, 10, 11], "e"), put(VISOR, [5, 12], "e")];
+  }
+  if (frame === "starry") {
+    return [put(VISOR, [6, 11], "p"), put(put(VISOR, [5, 7, 10, 12], "p"), [6, 11], "w"), put(VISOR, [6, 11], "p")];
   }
   if (frame === "dizzy") {
     // Ojos en X: lo lanzaron por la pagina.
@@ -107,6 +138,17 @@ const TAILS = [
 function rows(frame: Frame, tail: number, look: number) {
   const body = frame === "punch" ? BODY_PUNCH : BODY_IDLE;
   const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
+  if (frame === "sweat") {
+    // Gota de sudor al costado de la cabeza.
+    map[3] = put(map[3], [15], "b");
+    map[4] = put(map[4], [15, 16], "b");
+    map[5] = put(map[5], [16], "b");
+  }
+  if (frame === "sad") {
+    // Una lagrima bajo el ojo.
+    map[11] = put(map[11], [5], "b");
+    map[12] = put(map[12], [5], "b");
+  }
   if (frame !== "pose") return map;
   /*
     Pose JoJo: el puno izquierdo sube junto al visor (filas 8-11) y el

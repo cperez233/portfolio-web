@@ -153,7 +153,7 @@ The render loop stops off-screen.
   see below), Star Platinum (ORA rush onto a card, Star Finger, or The
   World with punches that land when time resumes), Crazy Diamond
   (shatters every piece on screen, sampled on a grid so boxes break too,
-  then repairs them one by one), Gold Experience (garden, a tree growing
+  then repairs them one by one), Gold Experience (a golden burst of life, then a garden, a swaying tree growing
   from the bottom, a card turning into a frog, butterflies, or a title
   turning into a snake), Echoes (ACT 1 sounds that shake what they touch,
   ACT 2 stickers you tap, ACT 3 FREEZE), Soft & Wet (bubbles that steal a
@@ -169,10 +169,16 @@ The render loop stops off-screen.
 - **Time stop** (`lib/time-stop.ts`): the portrait tap and ZA WARUDO
   freeze the page for real: scroll, wheel, touch, keys and clicks are
   blocked, CSS and Web Animations pause, videos pause and the 3D scenes
-  stop. Only the Stand moves: it leaves a frozen copy behind, flies to
-  something in the current section, throws knives that hang in the air,
-  taunts per section (and when you try to move), and when time resumes
-  the knives land and it is already somewhere else.
+  stop. The Stand freezes too (as seen from outside in the series). When
+  the portrait stopped time it comes back sweating ("I couldn't
+  move…!"). When it cast ZA WARUDO itself, on resume it is already
+  somewhere else on screen, its silhouette fades where it was, knives
+  appear around something on the page and land at once, and it gloats
+  about the section (or about you trying to move).
+- **Expressions**: the sprite has smug, angry, sweating, starry-eyed and
+  sad faces plus manga marks over its head (!?, ＃, ♪, …), picked per
+  reaction, per jan-ken round and after each power (King Crimson even
+  skips its flight: it is just there).
 - **Secrets** (`lib/secrets.ts`, `components/secrets.tsx`): eleven, stored
   per visitor in localStorage, counted in the footer ("Secrets 3/11") and
   announced when found. Names show only once found.

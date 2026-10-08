@@ -51,7 +51,24 @@ const PAD_X = 16;
 const PAD_TOP = 4;
 const PAD_BOTTOM = 4;
 
-type Action = "punch" | "freeze" | "happy" | "shock" | "pose" | "dizzy" | "twirl" | "yawn" | "lookaround";
+type Action =
+  | "punch"
+  | "freeze"
+  | "happy"
+  | "shock"
+  | "pose"
+  | "dizzy"
+  | "twirl"
+  | "yawn"
+  | "lookaround"
+  | "smug"
+  | "angry"
+  | "sweat"
+  | "starry"
+  | "sad";
+
+/** Acciones que son solo una cara. */
+const FACES: Action[] = ["smug", "angry", "sweat", "starry", "sad"];
 
 interface Spot {
   el: Element;
@@ -122,8 +139,11 @@ export function MiniStand() {
   const act = useRef<(kind: Action, ms: number) => void>(() => {});
   // Cuenta como actividad (para que no se duerma justo al terminar un poder).
   const poke = useRef(() => {});
+  // Aparecer en otro sitio sin volar (King Crimson se salta el viaje).
+  const blink = useRef(() => {});
+  const markRef = useRef<(text: string) => void>(() => {});
   const react = useRef<(kind: StandEvent, ms?: number) => void>(() => {});
-  const probe = useRef(() => ({ x: 0, y: 0, pastScroll: 0, seen: 0, total: 0 }));
+  const probe = useRef(() => ({ x: 0, y: 0, pastScroll: 0, seen: 0, total: 0, minutes: 1 }));
 
   const closePanel = useCallback(() => {
     setPanel(null);
@@ -240,12 +260,12 @@ export function MiniStand() {
     };
 
     // Onomatopeyas, aura, polvo y estrellas: elementos sueltos que se van solos.
-    const LIFE = { sfx: 900, aura: 2200, dust: 600, star: 900 };
+    const LIFE = { sfx: 900, aura: 2200, dust: 600, star: 900, mark: 1300 };
     function sfx(text: string, kind: keyof typeof LIFE, dx?: number, dy = -SPRITE_H * scale * 0.9) {
       const node = document.createElement("span");
       node.className = `stand-${kind}`;
       node.textContent = text;
-      const x = dx ?? (kind === "sfx" ? (body.face > 0 ? -28 : 28) : (Math.random() - 0.5) * 30);
+      const x = dx ?? (kind === "sfx" ? (body.face > 0 ? -28 : 28) : kind === "mark" ? SPRITE_W * scale * 0.55 * body.face : (Math.random() - 0.5) * 30);
       node.style.transform = `translate3d(${Math.round(body.x + x)}px, ${Math.round(body.y + dy)}px, 0)`;
       if (kind === "dust") node.style.setProperty("--dust-x", `${Math.sign(x) * 14}px`);
       fx!.appendChild(node);
@@ -330,6 +350,7 @@ export function MiniStand() {
         pastScroll: past.y,
         seen: seen.size,
         total: sectionEls.length,
+        minutes: Math.max(1, Math.round(now / 60000)),
       };
     };
 
@@ -348,39 +369,52 @@ export function MiniStand() {
       const line = pickLine(short(linesRef.current.events[kind]));
       // El tiempo detenido lo maneja onTimeStop: ahi el Stand es el unico que se mueve.
       if (kind === "timestop") return;
-      if (kind === "thrown") act.current("dizzy", 2000);
-      else if (kind === "ora" || kind === "barrage") act.current("punch", 900);
-      else if (kind === "muda" || kind === "arrow" || kind === "fastScroll" || kind === "themeLight" || kind === "resize") act.current("shock", 1400);
-      else if (kind === "whatsapp" || kind === "sent" || kind === "bottom" || kind === "chapter") {
-        act.current("pose", 1500);
-        sfx(kind === "chapter" ? "バァーン" : "ドン!", "sfx");
-      } else if (kind === "faq" || kind === "typing") act.current("lookaround", 1600);
-      else if (kind === "dropped") act.current("twirl", 700);
-      else act.current("happy", 1400);
+      // Cara y marca de manga segun lo que paso.
+      const faces: Partial<Record<StandEvent, [Action, number, string?]>> = {
+        thrown: ["dizzy", 2000],
+        ora: ["punch", 900],
+        barrage: ["punch", 900],
+        muda: ["angry", 1600, "＃"],
+        arrow: ["shock", 1400, "!?"],
+        fastScroll: ["sweat", 1600, "!!"],
+        themeLight: ["angry", 1400, "!"],
+        themeDark: ["smug", 1600],
+        resize: ["sweat", 1400, "?"],
+        whatsapp: ["starry", 1800],
+        sent: ["starry", 1800],
+        bottom: ["starry", 1800],
+        chapter: ["pose", 1500],
+        faq: ["lookaround", 1600],
+        typing: ["lookaround", 1600],
+        audit: ["lookaround", 1600],
+        dropped: ["twirl", 700],
+        stare: ["smug", 1600, "…"],
+        return: ["sad", 1600, "…"],
+        copy: ["smug", 1400],
+        language: ["happy", 1400, "♪"],
+        hesitate: ["starry", 1400],
+        tbc: ["pose", 1500],
+      };
+      const [face, faceMs, mark] = faces[kind] ?? ["happy", 1400];
+      act.current(face, faceMs);
+      if (mark) sfx(mark, "mark");
+      if (kind === "whatsapp" || kind === "sent" || kind === "bottom") sfx("ドン!", "sfx");
+      else if (kind === "chapter") sfx("バァーン", "sfx");
       say.current(line, ms);
     };
 
     // --- Tiempo detenido ----------------------------------------------
     /*
-      Con el tiempo detenido (toque en el retrato o ZA WARUDO) nadie se
-      mueve salvo el: deja una copia quieta donde estaba, vuela a lo que
-      haya en esta parte de la pagina, le clava cuchillos que quedan
-      suspendidos, se burla segun la seccion y se va a otro sitio. Al
-      reanudarse, los cuchillos caen, la copia desaparece y el ya esta
-      en otro lado: el efecto de "se teletransporto".
+      Con el tiempo detenido todo queda congelado, el tambien: no se
+      dibuja, no habla, no vuela (asi se ve en la serie desde afuera).
+      - Si lo detuvo el (ZA WARUDO), al reanudarse ya esta en otro sitio
+        de lo que se ve, queda su silueta un instante donde estaba, y unos
+        cuchillos aparecen de golpe alrededor de algo de la pagina y se
+        clavan. Se burla segun la seccion (o de que intentaste moverte).
+      - Si lo detuvo el retrato, a el tambien lo agarro: queda sudando.
     */
     type Point = { x: number; y: number };
-    let stop: {
-      start: number;
-      ms: number;
-      a: Point;
-      b: Point;
-      prank: DOMRect | null;
-      knives: HTMLElement[];
-      frozen: HTMLCanvasElement;
-      threw: boolean;
-      taunted: boolean;
-    } | null = null;
+    let stop: { by: TimeStopDetail["by"]; at: number; attempted: boolean } | null = null;
     let hold: Point | null = null;
     let holdUntil = 0;
 
@@ -395,99 +429,133 @@ export function MiniStand() {
         y: Math.min(height - 8, Math.max(SPRITE_H * scale + 70, p.y)),
       };
     }
-    function beginStop(ms: number) {
-      const now = performance.now();
-      sleeping = false;
-      lastActivity = now;
-      action = null;
-      say.current(null);
-      const rects = piecesOnScreen(24)
-        .map((el) => el.getBoundingClientRect())
-        .filter((r) => r.width > 40 && r.height > 16);
-      const far = (r: DOMRect, from: Point) => Math.hypot(r.left + r.width / 2 - from.x, r.top + r.height / 2 - from.y);
-      const origin = { x: body.x, y: body.y };
-      // La broma: algo grande y lejos de donde estaba.
-      const prank = [...rects].sort((p, q) => far(q, origin) * Math.sqrt(q.width * q.height) - far(p, origin) * Math.sqrt(p.width * p.height))[0] ?? null;
-      const a = prank
-        ? clampPoint({ x: prank.right + SPRITE_W * scale * 0.6, y: prank.top - 6 })
-        : clampPoint({ x: width / 2, y: height * 0.4 });
-      // Y termina en otro lado: lo mas lejos posible de donde estaba.
-      const dest = rects.filter((r) => r !== prank).sort((p, q) => far(q, origin) - far(p, origin))[0];
-      const b = dest
-        ? clampPoint({ x: dest.left + Math.min(dest.width * 0.7, SPRITE_W * scale * 1.4), y: dest.top - 1 })
-        : clampPoint({ x: width - origin.x, y: height - origin.y });
-      const frozen = snapshot("stand-frozen");
-      stop = { start: now, ms, a, b, prank, knives: [], frozen, threw: false, taunted: false };
-      const lines = linesRef.current.timeStop.sections;
-      say.current(pickLine(short(lines[sectionId()] ?? lines.default)), Math.min(2600, ms * 0.45));
-      act.current("pose", 700);
+    function visibleRects() {
+      return piecesOnScreen(24)
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .filter(({ r }) => r.width > 40 && r.height > 16);
     }
-    function throwKnives() {
-      if (!stop || !stop.prank) return;
-      const r = stop.prank;
+    /** Aparece en otro sitio de lo que se ve, sin volar. Devuelve a donde. */
+    function teleport(avoid?: Element) {
+      const from = { x: body.x, y: body.y };
+      const rects = visibleRects().filter(({ el }) => el !== avoid);
+      const dist = (r: DOMRect) => Math.hypot(r.left + r.width / 2 - from.x, r.top - from.y);
+      // Lo bastante lejos para que se note el salto, pero sin ir siempre al mismo extremo.
+      const far = rects.filter(({ r }) => dist(r) > Math.min(width, height) * 0.3);
+      const pool = far.length ? far : rects;
+      const dest = pool[Math.floor(Math.random() * pool.length)]?.r;
+      const point = dest
+        ? clampPoint({ x: dest.left + Math.min(dest.width * 0.75, SPRITE_W * scale * 1.5), y: dest.top - 1 })
+        : clampPoint({ x: width - from.x, y: height * 0.4 });
+      // Silueta donde estaba, que se desvanece.
+      const left = snapshot("stand-frozen");
+      window.setTimeout(() => left.classList.add("is-leaving"), 40);
+      window.setTimeout(() => left.remove(), 450);
+      body.x = point.x;
+      body.y = point.y;
+      body.vx = 0;
+      body.vy = 0;
+      hold = point;
+      holdUntil = performance.now() + 4500;
+      landedHere = true;
+      return point;
+    }
+    /** Cuchillos que "ya estaban ahi" al volver el tiempo, y se clavan. */
+    function knives() {
+      const rects = visibleRects();
+      const cx0 = width / 2;
+      const cy0 = height / 2;
+      const target = [...rects].sort(
+        (p, q) =>
+          Math.hypot(p.r.left + p.r.width / 2 - cx0, p.r.top + p.r.height / 2 - cy0) -
+          Math.hypot(q.r.left + q.r.width / 2 - cx0, q.r.top + q.r.height / 2 - cy0),
+      )[0];
+      if (!target) return null;
+      const r = target.r;
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
-      const count = width < 640 ? 4 : 6;
+      const count = width < 640 ? 5 : 8;
+      const rx = Math.min(r.width, width * 0.7) / 2;
+      const ry = r.height / 2;
       for (let i = 0; i < count; i++) {
-        const angle = -Math.PI * 0.9 + (i / (count - 1)) * Math.PI * 0.8 + (Math.random() - 0.5) * 0.2;
-        // En elipse alrededor del blanco, a la vista.
-        const kx = Math.min(width - 30, Math.max(30, cx + Math.cos(angle) * (Math.min(r.width, width * 0.6) / 2 + 60)));
-        const ky = Math.max(80, cy + Math.sin(angle) * (r.height / 2 + 60));
+        const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+        // Donde se clava: en el borde del blanco.
+        const hx = cx + Math.cos(angle) * rx * 0.85;
+        const hy = cy + Math.sin(angle) * ry * 0.85;
+        // De donde viene: afuera, en la misma direccion.
+        const ox = Math.cos(angle) * 110;
+        const oy = Math.sin(angle) * 110;
         const knife = document.createElement("span");
         knife.className = "stand-knife";
-        const toward = Math.atan2(cy - ky, cx - kx);
-        const hitX = cx + (r.width / 2) * Math.cos(angle) * 0.6;
-        const hitY = cy + (r.height / 2) * Math.sin(angle) * 0.6;
-        knife.style.transform = `translate(${kx.toFixed(0)}px, ${ky.toFixed(0)}px)`;
-        knife.style.setProperty("--ka", `${toward.toFixed(3)}rad`);
-        knife.style.setProperty("--kx", `${(hitX - kx).toFixed(0)}px`);
-        knife.style.setProperty("--ky", `${(hitY - ky).toFixed(0)}px`);
-        knife.style.animationDelay = `${i * 90}ms`;
-        knife.dataset.hit = `${hitX.toFixed(0)},${hitY.toFixed(0)}`;
+        knife.style.left = `${hx.toFixed(0)}px`;
+        knife.style.top = `${hy.toFixed(0)}px`;
+        knife.style.setProperty("--ka", `${(angle + Math.PI).toFixed(3)}rad`);
+        knife.style.setProperty("--kx", `${ox.toFixed(0)}px`);
+        knife.style.setProperty("--ky", `${oy.toFixed(0)}px`);
+        knife.style.animationDelay = `${i * 35}ms`;
         fx!.appendChild(knife);
-        stop.knives.push(knife);
+        window.setTimeout(() => knife.classList.add("is-leaving"), 1500 + i * 35);
+        window.setTimeout(() => knife.remove(), 2000 + i * 35);
       }
-      act.current("punch", 600);
-      sfx("シュシュッ", "sfx");
-    }
-    function endStop() {
-      if (!stop) return;
-      const { knives, frozen, b } = stop;
-      stop = null;
-      knives.forEach((knife) => knife.classList.add("is-thrown"));
       window.setTimeout(() => {
-        knives.forEach((knife, i) => {
-          const [x, y] = (knife.dataset.hit ?? "0,0").split(",").map(Number);
-          if (i % 2 === 0) pop("ズドッ", x, y - 20, "power-pop-word is-gold", 650);
-        });
-      }, 220);
-      window.setTimeout(() => knives.forEach((knife) => knife.classList.add("is-leaving")), 1300);
-      window.setTimeout(() => knives.forEach((knife) => knife.remove()), 1800);
-      frozen.classList.add("is-leaving");
-      window.setTimeout(() => frozen.remove(), 400);
-      hold = b;
-      holdUntil = performance.now() + 4500;
-      lastActivity = performance.now();
-      act.current("pose", 1400);
-      sfx("ドン!", "sfx");
-      window.setTimeout(() => say.current(pickLine(short(linesRef.current.timeStop.resume)), 2400), 250);
+        pop("ズドドドッ", cx, r.top - 10, "power-pop-word is-gold is-big", 900);
+        target.el.classList.add("power-hit");
+        window.setTimeout(() => target.el.classList.remove("power-hit"), 320);
+      }, 260);
+      return target.el;
     }
     const onTimeStop = (event: Event) => {
-      const { active, ms } = (event as CustomEvent<TimeStopDetail>).detail;
-      if (reducedMotion) return;
-      if (active) beginStop(ms);
-      else endStop();
-    };
-    let lastAttemptLine = 0;
-    const onAttempt = () => {
+      const { active, by } = (event as CustomEvent<TimeStopDetail>).detail;
       const now = performance.now();
-      if (!stop || now - lastAttemptLine < 1600) return;
-      lastAttemptLine = now;
-      act.current("happy", 800);
-      say.current(pickLine(short(linesRef.current.timeStop.attempt)), 1400);
+      if (active) {
+        stop = { by, at: now, attempted: false };
+        return;
+      }
+      if (!stop) return;
+      const { at, attempted } = stop;
+      const paused = now - at;
+      stop = null;
+      // El reloj interno del Stand tambien estuvo detenido.
+      bubbleUntil += paused;
+      if (action) {
+        action.from += paused;
+        action.until += paused;
+      }
+      lastActivity = now;
+      sleeping = false;
+      if (reducedMotion) return;
+      const lines = linesRef.current;
+      if (by === "page") {
+        act.current("sweat", 1800);
+        sfx("!?", "mark");
+        say.current(pickLine(short(lines.events.timestop)), 2600);
+        return;
+      }
+      if (by === "stand") {
+        const hit = knives();
+        teleport(hit ?? undefined);
+        sfx("ドン!", "sfx");
+      }
+      act.current("smug", 2000);
+      sfx("ﾌﾌﾌ", "mark");
+      const sections = lines.timeStop.sections;
+      say.current(
+        pickLine(short(attempted ? lines.timeStop.attempt : (sections[sectionId()] ?? sections.default))),
+        2400,
+      );
+      window.setTimeout(() => {
+        if (!stop) say.current(pickLine(short(lines.timeStop.resume)), 2200);
+      }, 3400);
+    };
+    const onAttempt = () => {
+      if (stop) stop.attempted = true;
     };
     window.addEventListener("jojo:timestop", onTimeStop);
     window.addEventListener("jojo:timestop-attempt", onAttempt);
+    markRef.current = (text) => sfx(text, "mark");
+    blink.current = () => {
+      teleport();
+      sfx("ドン!", "sfx");
+    };
 
     // --- Actividad, sueno y gestos ---------------------------------------
     function activity() {
@@ -633,6 +701,12 @@ export function MiniStand() {
     // --- Bucle --------------------------------------------------------
     function tick(now: number) {
       if (stopped) return;
+      // Tiempo detenido: el tambien queda congelado (ni se dibuja).
+      if (stop) {
+        frameTime = now;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const dt = Math.min(1 / 30, (now - frameTime) / 1000);
       frameTime = now;
       const spriteW = SPRITE_W * scale;
@@ -645,7 +719,7 @@ export function MiniStand() {
       if (action && now > action.until) action = null;
 
       const frozen = action?.kind === "freeze";
-      if (!sleeping && !stop && !panelOpen.current && !casting.current && now - lastActivity > SLEEP_MS) {
+      if (!sleeping && !panelOpen.current && !casting.current && now - lastActivity > SLEEP_MS) {
         sleeping = true;
         say.current(linesRef.current.sleep, Infinity);
         unlockSecret("sleep");
@@ -667,21 +741,6 @@ export function MiniStand() {
       if (reducedMotion) {
         tx = width - spriteW / 2 - 16;
         ty = height - 16;
-      } else if (stop) {
-        // Tiempo detenido: primero a la broma, luego a su nuevo sitio.
-        const t = (now - stop.start) / stop.ms;
-        const goal = t < 0.55 ? stop.a : stop.b;
-        tx = goal.x;
-        ty = goal.y;
-        perched = true;
-        if (!stop.threw && t > 0.18 && Math.hypot(stop.a.x - body.x, stop.a.y - body.y) < 40) {
-          stop.threw = true;
-          throwKnives();
-        }
-        if (!stop.taunted && t > 0.6) {
-          stop.taunted = true;
-          say.current(pickLine(short(linesRef.current.events.timestop)), 2200);
-        }
       } else if (hold && now < holdUntil) {
         tx = hold.x;
         ty = hold.y;
@@ -762,8 +821,8 @@ export function MiniStand() {
           body.vy *= -0.6;
         }
       } else if (!frozen && !(sleeping && !flying)) {
-        const k = stop ? 120 : dialog ? 140 : 60;
-        const c = stop ? 16 : dialog ? 18 : 11;
+        const k = dialog ? 140 : 60;
+        const c = dialog ? 18 : 11;
         const bob = flying ? 3 * Math.sin(now / 160) : 0;
         body.vx += ((tx - body.x) * k - c * body.vx) * dt;
         body.vy += ((ty - body.y + bob) * k - c * body.vy) * dt;
@@ -780,7 +839,7 @@ export function MiniStand() {
       const resting = !flying && !free && speed < 40;
 
       // Aterrizaje: ドン y, un rato despues, la frase del lugar.
-      if (mode === "out" && current && resting && !sleeping && !dialog && !stop && now > holdUntil) {
+      if (mode === "out" && current && resting && !sleeping && !dialog && now > holdUntil) {
         settledSince ||= now;
         if (!landedHere && !reducedMotion) {
           landedHere = true;
@@ -864,6 +923,7 @@ export function MiniStand() {
       else if (action?.kind === "yawn") frame = "blink";
       else if (action?.kind === "shock" || frozen) frame = "shock";
       else if (action?.kind === "happy") frame = "happy";
+      else if (action && FACES.includes(action.kind)) frame = action.kind as Frame;
       else if (action?.kind === "pose") frame = "pose";
       else if (action?.kind === "punch") frame = Math.floor(now / 70) % 2 ? "punch" : "idle";
       else if (now < blinkUntil) frame = "blink";
@@ -991,7 +1051,11 @@ export function MiniStand() {
     react.current("language");
   }, [language]);
 
-  const onTalk = useCallback(() => act.current("happy", 500), []);
+  // En el chat gesticula con caras distintas, no siempre la misma.
+  const onTalk = useCallback(() => {
+    const faces: Action[] = ["happy", "happy", "smug", "starry", "pose"];
+    act.current(faces[Math.floor(Math.random() * faces.length)], 700);
+  }, []);
 
   async function castPower(id: PowerId) {
     setPanel(null);
@@ -1010,11 +1074,12 @@ export function MiniStand() {
     say.current(pickLine(variantLines?.say ?? power.say), 1600);
     await wait(700);
     const info = probe.current();
-    if (id === "starplatinum" || id === "crazydiamond") act.current("punch", 1500);
+    // Giorno tambien golpea para dar vida.
+    if (id === "starplatinum" || id === "crazydiamond" || id === "goldexperience") act.current("punch", id === "goldexperience" ? 700 : 1500);
     else if (id === "madeinheaven") act.current("twirl", 2600);
 
     const found = readSecrets().length;
-    const minutes = Math.max(1, Math.round(performance.now() / 60000));
+    const minutes = info.minutes;
     const values = {
       min: `${minutes} min`,
       parts: `${info.seen}/${info.total}`,
@@ -1061,14 +1126,45 @@ export function MiniStand() {
     poke.current();
     if (id === "bitesthedust" && before) {
       // Deja vu: repite lo que dijo antes, como si nada.
-      act.current("shock", 1200);
+      act.current("sweat", 2200);
+      markRef.current("!?");
       say.current(`${before} ${pickLine(lines.dejaVu)}`, 2800);
       return;
     }
+    // King Crimson: el viaje del Stand tambien se borra; ya esta alli.
+    if (id === "kingcrimson" && !reducedMotion) blink.current();
+    // ZA WARUDO ya se burla al reanudarse (onTimeStop).
+    if (id === "zawarudo" && !reducedMotion) return;
     const closing = perfect && power.bonus ? power.bonus : (variantLines?.done ?? power.done);
     if (closing.length) {
-      act.current(perfect ? "twirl" : "happy", perfect ? 800 : 1200);
+      const [face, mark] = perfect ? (["starry", "✦"] as const) : aftermath(id, variant);
+      act.current(face, 1800);
+      if (mark) markRef.current(mark);
       say.current(pickLine(closing), 2600);
+    }
+  }
+
+  /** La cara con la que queda despues de cada poder. */
+  function aftermath(id: PowerId, variant?: string): readonly [Action, string | null] {
+    switch (id) {
+      case "starplatinum":
+        return variant === "rush" ? ["sweat", "ハァ"] : ["smug", null];
+      case "crazydiamond":
+        return Math.random() < 0.5 ? ["starry", "✦"] : ["angry", "＃"];
+      case "goldexperience":
+        return ["starry", "✿"];
+      case "echoes":
+        return ["happy", "♪"];
+      case "softwet":
+        return ["sad", "…"];
+      case "hermit":
+        return ["smug", "ﾌﾌ"];
+      case "madeinheaven":
+        return ["sweat", "ハァハァ"];
+      case "kingcrimson":
+        return ["smug", "!"];
+      default:
+        return ["happy", null];
     }
   }
 
@@ -1127,9 +1223,17 @@ export function MiniStand() {
           lines={standLines[language].janken}
           onClose={closePanel}
           onRound={(result) => {
-            if (result === "lose") act.current("happy", 1200);
-            else if (result === "win") act.current("shock", 1200);
-            else act.current("punch", 500);
+            // "lose" es que perdiste tu: el Stand se pone engreido.
+            if (result === "lose") {
+              act.current("smug", 1400);
+              markRef.current("ﾌﾌﾌ");
+            } else if (result === "win") {
+              act.current(Math.random() < 0.5 ? "angry" : "sad", 1400);
+              markRef.current(Math.random() < 0.5 ? "＃" : "…");
+            } else {
+              act.current("sweat", 900);
+              markRef.current("!?");
+            }
           }}
           say={(text, ms) => say.current(text, ms)}
         />

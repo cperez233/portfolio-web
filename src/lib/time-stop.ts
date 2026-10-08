@@ -6,17 +6,23 @@
  * las animaciones CSS y de la Web Animations API se pausan, los videos se
  * detienen y las escenas 3D dejan de avanzar (consultan isTimeStopped()).
  *
- * El unico que se mueve es el mini Stand: escucha "jojo:timestop" y hace
- * lo suyo. Cada intento de moverse emite "jojo:timestop-attempt" para que
- * se burle.
+ * El mini Stand tambien queda congelado; escucha "jojo:timestop" para
+ * saber quien lo detuvo: si fue el (ZA WARUDO), al reanudarse ya esta en
+ * otro sitio. Cada intento de moverse emite "jojo:timestop-attempt" (se
+ * burla despues).
  *
  * Lo usan el toque en el retrato del hero y el poder ZA WARUDO.
  */
 
 export interface TimeStopDetail {
   active: boolean;
-  /** Duracion total, en ms (solo al empezar). */
+  /** Duracion total, en ms. */
   ms: number;
+  /**
+   * Quien lo detuvo: "page" (el toque del retrato), "stand" (ZA WARUDO del
+   * mini Stand) o "platinum" (Star Platinum: The World, sin moverse de sitio).
+   */
+  by: "page" | "stand" | "platinum";
 }
 
 let stopped = false;
@@ -29,7 +35,7 @@ export function isTimeStopped() {
 const SCROLL_KEYS = new Set([" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "Tab", "Enter"]);
 
 /** Detiene el tiempo `ms` milisegundos. Devuelve una promesa que se cumple al reanudarse. */
-export function stopTime(ms: number): Promise<void> {
+export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise<void> {
   if (typeof window === "undefined" || stopped) return Promise.resolve();
   stopped = true;
   const root = document.documentElement;
@@ -62,7 +68,7 @@ export function stopTime(ms: number): Promise<void> {
   const pin = () => window.scrollY !== y && window.scrollTo(0, y);
   window.addEventListener("scroll", pin);
 
-  window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: true, ms } }));
+  window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: true, ms, by } }));
 
   return new Promise((resolve) => {
     window.setTimeout(() => {
@@ -75,7 +81,7 @@ export function stopTime(ms: number): Promise<void> {
       videos.forEach((video) => void video.play().catch(() => {}));
       window.__lenis?.start();
       stopped = false;
-      window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: false, ms } }));
+      window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: false, ms, by } }));
       resolve();
     }, ms);
   });

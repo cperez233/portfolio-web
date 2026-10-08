@@ -2517,11 +2517,11 @@ html.time-stopped *::before,
 html.time-stopped *::after {
   animation-play-state: paused !important;
 }
-/* ...menos el Stand, sus efectos y la esfera del retrato. */
-html.time-stopped :is(.power-live, .stand-layer, .za-warudo-sphere, .za-warudo-text),
-html.time-stopped :is(.power-live, .stand-layer) *,
-html.time-stopped :is(.power-live, .stand-layer) *::before,
-html.time-stopped :is(.power-live, .stand-layer) *::after {
+/* ...menos los efectos del poder y la esfera del retrato. El Stand tambien se congela. */
+html.time-stopped :is(.power-live, .za-warudo-sphere, .za-warudo-text),
+html.time-stopped .power-live *,
+html.time-stopped .power-live *::before,
+html.time-stopped .power-live *::after {
   animation-play-state: running !important;
 }
 html.time-stopped,
@@ -2529,7 +2529,6 @@ html.time-stopped body {
   cursor: not-allowed;
 }
 /* El Stand por encima de los efectos (es el unico que se mueve). */
-html.time-stopped .stand-layer,
 html.stand-front .stand-layer {
   z-index: 72;
 }
@@ -2766,33 +2765,89 @@ html.time-stopped .stand-hit {
     filter: grayscale(1) blur(4px);
   }
 }
+/*
+  Cuchillos de ZA WARUDO: aparecen de golpe al volver el tiempo, ya
+  apuntando, y se clavan en un instante (left/top es donde se clavan).
+*/
 .stand-knife {
+  position: fixed;
+  z-index: 72;
+  width: 50px;
+  height: 11px;
+  margin: -5.5px 0 0 -46px;
+  transform-origin: 92% 50%;
+  rotate: var(--ka);
+  background:
+    linear-gradient(90deg, #6b4a2f 0 28%, #161418 28% 34%, transparent 34%),
+    linear-gradient(180deg, #ffffff 0 30%, #c7ccd6 55%, #8b919c);
+  clip-path: polygon(0 22%, 34% 22%, 34% 0, 39% 0, 100% 50%, 39% 100%, 34% 100%, 34% 78%, 0 78%);
+  filter: drop-shadow(0 0 1px #161418) drop-shadow(0 0 1px #161418) drop-shadow(2px 2px 0 rgba(22, 20, 24, 0.5));
+  pointer-events: none;
+  animation:
+    stand-knife-hit 0.24s cubic-bezier(0.6, 0, 0.9, 0.4) both,
+    stand-knife-stuck 0.3s ease-out 0.24s;
+  transition: opacity 0.4s;
+}
+.stand-knife.is-leaving {
+  opacity: 0;
+}
+@keyframes stand-knife-hit {
+  0% {
+    opacity: 0;
+    translate: var(--kx) var(--ky);
+  }
+  15% {
+    opacity: 1;
+    translate: var(--kx) var(--ky);
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+@keyframes stand-knife-stuck {
+  30% {
+    rotate: calc(var(--ka) + 6deg);
+  }
+  60% {
+    rotate: calc(var(--ka) - 3deg);
+  }
+}
+
+/* Marcas de manga sobre la cabeza del Stand (!?, ＃, ♪, …). */
+.stand-mark {
   position: absolute;
   left: 0;
   top: 0;
-  width: 46px;
-  height: 10px;
-  margin: -5px 0 0 -23px;
-  rotate: var(--ka);
-  background:
-    linear-gradient(90deg, #6b5640 0 30%, #161418 30% 36%, transparent 36%),
-    linear-gradient(180deg, #f4f4f6, #a8acb6);
-  clip-path: polygon(0 20%, 36% 20%, 36% 0, 40% 0, 100% 50%, 40% 100%, 36% 100%, 36% 80%, 0 80%);
-  filter: drop-shadow(0 0 1px #161418) drop-shadow(0 0 1px #161418);
-  animation: stand-knife-in 0.25s ease-out both;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-accent);
+  -webkit-text-stroke: 4px #161418;
+  paint-order: stroke fill;
+  will-change: transform;
+  animation: stand-mark 1.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-.stand-knife.is-thrown {
-  transition: translate 0.22s cubic-bezier(0.5, 0, 1, 0.6);
-  translate: var(--kx) var(--ky);
-}
-.stand-knife.is-leaving {
-  transition: opacity 0.4s;
-  opacity: 0;
-}
-@keyframes stand-knife-in {
-  from {
+@keyframes stand-mark {
+  0% {
     opacity: 0;
-    scale: 0.4;
+    scale: 0.2;
+    translate: -50% 4px;
+  }
+  18% {
+    opacity: 1;
+    scale: 1.25;
+    translate: -50% -6px;
+  }
+  30% {
+    scale: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: -50% -14px;
   }
 }
 
@@ -2996,74 +3051,122 @@ html.time-stopped .stand-hit {
 }
 
 /* Gold Experience: hojas, flores, mariquitas, arbol, rana, mariposas, serpiente. */
-.power-leaf,
-.power-bug,
-.power-flower {
+/* Brote generico (hojas, flores, mariquitas): sale, sube y se va. */
+.power-ge-item {
   position: absolute;
+  translate: -50% -50%;
   opacity: 0;
-  animation: power-grow 2.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: power-ge-item 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.power-leaf {
-  width: 26px;
-  height: 26px;
-  border: 2px solid #161418;
-  border-radius: 0 100%;
-  background-color: #6fbf5b;
+.power-ge-item svg {
+  display: block;
+  overflow: visible;
+  animation: power-sway 1.2s ease-in-out infinite alternate;
 }
-.power-leaf.is-falling {
-  animation: power-fall 1.6s ease-in both;
+.power-ge-item.is-falling {
+  animation: power-ge-fall 1.8s ease-in both;
 }
-.power-flower {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #161418;
-  border-radius: 9999px;
-  background: radial-gradient(circle, #e3b341 0 28%, #161418 29% 36%, #f4c6e0 37%);
-}
-.power-bug {
-  width: 26px;
-  height: 22px;
-  border: 2px solid #161418;
-  border-radius: 13px 13px 10px 10px;
-  background:
-    radial-gradient(circle at 30% 60%, #161418 0 3px, transparent 3.5px),
-    radial-gradient(circle at 70% 55%, #161418 0 3px, transparent 3.5px),
-    linear-gradient(90deg, transparent 47%, #161418 47% 53%, transparent 53%),
-    #d8443c;
-}
-@keyframes power-grow {
+@keyframes power-ge-item {
   0% {
     opacity: 0;
     scale: 0;
-    translate: 0 0;
+    translate: -50% -50%;
     rotate: 0deg;
   }
-  15% {
+  14% {
     opacity: 1;
-    scale: 1.2;
+    scale: 1.25;
+  }
+  24% {
+    scale: 1;
   }
   80% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    scale: 1;
-    translate: var(--gx) var(--gy);
+    translate: calc(-50% + var(--gx)) calc(-50% + var(--gy));
     rotate: var(--gr);
   }
 }
-@keyframes power-fall {
+@keyframes power-ge-fall {
   0% {
     opacity: 1;
-    translate: 0 0;
+    translate: -50% -50%;
     rotate: 0deg;
   }
   100% {
     opacity: 0;
-    translate: var(--gx) 50vh;
-    rotate: 540deg;
+    translate: calc(-50% + var(--gx)) 50vh;
+    rotate: 400deg;
   }
 }
+@keyframes power-sway {
+  from {
+    rotate: -8deg;
+  }
+  to {
+    rotate: 8deg;
+  }
+}
+
+/* Destello de vida: anillo dorado y chispas. */
+.power-life {
+  position: fixed;
+  z-index: 71;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.power-life::before {
+  content: "";
+  position: absolute;
+  left: -40px;
+  top: -40px;
+  width: 80px;
+  height: 80px;
+  border: 4px solid #e3b341;
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 3px #161418,
+    inset 0 0 0 2px #161418,
+    0 0 24px rgba(227, 179, 65, 0.7);
+  animation: power-life-ring 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.power-life i {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background-color: #fff3c4;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 3px #e3b341);
+  animation: power-life-spark 0.8s ease-out forwards;
+}
+@keyframes power-life-ring {
+  from {
+    scale: 0.1;
+    opacity: 1;
+  }
+  to {
+    scale: calc(1.6 * var(--life, 1));
+    opacity: 0;
+  }
+}
+@keyframes power-life-spark {
+  0% {
+    translate: 0 0;
+    scale: 0.4;
+    opacity: 1;
+  }
+  100% {
+    translate: var(--sx) var(--sy);
+    scale: 1.4;
+    opacity: 0;
+  }
+}
+
+/* El arbol: tronco que sube, ramas que se dibujan, copa que brota y se mece. */
 .power-tree {
   position: absolute;
   bottom: 0;
@@ -3081,32 +3184,82 @@ html.time-stopped .stand-hit {
   height: 100%;
   overflow: visible;
 }
-.power-tree .trunk path {
+.power-tree .trunk {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: power-trunk 0.9s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes power-trunk {
+  from {
+    scale: 0.4 0;
+  }
+}
+.power-tree .branches path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: power-crack 1s cubic-bezier(0.3, 0.6, 0.3, 1) forwards;
+  animation: power-crack 0.7s cubic-bezier(0.3, 0.6, 0.3, 1) 0.55s forwards;
+}
+.power-tree .sway {
+  transform-box: view-box;
+  transform-origin: 170px 400px;
+  animation: power-tree-sway 2.4s ease-in-out 1.6s infinite alternate;
+}
+@keyframes power-tree-sway {
+  from {
+    rotate: -1.5deg;
+  }
+  to {
+    rotate: 1.5deg;
+  }
 }
 .power-tree .crown,
-.power-tree .fruit {
+.power-tree .fruit,
+.power-tree .fruit g {
   transform-box: fill-box;
   transform-origin: center;
+}
+.power-tree .crown,
+.power-tree > svg > .fruit,
+.power-tree .sway .fruit {
   scale: 0;
-  animation: power-bloom 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: power-bloom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 @keyframes power-bloom {
   to {
     scale: 1;
   }
 }
+
+/* La rana: respira y parpadea mientras no salta. */
 .power-frog {
   position: absolute;
-  left: -56px;
-  top: -46px;
-  animation: power-bloom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  left: -60px;
+  top: -50px;
+  animation: power-bloom-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transition: opacity 0.3s;
 }
 .power-frog.is-leaving {
   opacity: 0;
+}
+.power-frog-body {
+  display: block;
+  transform-origin: 50% 100%;
+  animation: power-breathe 0.6s ease-in-out infinite alternate;
+}
+.power-frog-body .pupil {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: power-blink 2.4s steps(1) infinite;
+}
+@keyframes power-breathe {
+  to {
+    scale: 1.04 0.96;
+  }
+}
+@keyframes power-blink {
+  92% {
+    scale: 1 0.1;
+  }
 }
 @keyframes power-bloom-in {
   from {
@@ -3124,27 +3277,20 @@ html.time-stopped .stand-hit {
 }
 .power-butterfly {
   position: absolute;
-  margin: -23px 0 0 -29px;
+  margin: -25px 0 0 -31px;
   opacity: 0;
-  animation: power-flutter-path 3.4s ease-in-out both;
+  rotate: var(--tilt, 0deg);
+  animation: power-flutter-path 3.6s ease-in-out both;
 }
 .power-butterfly .wing-l,
 .power-butterfly .wing-r {
   transform-box: view-box;
-  transform-origin: 20px 16px;
-  animation: power-flap 0.18s ease-in-out infinite alternate;
-}
-.power-butterfly .wing-r {
-  animation-name: power-flap-r;
+  transform-origin: 30px 24px;
+  animation: power-flap 0.16s ease-in-out infinite alternate;
 }
 @keyframes power-flap {
   to {
-    transform: scaleX(0.25);
-  }
-}
-@keyframes power-flap-r {
-  to {
-    transform: scaleX(0.25);
+    transform: scaleX(0.3);
   }
 }
 @keyframes power-flutter-path {
@@ -3170,10 +3316,27 @@ html.time-stopped .stand-hit {
 }
 .power-snake {
   position: absolute;
-  animation: power-slither 3s linear both;
+  animation: power-slither 3.2s linear both;
 }
 .power-snake svg {
+  overflow: visible;
   animation: power-wiggle 0.3s ease-in-out infinite alternate;
+}
+.power-snake .scales {
+  animation: power-scales 0.4s linear infinite;
+}
+.power-snake .tongue {
+  animation: power-tongue 0.5s steps(2) infinite;
+}
+@keyframes power-scales {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+@keyframes power-tongue {
+  50% {
+    opacity: 0;
+  }
 }
 @keyframes power-slither {
   from {
@@ -3966,10 +4129,10 @@ html.time-stopped .stand-hit {
     animation: none;
   }
   .power-fist,
-  .power-leaf,
-  .power-bug,
-  .power-flower,
-  .power-butterfly {
+  .power-ge-item,
+  .power-butterfly,
+  .power-tree *,
+  .power-life {
     animation: none;
     opacity: 1;
   }
