@@ -13,6 +13,7 @@ import {
   type Material,
 } from "three";
 import { inked, inkMaterial, toon, toonRamp } from "./toon";
+import { isTimeStopped } from "@/lib/time-stop";
 
 /**
  * La Flecha: la que despierta los Stands. Punta dorada con el escarabajo
@@ -204,6 +205,12 @@ export function createArrowScene({ canvas, reducedMotion, onPierce }: Options): 
   function tick(now: number) {
     raf = 0;
     if (!visible) return;
+    // Tiempo detenido (ZA WARUDO): la flecha tambien se queda quieta.
+    if (isTimeStopped()) {
+      last = now;
+      raf = requestAnimationFrame(tick);
+      return;
+    }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
 

@@ -2511,21 +2511,45 @@ html.dark .chapter-plate {
    Poderes del mini Stand (components/mini-stand/powers.ts).
 ------------------------------------------------------------------ */
 
-/* El tiempo detenido: todos los bucles de la pagina, quietos. */
+/* El tiempo detenido: todos los bucles de la pagina, quietos... */
 html.time-stopped *,
 html.time-stopped *::before,
 html.time-stopped *::after {
   animation-play-state: paused !important;
 }
-html.time-stopped .power-zw,
-html.time-stopped .power-zw * {
+/* ...menos el Stand, sus efectos y la esfera del retrato. */
+html.time-stopped :is(.power-live, .stand-layer, .za-warudo-sphere, .za-warudo-text),
+html.time-stopped :is(.power-live, .stand-layer) *,
+html.time-stopped :is(.power-live, .stand-layer) *::before,
+html.time-stopped :is(.power-live, .stand-layer) *::after {
   animation-play-state: running !important;
+}
+html.time-stopped,
+html.time-stopped body {
+  cursor: not-allowed;
+}
+/* El Stand por encima de los efectos (es el unico que se mueve). */
+html.time-stopped .stand-layer,
+html.stand-front .stand-layer {
+  z-index: 72;
+}
+html.time-stopped .stand-hit {
+  pointer-events: none;
 }
 
 .power-zw,
 .power-btd,
+.power-btd-intro,
 .power-kc,
-.power-hermit {
+.power-hermit,
+.power-cd,
+.power-sp,
+.power-spw,
+.power-ge,
+.power-sw,
+.power-mih,
+.power-universe,
+.power-speedlines {
   position: fixed;
   inset: 0;
   z-index: 70;
@@ -2533,120 +2557,28 @@ html.time-stopped .power-zw * {
   overflow: hidden;
   transition: opacity 0.4s var(--ease-premium);
 }
-.power-zw.is-leaving,
-.power-btd.is-leaving,
-.power-kc.is-leaving,
-.power-hermit.is-leaving,
-.power-echo.is-leaving {
+:is(
+    .power-zw,
+    .power-btd,
+    .power-kc,
+    .power-hermit,
+    .power-echo,
+    .power-echo-freeze,
+    .power-sp,
+    .power-spw,
+    .power-ge,
+    .power-sw,
+    .power-mih,
+    .power-speedlines
+  ).is-leaving {
   opacity: 0;
-}
-.power-zw-sphere {
-  position: absolute;
-  width: 300vmax;
-  height: 300vmax;
-  border-radius: 9999px;
-  background-color: #ffffff;
-  mix-blend-mode: difference;
-  animation: power-zw 2.9s cubic-bezier(0.7, 0, 0.3, 1) both;
-}
-@keyframes power-zw {
-  0% {
-    transform: translate(-50%, -50%) scale(0);
-  }
-  20%,
-  80% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0);
-  }
-}
-.power-zw-text {
-  position: absolute;
-  left: 50%;
-  top: 22%;
-  translate: -50% 0;
-  font-family: var(--font-jp);
-  font-size: clamp(2.4rem, 7vw, 5.5rem);
-  color: #e3b341;
-  -webkit-text-stroke: 6px #161418;
-  paint-order: stroke fill;
-  white-space: nowrap;
-  animation: power-pop 0.5s var(--ease-premium) 0.35s both;
-}
-@keyframes power-pop {
-  from {
-    opacity: 0;
-    transform: scale(1.8) rotate(-8deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(-4deg);
-  }
-}
-
-/* Crazy Diamond: vidrio roto sobre toda la pantalla y piezas que saltan. */
-.power-cd {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  pointer-events: none;
-  overflow: hidden;
-}
-.power-cd path {
-  fill: none;
-  stroke: #161418;
-  stroke-width: 2.5;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(0 0 1.5px #ece6d8);
-  animation: power-crack 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-}
-.power-cd.is-healing path {
-  animation: power-heal 0.6s var(--ease-premium) forwards;
-}
-@keyframes power-crack {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-@keyframes power-heal {
-  from {
-    stroke-dashoffset: 0;
-    stroke: #e891c4;
-  }
-  to {
-    stroke-dashoffset: 1;
-    stroke: #e891c4;
-  }
-}
-.power-broken {
-  translate: var(--cd-x) var(--cd-y);
-  rotate: var(--cd-r);
-  filter: contrast(1.15) saturate(0.7);
-  transition:
-    translate 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.4),
-    rotate 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.4),
-    filter 0.2s;
-}
-.power-healed {
-  transition:
-    translate 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-    rotate 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: power-healed 0.8s var(--ease-premium);
-}
-@keyframes power-healed {
-  35% {
-    filter: brightness(1.25) drop-shadow(0 0 8px #e891c4);
-  }
 }
 
 /* Palabras sueltas de los poderes (ドラ, オラァ, パチン...). */
 .power-pop-word,
 .power-sparkle {
   position: fixed;
-  z-index: 71;
+  z-index: 73;
   pointer-events: none;
   translate: -50% -50%;
   font-family: var(--font-jp);
@@ -2665,6 +2597,15 @@ html.time-stopped .power-zw * {
 .power-pop-word.is-blue {
   color: #8fd3f4;
   font-size: 1.1rem;
+}
+.power-pop-word.is-purple {
+  color: #a99cf0;
+}
+.power-pop-word.is-green {
+  color: #86d16f;
+}
+.power-pop-word.is-gold {
+  color: #e3b341;
 }
 .power-pop-word.is-big {
   font-size: clamp(2.6rem, 8vw, 5.5rem);
@@ -2695,10 +2636,28 @@ html.time-stopped .power-zw * {
     translate: -50% calc(-50% - 16px);
   }
 }
+@keyframes power-pop {
+  from {
+    opacity: 0;
+    transform: scale(1.8) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-4deg);
+  }
+}
+@keyframes power-spin {
+  to {
+    rotate: 360deg;
+  }
+}
 
 /* La pagina tiembla con los golpes. */
 .power-quake {
   animation: power-quake 0.12s steps(2, end) infinite;
+}
+.power-quake-strong {
+  animation: power-quake-strong 0.09s steps(2, end) infinite;
 }
 @keyframes power-quake {
   0% {
@@ -2708,77 +2667,335 @@ html.time-stopped .power-zw * {
     translate: -3px 2px;
   }
 }
-
-/* Star Platinum: rafaga de punos con estela. */
-.power-sp,
-.power-ge,
-.power-sw,
-.power-mih {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  pointer-events: none;
-  overflow: hidden;
-  transition: opacity 0.4s var(--ease-premium);
+@keyframes power-quake-strong {
+  0% {
+    translate: 7px -4px;
+  }
+  50% {
+    translate: -6px 5px;
+  }
 }
-.power-sp.is-leaving,
-.power-ge.is-leaving,
-.power-sw.is-leaving,
-.power-mih.is-leaving {
+
+/* Impacto: anillo y rayos de tinta. */
+.power-impact {
+  position: fixed;
+  z-index: 72;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  pointer-events: none;
+  border-radius: 9999px;
+  background:
+    repeating-conic-gradient(#161418 0 6deg, transparent 6deg 30deg),
+    radial-gradient(circle, #ece6d8 0 30%, transparent 32%);
+  mask-image: radial-gradient(circle, #000 0 40%, transparent 72%);
+  animation: power-impact 0.45s ease-out forwards;
+}
+.power-impact.is-big {
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+}
+@keyframes power-impact {
+  from {
+    scale: 0.3;
+    opacity: 1;
+  }
+  to {
+    scale: 1.6;
+    opacity: 0;
+  }
+}
+
+/* ZA WARUDO. */
+.power-zw-sphere {
+  position: absolute;
+  width: 300vmax;
+  height: 300vmax;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  mix-blend-mode: difference;
+  animation: power-zw 2.9s cubic-bezier(0.7, 0, 0.3, 1) both;
+}
+@keyframes power-zw {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  12%,
+  88% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+.power-zw-text {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  translate: -50% 0;
+  font-family: var(--font-jp);
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
+  color: #e3b341;
+  -webkit-text-stroke: 6px #161418;
+  paint-order: stroke fill;
+  white-space: nowrap;
+  animation: power-pop 0.5s var(--ease-premium) 0.35s both;
+}
+.power-zw-text.is-resume {
+  color: #ece6d8;
+  animation-delay: 0s;
+}
+
+/* Lo que deja el Stand con el tiempo detenido: su copia quieta y cuchillos. */
+.stand-frozen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  opacity: 0.85;
+  filter: grayscale(1) contrast(1.2);
+}
+.stand-frozen.is-leaving {
+  animation: stand-frozen-out 0.35s ease-out forwards;
+}
+@keyframes stand-frozen-out {
+  to {
+    opacity: 0;
+    scale: 1.4;
+    filter: grayscale(1) blur(4px);
+  }
+}
+.stand-knife {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 46px;
+  height: 10px;
+  margin: -5px 0 0 -23px;
+  rotate: var(--ka);
+  background:
+    linear-gradient(90deg, #6b5640 0 30%, #161418 30% 36%, transparent 36%),
+    linear-gradient(180deg, #f4f4f6, #a8acb6);
+  clip-path: polygon(0 20%, 36% 20%, 36% 0, 40% 0, 100% 50%, 40% 100%, 36% 100%, 36% 80%, 0 80%);
+  filter: drop-shadow(0 0 1px #161418) drop-shadow(0 0 1px #161418);
+  animation: stand-knife-in 0.25s ease-out both;
+}
+.stand-knife.is-thrown {
+  transition: translate 0.22s cubic-bezier(0.5, 0, 1, 0.6);
+  translate: var(--kx) var(--ky);
+}
+.stand-knife.is-leaving {
+  transition: opacity 0.4s;
   opacity: 0;
 }
+@keyframes stand-knife-in {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+/* Crazy Diamond: vidrio roto sobre toda la pantalla y piezas que saltan. */
+.power-cd path {
+  fill: none;
+  stroke: #161418;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 1.5px #ece6d8);
+  animation: power-crack 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.power-cd.is-healing path {
+  animation: power-heal 0.6s var(--ease-premium) forwards;
+}
+@keyframes power-crack {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes power-heal {
+  from {
+    stroke-dashoffset: 0;
+    stroke: #e891c4;
+  }
+  to {
+    stroke-dashoffset: 1;
+    stroke: #e891c4;
+  }
+}
+/*
+  !important: algunas piezas ya tienen translate/rotate propios (o una
+  animacion que los mueve) y si no, no se romperian.
+*/
+.power-broken {
+  translate: var(--cd-x) var(--cd-y) !important;
+  rotate: var(--cd-r) !important;
+  clip-path: var(--cd-clip, none) !important;
+  filter: contrast(1.15) saturate(0.6) !important;
+  transition:
+    translate 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.4) var(--cd-delay, 0ms),
+    rotate 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.4) var(--cd-delay, 0ms),
+    filter 0.2s !important;
+}
+.power-healed {
+  transition:
+    translate 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) var(--cd-heal-delay, 0ms),
+    rotate 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) var(--cd-heal-delay, 0ms) !important;
+  animation: power-healed 0.8s var(--ease-premium) var(--cd-heal-delay, 0ms);
+}
+.power-healed-soft {
+  animation: power-healed 0.7s var(--ease-premium);
+}
+@keyframes power-healed {
+  35% {
+    filter: brightness(1.25) drop-shadow(0 0 8px #e891c4);
+  }
+}
+
+/* Star Platinum: punos con estela, lineas de velocidad, dedo estelar. */
 .power-fist {
   position: absolute;
-  width: 34px;
-  height: 28px;
-  margin: -14px 0 0 -17px;
+  width: 36px;
+  height: 30px;
+  margin: -15px 0 0 -18px;
   border: 3px solid #161418;
   border-radius: 9px 15px 15px 9px;
   background:
-    repeating-linear-gradient(90deg, transparent 0 7px, #161418 7px 9px) 50% 0 / 100% 40% no-repeat,
+    linear-gradient(90deg, transparent 0 62%, #161418 62% 66%, transparent 66%) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(180deg, #a99cf0 0 6px, #161418 6px 8px) 100% 50% / 30% 100% no-repeat,
     #8a7fd6;
   box-shadow:
-    -10px 0 0 -2px rgba(138, 127, 214, 0.45),
-    -20px 0 0 -5px rgba(138, 127, 214, 0.2);
+    -12px 0 0 -3px rgba(138, 127, 214, 0.5),
+    -24px 0 0 -7px rgba(138, 127, 214, 0.25);
   rotate: var(--fa);
   opacity: 0;
-  animation: power-fist 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  animation: power-fist 0.26s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.power-fist.is-held {
+  animation: power-fist-held 0.3s ease-out both;
+  box-shadow: none;
 }
 @keyframes power-fist {
   0% {
-    opacity: 0;
+    opacity: 0.6;
+    translate: var(--dx) var(--dy);
+    scale: 0.6;
+  }
+  75% {
+    opacity: 1;
     translate: 0 0;
-    scale: 0.5;
-  }
-  30% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-    translate: var(--fx) var(--fy);
     scale: 1.15;
   }
   100% {
     opacity: 0;
-    translate: var(--fx) var(--fy);
+    translate: 0 0;
     scale: 1.3;
   }
 }
-.power-sp-text {
+@keyframes power-fist-held {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+  to {
+    opacity: 0.95;
+    scale: 1;
+  }
+}
+.power-sp-aura {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  margin: -55px 0 0 -55px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(169, 156, 240, 0.55), transparent 65%);
+  animation: power-aura 0.18s steps(2) infinite;
+}
+@keyframes power-aura {
+  50% {
+    scale: 1.15;
+    opacity: 0.6;
+  }
+}
+.power-speedlines {
+  background: repeating-conic-gradient(from 0deg at var(--sx) var(--sy), rgba(236, 230, 216, 0.14) 0 1.2deg, transparent 1.2deg 7deg);
+  mask-image: radial-gradient(circle at var(--sx) var(--sy), transparent 0 90px, #000 260px);
+  animation: power-flicker 0.12s steps(2) infinite;
+}
+@keyframes power-flicker {
+  50% {
+    opacity: 0.6;
+  }
+}
+.power-hit {
+  animation: power-hit 0.07s steps(2) infinite !important;
+}
+@keyframes power-hit {
+  0% {
+    translate: 4px -3px;
+  }
+  50% {
+    translate: -4px 3px;
+  }
+}
+.power-knocked {
+  translate: var(--knock-x) var(--knock-y) !important;
+  rotate: var(--knock-r) !important;
+  transition:
+    translate 0.12s ease-out,
+    rotate 0.12s ease-out !important;
+}
+.power-healed-soft {
+  transition:
+    translate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    rotate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.power-poked {
+  scale: 0.94 !important;
+  filter: brightness(1.3) !important;
+  transition: scale 0.1s !important;
+}
+.power-finger {
+  position: absolute;
+  height: 16px;
+  margin-top: -8px;
+  width: var(--len);
+  transform-origin: 0 50%;
+  border: 3px solid #161418;
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(90deg, transparent, #8a7fd6 20%);
+  animation: power-finger 0.26s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.power-finger.is-back {
+  transition: scale 0.3s ease-in;
+  scale: 0 1;
+}
+@keyframes power-finger {
+  from {
+    scale: 0 1;
+  }
+}
+.power-spw {
+  background-color: rgba(40, 60, 140, 0.35);
+  mix-blend-mode: multiply;
+}
+.power-spw-text {
   position: absolute;
   left: 50%;
-  top: 18%;
+  top: 20%;
   translate: -50% 0;
   font-family: var(--font-jp);
-  font-size: clamp(2rem, 6.5vw, 4.8rem);
+  font-size: clamp(1.4rem, 4.5vw, 3.2rem);
   white-space: nowrap;
-  color: #8a7fd6;
+  color: #a99cf0;
   -webkit-text-stroke: 6px #161418;
   paint-order: stroke fill;
   animation: power-pop 0.45s var(--ease-premium) both;
 }
 
-/* Gold Experience: hojas, flores y mariquitas que brotan. */
+/* Gold Experience: hojas, flores, mariquitas, arbol, rana, mariposas, serpiente. */
 .power-leaf,
 .power-bug,
 .power-flower {
@@ -2792,6 +3009,9 @@ html.time-stopped .power-zw * {
   border: 2px solid #161418;
   border-radius: 0 100%;
   background-color: #6fbf5b;
+}
+.power-leaf.is-falling {
+  animation: power-fall 1.6s ease-in both;
 }
 .power-flower {
   width: 28px;
@@ -2832,43 +3052,521 @@ html.time-stopped .power-zw * {
     rotate: var(--gr);
   }
 }
-
-/* Soft & Wet: burbujas que se pueden reventar. */
-.power-bubble {
+@keyframes power-fall {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--gx) 50vh;
+    rotate: 540deg;
+  }
+}
+.power-tree {
   position: absolute;
-  bottom: -100px;
+  bottom: 0;
+  transform-origin: 50% 100%;
+  transition:
+    scale 0.6s ease-in,
+    opacity 0.6s;
+}
+.power-tree.is-leaving {
+  scale: 1 0;
+  opacity: 0;
+}
+.power-tree svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.power-tree .trunk path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: power-crack 1s cubic-bezier(0.3, 0.6, 0.3, 1) forwards;
+}
+.power-tree .crown,
+.power-tree .fruit {
+  transform-box: fill-box;
+  transform-origin: center;
+  scale: 0;
+  animation: power-bloom 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes power-bloom {
+  to {
+    scale: 1;
+  }
+}
+.power-frog {
+  position: absolute;
+  left: -56px;
+  top: -46px;
+  animation: power-bloom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: opacity 0.3s;
+}
+.power-frog.is-leaving {
+  opacity: 0;
+}
+@keyframes power-bloom-in {
+  from {
+    scale: 0;
+  }
+}
+.power-ge-morph {
+  scale: 0.3 !important;
+  rotate: 12deg !important;
+  opacity: 0 !important;
+  transition:
+    scale 0.4s cubic-bezier(0.6, 0, 0.8, 0.4),
+    rotate 0.4s,
+    opacity 0.35s !important;
+}
+.power-butterfly {
+  position: absolute;
+  margin: -23px 0 0 -29px;
+  opacity: 0;
+  animation: power-flutter-path 3.4s ease-in-out both;
+}
+.power-butterfly .wing-l,
+.power-butterfly .wing-r {
+  transform-box: view-box;
+  transform-origin: 20px 16px;
+  animation: power-flap 0.18s ease-in-out infinite alternate;
+}
+.power-butterfly .wing-r {
+  animation-name: power-flap-r;
+}
+@keyframes power-flap {
+  to {
+    transform: scaleX(0.25);
+  }
+}
+@keyframes power-flap-r {
+  to {
+    transform: scaleX(0.25);
+  }
+}
+@keyframes power-flutter-path {
+  0% {
+    opacity: 0;
+    scale: 0.2;
+    translate: 0 0;
+  }
+  12% {
+    opacity: 1;
+    scale: 1;
+  }
+  45% {
+    translate: var(--b1x) var(--b1y);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--b2x) var(--b2y);
+  }
+}
+.power-snake {
+  position: absolute;
+  animation: power-slither 3s linear both;
+}
+.power-snake svg {
+  animation: power-wiggle 0.3s ease-in-out infinite alternate;
+}
+@keyframes power-slither {
+  from {
+    translate: var(--start) 0;
+  }
+  to {
+    translate: var(--travel) 0;
+  }
+}
+@keyframes power-wiggle {
+  to {
+    translate: 0 4px;
+  }
+}
+.power-ge-wave {
+  animation: power-ge-wave 0.5s ease-in-out infinite alternate !important;
+}
+@keyframes power-ge-wave {
+  from {
+    transform: skewX(-6deg);
+    filter: hue-rotate(60deg) saturate(1.4);
+  }
+  to {
+    transform: skewX(6deg);
+  }
+}
+
+/* Echoes: pegatinas de sonido que hacen reaccionar lo que tocan. */
+.power-echo {
+  position: fixed;
+  z-index: 70;
+  pointer-events: none;
+  font-family: var(--font-jp);
+  font-size: clamp(1.4rem, 3vw, 2.3rem);
+  line-height: 1;
+  color: #86d16f;
+  -webkit-text-stroke: 5px #161418;
+  paint-order: stroke fill;
+  white-space: nowrap;
+  rotate: var(--echo-rotate, -8deg);
+  animation: power-echo 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: opacity 0.4s var(--ease-premium);
+}
+.power-echo.is-tap {
   pointer-events: auto;
   cursor: pointer;
-  border: 2px solid #161418;
+  padding: 0.3rem 0.5rem;
+  border: 2px dashed rgba(134, 209, 111, 0.7);
+  border-radius: 0.6rem;
+}
+.power-echo.is-ringing {
+  animation: power-ring 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes power-echo {
+  from {
+    opacity: 0;
+    scale: 2.2;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes power-ring {
+  40% {
+    scale: 1.4;
+    color: #ece6d8;
+  }
+}
+.power-fx-rumble {
+  animation: power-hit 0.06s steps(2) 12 !important;
+}
+.power-fx-bounce {
+  animation: power-fx-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+.power-fx-pulse {
+  animation: power-fx-pulse 0.5s ease-in-out 2 !important;
+}
+.power-fx-glitch {
+  animation: power-fx-glitch 0.4s steps(3) 2 !important;
+}
+.power-fx-shine {
+  animation: power-fx-shine 0.9s ease-out !important;
+}
+.power-fx-wobble {
+  animation: power-fx-wobble 0.9s ease-in-out !important;
+}
+@keyframes power-fx-bounce {
+  30% {
+    translate: 0 -26px;
+    scale: 0.95 1.08;
+  }
+  55% {
+    translate: 0 0;
+    scale: 1.1 0.88;
+  }
+  75% {
+    translate: 0 -8px;
+  }
+}
+@keyframes power-fx-pulse {
+  50% {
+    scale: 1.08;
+  }
+}
+@keyframes power-fx-glitch {
+  0% {
+    translate: -4px 0;
+    filter: drop-shadow(3px 0 0 #e891c4) drop-shadow(-3px 0 0 #8fd3f4);
+  }
+  50% {
+    translate: 4px 1px;
+    clip-path: inset(10% 0 40% 0);
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+@keyframes power-fx-shine {
+  30% {
+    filter: brightness(1.6) drop-shadow(0 0 12px #e3b341);
+  }
+}
+@keyframes power-fx-wobble {
+  20% {
+    rotate: -4deg;
+  }
+  40% {
+    rotate: 3deg;
+  }
+  60% {
+    rotate: -2deg;
+  }
+  80% {
+    rotate: 1deg;
+  }
+}
+.power-heavy {
+  translate: 0 22px !important;
+  scale: 1.04 0.92 !important;
+  filter: brightness(0.8) !important;
+  transition:
+    translate 0.18s cubic-bezier(0.5, 0, 1, 0.5),
+    scale 0.18s !important;
+}
+.power-echo-freeze {
+  position: fixed;
+  z-index: 70;
+  height: 0;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+.power-echo-freeze::before {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 14px;
+  height: 18px;
+  background:
+    linear-gradient(170deg, transparent 45%, #161418 46% 50%, transparent 51%) 0 0 / 40px 100%,
+    linear-gradient(10deg, transparent 45%, #161418 46% 50%, transparent 51%) 20px 0 / 40px 100%;
+  animation: power-echo 0.3s ease-out both;
+}
+.power-freeze-label {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: #86d16f;
+  -webkit-text-stroke: 4px #161418;
+  paint-order: stroke fill;
+  white-space: nowrap;
+}
+
+/* Soft & Wet: burbujas ladronas. */
+.power-bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  cursor: pointer;
+  border: 2px solid rgba(236, 230, 216, 0.9);
   border-radius: 9999px;
+  box-shadow:
+    0 0 0 2px #161418,
+    inset -6px -8px 14px rgba(143, 211, 244, 0.45);
   background:
     radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.95) 0 9%, transparent 10%),
-    radial-gradient(circle at 50% 50%, rgba(143, 211, 244, 0.15) 0 55%, rgba(232, 145, 196, 0.45) 75%, rgba(143, 211, 244, 0.6));
-  animation-name: power-bubble;
-  animation-timing-function: linear;
-  animation-fill-mode: both;
+    conic-gradient(from 40deg, rgba(232, 145, 196, 0.35), rgba(143, 211, 244, 0.35), rgba(227, 179, 65, 0.3), rgba(134, 209, 111, 0.3), rgba(232, 145, 196, 0.35));
+  background-size: cover;
+  background-position: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  line-height: 1.05;
+  text-align: center;
+  color: #ece6d8;
   transition:
     scale 0.2s var(--ease-premium),
     opacity 0.2s;
+  will-change: transform;
+}
+.power-bubble.has-loot::after {
+  content: attr(data-loot);
+  padding: 0 6px;
+  -webkit-text-stroke: 3px #161418;
+  paint-order: stroke fill;
+}
+.power-bubble.has-img {
+  box-shadow:
+    inset 0 0 0 4px rgba(143, 211, 244, 0.5),
+    inset 6px 6px 12px rgba(255, 255, 255, 0.5);
 }
 .power-bubble.is-popped {
   scale: 1.6;
   opacity: 0;
   pointer-events: none;
 }
-@keyframes power-bubble {
-  0% {
-    translate: 0 0;
-  }
-  50% {
-    translate: var(--sway) -55vh;
-  }
-  100% {
-    translate: 0 calc(-100vh - 140px);
-  }
+.power-stolen-img {
+  opacity: 0.06 !important;
+  transition: opacity 0.3s !important;
+}
+.power-stolen-color {
+  color: transparent !important;
+  -webkit-text-stroke: 1px var(--color-ink-subtle);
+  text-shadow: none !important;
 }
 
-/* Made in Heaven: lineas de velocidad y un reloj que se vuelve loco. */
+/* Hermit Purple: enredaderas con espinas y foto de espiritu. */
+.power-hermit svg {
+  overflow: visible;
+}
+.power-vine-ink polyline,
+.power-vine polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: power-crack 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.power-vine-ink polyline {
+  stroke: #161418;
+  stroke-width: 13;
+}
+.power-vine polyline {
+  stroke-width: 8;
+}
+.power-vine-ink polyline:last-child,
+.power-vine polyline:last-child {
+  animation-delay: 0.8s;
+}
+.power-thorns polyline {
+  fill: none;
+  stroke: none;
+  stroke-width: 3;
+}
+.power-thorns {
+  opacity: 0;
+  animation: power-fade-in 0.4s ease-out 1s forwards;
+}
+.power-vine-leaves ellipse {
+  fill: #86d16f;
+  stroke: #161418;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  scale: 0;
+  animation: power-bloom 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes power-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+.power-polaroid {
+  position: absolute;
+  padding: 12px 12px 0;
+  background-color: #f4efe4;
+  border: 3px solid #161418;
+  box-shadow: 6px 6px 0 0 #161418;
+  rotate: -4deg;
+  animation: power-polaroid 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s both;
+}
+@keyframes power-polaroid {
+  from {
+    opacity: 0;
+    translate: 0 60px;
+    rotate: 8deg;
+  }
+}
+.power-polaroid-photo {
+  position: relative;
+  display: flex;
+  height: 78%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, #5b3d7a, #241731 70%);
+  color: #f4efe4;
+  animation: power-develop 2.2s ease-out 1s both;
+}
+@keyframes power-develop {
+  from {
+    filter: brightness(3) sepia(1) blur(6px);
+  }
+  60% {
+    filter: brightness(1.3) sepia(0.6) blur(1px);
+  }
+  to {
+    filter: none;
+  }
+}
+.power-polaroid-kanji {
+  font-family: var(--font-jp);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: #c9a3f2;
+  -webkit-text-stroke: 4px #161418;
+  paint-order: stroke fill;
+}
+.power-polaroid-rows {
+  display: grid;
+  gap: 4px;
+}
+.power-polaroid-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  border-bottom: 1px dashed rgba(244, 239, 228, 0.3);
+}
+.power-polaroid-row b {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: #e3b341;
+}
+.power-polaroid-caption {
+  padding: 8px 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: #161418;
+  rotate: -1deg;
+}
+
+/* Made in Heaven: el sol y la luna en un parpadeo, y el universo anterior. */
+.power-mih-sky {
+  position: absolute;
+  inset: 0;
+  animation: power-sky 1.2s linear infinite;
+  mix-blend-mode: soft-light;
+}
+@keyframes power-sky {
+  0%,
+  100% {
+    background-color: rgba(10, 14, 40, 0.65);
+  }
+  50% {
+    background-color: rgba(255, 228, 160, 0.55);
+  }
+}
+.power-mih-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(80vw, 640px);
+  height: min(80vw, 640px);
+  translate: -50% -50%;
+  animation: power-spin 0.5s linear infinite;
+}
+.power-mih-orbit i {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border: 3px solid #161418;
+  border-radius: 9999px;
+}
+.power-mih-orbit .sun {
+  left: calc(50% - 21px);
+  top: -21px;
+  background-color: #e3b341;
+  box-shadow: 0 0 0 6px rgba(227, 179, 65, 0.35);
+}
+.power-mih-orbit .moon {
+  left: calc(50% - 21px);
+  bottom: -21px;
+  background: radial-gradient(circle at 70% 35%, transparent 0 42%, #ece6d8 43%);
+}
 .power-mih-lines {
   position: absolute;
   left: 50%;
@@ -2883,7 +3581,7 @@ html.time-stopped .power-zw * {
 .power-mih-clock {
   position: absolute;
   left: 50%;
-  top: 46%;
+  top: 50%;
   width: 92px;
   height: 92px;
   translate: -50% -50%;
@@ -2892,7 +3590,8 @@ html.time-stopped .power-zw * {
   background-color: #ece6d8;
   box-shadow: 4px 4px 0 0 #161418;
 }
-.power-mih-clock i {
+.power-mih-clock i,
+.power-btd-clock i {
   position: absolute;
   left: calc(50% - 2px);
   bottom: 50%;
@@ -2903,7 +3602,8 @@ html.time-stopped .power-zw * {
   transform-origin: 50% 100%;
   animation: power-spin 0.35s linear infinite;
 }
-.power-mih-clock i + i {
+.power-mih-clock i + i,
+.power-btd-clock i + i {
   height: 28%;
   background-color: #e3b341;
   animation-duration: 2.2s;
@@ -2911,7 +3611,7 @@ html.time-stopped .power-zw * {
 .power-mih-text {
   position: absolute;
   left: 50%;
-  top: 24%;
+  top: 22%;
   translate: -50% 0;
   font-family: var(--font-jp);
   font-size: clamp(2rem, 6vw, 4.6rem);
@@ -2921,97 +3621,299 @@ html.time-stopped .power-zw * {
   paint-order: stroke fill;
   animation: power-pop 0.45s var(--ease-premium) both;
 }
-@keyframes power-spin {
+
+/* El universo anterior: la pagina de antes, oscura, vino tinto y sin manga. */
+.power-universe {
+  z-index: 71;
+  display: flex;
+  flex-direction: column;
+  padding: 24px clamp(16px, 6vw, 80px);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 100% 64px,
+    #09090b;
+  color: #fafafa;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  animation: power-universe-in 0.7s cubic-bezier(0.7, 0, 0.3, 1) both;
+}
+@keyframes power-universe-in {
+  from {
+    clip-path: circle(0 at 50% 50%);
+    filter: brightness(4);
+  }
   to {
+    clip-path: circle(150% at 50% 50%);
+  }
+}
+.pu-nav {
+  display: flex;
+  align-self: center;
+  align-items: center;
+  gap: 32px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  background: rgba(20, 20, 20, 0.7);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pu-links {
+  display: flex;
+  gap: 14px;
+}
+.pu-links i {
+  width: 46px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.pu-hero {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  max-width: 760px;
+}
+.pu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px 12px;
+  border: 1px solid rgba(140, 59, 69, 0.5);
+  border-radius: 9999px;
+  background: rgba(140, 59, 69, 0.18);
+  color: #c98d95;
+  font-size: 13px;
+}
+.pu-badge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #c98d95;
+}
+.pu-tagline {
+  font-size: clamp(2rem, 5.2vw, 3.8rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.pu-ctas {
+  display: flex;
+  gap: 12px;
+}
+.pu-ctas i {
+  width: 170px;
+  height: 44px;
+  border-radius: 10px;
+  background: #652a31;
+}
+.pu-ctas i + i {
+  width: 150px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pu-label {
+  font-family: ui-monospace, "Fira Code", monospace;
+  font-size: 13px;
+  color: #71717a;
+}
+.pu-load {
+  display: grid;
+  gap: 8px;
+  padding: 18px 0 8px;
+}
+.pu-load-text {
+  font-family: ui-monospace, "Fira Code", monospace;
+  font-size: 13px;
+  color: #c98d95;
+}
+.pu-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.pu-bar i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #652a31, #c98d95);
+}
+.power-universe.is-glitch {
+  animation: power-universe-glitch 0.12s steps(2) infinite;
+}
+.power-universe.is-glitch .pu-tagline {
+  text-shadow:
+    4px 0 0 #e891c4,
+    -4px 0 0 #8fd3f4;
+}
+@keyframes power-universe-glitch {
+  0% {
+    translate: 6px 0;
+    clip-path: inset(0 0 12% 0);
+  }
+  50% {
+    translate: -6px 2px;
+    clip-path: inset(8% 0 0 0);
+  }
+}
+.power-universe.is-leaving {
+  animation: power-universe-out 0.6s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+@keyframes power-universe-out {
+  from {
+    clip-path: circle(150% at var(--ox) var(--oy));
+  }
+  to {
+    clip-path: circle(0 at var(--ox) var(--oy));
+  }
+}
+
+/* Bites the Dust: Killer Queen en el ojo, カチッ, explosion y cinta al reves. */
+.power-btd-intro {
+  z-index: 71;
+}
+.power-eye {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  translate: -50% -50%;
+  scale: 1.6;
+  animation: power-eye 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes power-eye {
+  0% {
+    scale: 1.6 0;
+  }
+  25%,
+  100% {
+    scale: 1.6 1.6;
+  }
+}
+.power-eye .pupil {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: power-pupil 0.3s ease-in 0.95s both;
+}
+@keyframes power-pupil {
+  to {
+    scale: 1.6;
+    fill: #e891c4;
+  }
+}
+.power-kq {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  margin: -24px 0 0 -24px;
+  animation: power-kq 1.05s cubic-bezier(0.6, 0, 0.4, 1) both;
+}
+@keyframes power-kq {
+  0% {
+    translate: var(--from-x) var(--from-y);
+    scale: 1;
+    rotate: 0deg;
+  }
+  70% {
+    translate: 0 0;
+    scale: 0.8;
     rotate: 360deg;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .power-fist,
-  .power-leaf,
-  .power-bug,
-  .power-flower,
-  .power-mih-lines,
-  .power-mih-clock i {
-    animation: none;
-    opacity: 1;
-  }
-  .power-bubble {
-    animation: none;
-    bottom: auto;
-    top: 40%;
+  100% {
+    translate: 0 0;
+    scale: 0;
+    rotate: 400deg;
   }
 }
-
-/* Echoes: pegatinas de sonido. */
-.power-echo {
-  position: fixed;
-  z-index: 70;
-  pointer-events: none;
-  font-family: var(--font-jp);
-  font-size: clamp(1.4rem, 3vw, 2.3rem);
-  line-height: 1;
-  color: #8fd18a;
-  -webkit-text-stroke: 5px #161418;
-  paint-order: stroke fill;
-  white-space: nowrap;
-  rotate: var(--echo-rotate, -8deg);
-  animation: power-echo 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  transition: opacity 0.4s var(--ease-premium);
+.power-btd-boom {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 40px;
+  height: 40px;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffffff 0 25%, #f4c6e0 40%, #e891c4 60%, transparent 72%);
+  animation: power-boom 0.45s ease-out forwards;
 }
-@keyframes power-echo {
-  from {
-    opacity: 0;
-    scale: 2.2;
-  }
+@keyframes power-boom {
   to {
-    opacity: 1;
-    scale: 1;
+    scale: 60;
+    opacity: 0.9;
   }
 }
-
-/* Hermit Purple: espinas moradas que crecen desde el Stand. */
-.power-hermit path {
-  fill: none;
-  stroke: #8a5cc4;
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-dasharray: 0.04 0.012;
-  stroke-dashoffset: 1;
-  filter: drop-shadow(2px 2px 0 #161418);
-  animation: power-vine 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-.power-hermit path:nth-child(2) {
-  animation-delay: 0.12s;
-}
-.power-hermit path:nth-child(3) {
-  animation-delay: 0.24s;
-}
-.power-hermit path:nth-child(4) {
-  animation-delay: 0.36s;
-}
-@keyframes power-vine {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Bites the Dust: cinta rebobinando. */
 .power-btd {
-  background: repeating-linear-gradient(0deg, rgba(227, 179, 65, 0.08) 0 2px, transparent 2px 5px);
-  backdrop-filter: sepia(0.6) hue-rotate(-20deg);
+  background: repeating-linear-gradient(0deg, rgba(232, 145, 196, 0.08) 0 2px, transparent 2px 5px);
+  backdrop-filter: sepia(0.5) hue-rotate(-40deg) saturate(1.4);
   animation: power-btd 0.25s steps(2) infinite;
+}
+.power-btd.is-hidden {
+  display: none;
+}
+.power-btd.is-jolt {
+  animation:
+    power-btd 0.25s steps(2) infinite,
+    power-jolt 0.2s steps(3);
+}
+.power-btd.is-flash {
+  background-color: rgba(255, 255, 255, 0.85);
 }
 @keyframes power-btd {
   50% {
     background-position: 0 3px;
   }
 }
+@keyframes power-jolt {
+  0% {
+    translate: 0 -14px;
+    filter: invert(0.15);
+  }
+  50% {
+    translate: 0 8px;
+  }
+}
+.power-btd-vortex {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220vmax;
+  height: 220vmax;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, rgba(232, 145, 196, 0.18) 0 10deg, transparent 10deg 24deg);
+  mask-image: radial-gradient(circle, #000 0 10%, transparent 12% 20%, #000 40%);
+  animation: power-spin 0.7s linear infinite reverse;
+}
+.power-btd-clock {
+  position: absolute;
+  right: 8%;
+  top: 18%;
+  width: 84px;
+  height: 84px;
+  border: 4px solid #161418;
+  border-radius: 9999px;
+  background-color: #f4c6e0;
+  box-shadow: 4px 4px 0 0 #161418;
+}
+.power-btd-clock i {
+  animation-direction: reverse;
+}
+.power-btd-rew {
+  position: absolute;
+  left: 6%;
+  top: 16%;
+  font-family: ui-monospace, monospace;
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  font-weight: 700;
+  color: #ece6d8;
+  text-shadow: 2px 2px 0 #161418;
+  animation: power-flicker 0.5s steps(2) infinite;
+}
 .power-btd-text {
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 44%;
   translate: -50% -50%;
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 8vw, 6.5rem);
@@ -3052,9 +3954,24 @@ html.time-stopped .power-zw * {
 
 @media (prefers-reduced-motion: reduce) {
   .power-btd,
-  .power-kc {
+  .power-kc,
+  .power-mih-sky,
+  .power-mih-lines,
+  .power-mih-orbit,
+  .power-mih-clock i,
+  .power-btd-vortex,
+  .power-btd-clock i,
+  .power-speedlines,
+  .power-universe {
     animation: none;
-    opacity: 0.6;
+  }
+  .power-fist,
+  .power-leaf,
+  .power-bug,
+  .power-flower,
+  .power-butterfly {
+    animation: none;
+    opacity: 1;
   }
 }
 

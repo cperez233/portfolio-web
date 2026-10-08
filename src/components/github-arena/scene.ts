@@ -20,6 +20,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { isTimeStopped } from "@/lib/time-stop";
 
 /**
  * Tablero 3D de contribuciones, dibujado como una vineta de manga:
@@ -418,6 +419,10 @@ export function createArena(options: ArenaOptions): Arena {
   function tick(time: number) {
     frame = 0;
     if (!visible) return;
+    if (isTimeStopped()) {
+      frame = requestAnimationFrame(tick);
+      return;
+    }
     let animating = !reducedMotion;
 
     // Inercia al soltar, y vuelta suave a la pose de reposo tras 3 s quieto.

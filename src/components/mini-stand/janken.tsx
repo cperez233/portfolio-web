@@ -1,5 +1,6 @@
 "use client";
 
+import { pickLine } from "./pick";
 import { useEffect, useRef, useState, type Ref } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Hand, HandFist, Scissors, X } from "lucide-react";
@@ -21,9 +22,7 @@ const HANDS: HandId[] = ["rock", "paper", "scissors"];
 const BEATS: Record<HandId, HandId> = { rock: "scissors", paper: "rock", scissors: "paper" };
 const ICONS = { rock: HandFist, paper: Hand, scissors: Scissors };
 
-function pick(list: string[]) {
-  return list[Math.floor(Math.random() * list.length)];
-}
+const pick = (list: string[]) => pickLine(list);
 
 interface JankenProps {
   ref?: Ref<HTMLDivElement>;

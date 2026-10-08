@@ -9,6 +9,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { inked, inkMaterial, toon, toonRamp } from "./toon";
+import { isTimeStopped } from "@/lib/time-stop";
 
 /**
  * ゴゴゴ en 3D: el "menacing" de JoJo hecho de bloques gruesos dorados con
@@ -151,6 +152,10 @@ export function createMenacingScene({
   function tick(now: number) {
     raf = 0;
     if (!visible) return;
+    if (isTimeStopped()) {
+      raf = requestAnimationFrame(tick);
+      return;
+    }
     tiltY += (pointerX * 0.5 - tiltY) * 0.06;
     tiltX += (pointerY * 0.3 - tiltX) * 0.06;
     root.rotation.y = reducedMotion ? -0.35 : -0.35 + tiltY;

@@ -148,15 +148,31 @@ The render loop stops off-screen.
   idle. Tapping it opens a manga chat (`stand-chat.tsx`): who it is,
   facts about Cristian taken from the page, JoJo trivia, a guided jump
   to a section (through the section curtain), jan-ken (`janken.tsx`) or
-  a borrowed Stand power (`powers.ts`): ZA WARUDO (inverts the page and
-  freezes every loop), Star Platinum (ORA barrage of fists), Crazy
-  Diamond (shatters the whole screen and what is on it, then repairs
-  it), Gold Experience (leaves, flowers and ladybugs sprout), Echoes
-  (sticks sound effects on the page), Soft & Wet (bubbles you can pop),
-  Hermit Purple (reads your visit: time, parts read, secrets), Made in
-  Heaven (every animation runs at 5x), Bites the Dust (rewinds your
-  scroll) and King Crimson (skips to the next section). All visual,
-  nothing is removed, and one power at a time.
+  a borrowed Stand power (`powers.ts`, helpers in `power-kit.ts`), several
+  with variants picked so they don't repeat: ZA WARUDO (a real time stop,
+  see below), Star Platinum (ORA rush onto a card, Star Finger, or The
+  World with punches that land when time resumes), Crazy Diamond
+  (shatters every piece on screen, sampled on a grid so boxes break too,
+  then repairs them one by one), Gold Experience (garden, a tree growing
+  from the bottom, a card turning into a frog, butterflies, or a title
+  turning into a snake), Echoes (ACT 1 sounds that shake what they touch,
+  ACT 2 stickers you tap, ACT 3 FREEZE), Soft & Wet (bubbles that steal a
+  title's colour or a whole image until you pop them), Hermit Purple
+  (thorny vines and a developing spirit photo with your visit), Made in
+  Heaven (animations up to 14x, day and night flashing, then the universe
+  starts resetting to the old burgundy site until the Stand stops it),
+  Bites the Dust (Killer Queen into an eye, カチッ, explosion, the page
+  rewinding in jolts with every loop running backwards, and a déjà vu)
+  and King Crimson. All visual, nothing is removed, one at a time.
+  Every random line comes from `pick.ts`: none of the last 3 picks of a
+  list comes back until a fourth one has been said.
+- **Time stop** (`lib/time-stop.ts`): the portrait tap and ZA WARUDO
+  freeze the page for real: scroll, wheel, touch, keys and clicks are
+  blocked, CSS and Web Animations pause, videos pause and the 3D scenes
+  stop. Only the Stand moves: it leaves a frozen copy behind, flies to
+  something in the current section, throws knives that hang in the air,
+  taunts per section (and when you try to move), and when time resumes
+  the knives land and it is already somewhere else.
 - **Secrets** (`lib/secrets.ts`, `components/secrets.tsx`): eleven, stored
   per visitor in localStorage, counted in the footer ("Secrets 3/11") and
   announced when found. Names show only once found.

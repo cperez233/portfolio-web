@@ -12,6 +12,7 @@ import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
+import { stopTime as freezeTime } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 
@@ -85,6 +86,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
     emitStandEvent("timestop");
     unlockSecret("timestop");
+    // De verdad: nadie se mueve (salvo el Stand) mientras dura la esfera.
+    void freezeTime(3200);
     const portraitBox = portraitEl.getBoundingClientRect();
     const stickyBox = stickyEl.getBoundingClientRect();
     setTimeStop({

@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { GuideId, PowerId, StandLines } from "./lines";
 import { POWER_IDS } from "./powers";
+import { pickLine } from "./pick";
 
 /**
  * Conversacion con el Stand, en vineta de manga: el Stand habla (letra a
@@ -32,10 +33,7 @@ interface Props {
   onTalk: () => void;
 }
 
-function pick<T>(list: T[], avoid?: T) {
-  const pool = list.length > 1 ? list.filter((item) => item !== avoid) : list;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
+const pick = (list: string[]) => pickLine(list);
 
 /** Texto que aparece letra a letra; con reduced motion, de una vez. */
 function Typed({ text, onDone }: { text: string; onDone?: () => void }) {
@@ -74,10 +72,8 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
   const [queue, setQueue] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
   const [mode, setMode] = useState<"menu" | "powers" | "guide">("menu");
-  // Cada "¿quien eres?" cuenta otra version; los datos de el no se repiten seguidos.
+  // Cada "¿quien eres?" cuenta otra version; datos y frases no repiten las ultimas 3 (pick.ts).
   const [whoTurn, setWhoTurn] = useState(0);
-  const [lastCris, setLastCris] = useState<string | undefined>(undefined);
-  const [lastTrivia, setLastTrivia] = useState<string | undefined>(undefined);
   const firstOption = useRef<HTMLButtonElement>(null);
 
   // El Stand dice las frases de la cola una tras otra.
@@ -118,13 +114,9 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
       setWhoTurn(whoTurn + 1);
       setQueue(set);
     } else if (choice === "cris") {
-      const fact = pick(lines.cris, lastCris);
-      setLastCris(fact);
-      setQueue([fact]);
+      setQueue([pick(lines.cris)]);
     } else if (choice === "trivia") {
-      const fact = pick(lines.trivia, lastTrivia);
-      setLastTrivia(fact);
-      setQueue([fact]);
+      setQueue([pick(lines.trivia)]);
     } else if (choice === "guide") {
       setMode("guide");
       setQueue([pick(lines.guidePrompt)]);

@@ -9,7 +9,10 @@ import { drawStand, SPRITE_H, SPRITE_W, type Frame } from "./sprite";
 import { standLines, type GuideId, type PowerId, type StandLines } from "./lines";
 import { Janken } from "./janken";
 import { StandChat } from "./stand-chat";
-import { runPower } from "./powers";
+import { POWER_VARIANTS, runPower } from "./powers";
+import { piecesOnScreen, pop } from "./power-kit";
+import { pickFrom, pickLine } from "./pick";
+import type { TimeStopDetail } from "@/lib/time-stop";
 
 /**
  * Mini Stand: Paranoid Android en pixel art, vivo por la pagina.
@@ -68,12 +71,6 @@ function shuffle(n: number) {
   return list;
 }
 
-/** Frase al azar que no sea la ultima dicha. */
-function pickFresh(list: string[], last: string | null) {
-  const pool = list.length > 1 ? list.filter((line) => line !== last) : list;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 /** Grito (globo de punta) o pensamiento (globo de nube). */
@@ -110,6 +107,9 @@ export function MiniStand() {
   // Tras arrastrarlo, el clic que llega al soltar no abre la conversacion.
   const dragged = useRef(false);
   const casting = useRef(false);
+  const visitsRef = useRef(1);
+  // Ultimas frases dichas (Bites the Dust las repite: deja vu).
+  const saidLog = useRef<string[]>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const panelOpen = useRef(false);
   useEffect(() => {
@@ -120,6 +120,8 @@ export function MiniStand() {
   // Puentes hacia el bucle de animacion.
   const say = useRef<(text: string | null, ms?: number) => void>(() => {});
   const act = useRef<(kind: Action, ms: number) => void>(() => {});
+  // Cuenta como actividad (para que no se duerma justo al terminar un poder).
+  const poke = useRef(() => {});
   const react = useRef<(kind: StandEvent, ms?: number) => void>(() => {});
   const probe = useRef(() => ({ x: 0, y: 0, pastScroll: 0, seen: 0, total: 0 }));
 
@@ -174,7 +176,6 @@ export function MiniStand() {
     let sleeping = false;
     let lastActivity = performance.now();
     let action: { kind: Action; from: number; until: number } | null = null;
-    let lastLine: string | null = null;
     let lastSpokeAt = -Infinity;
     let pointerX = width / 2;
     let pointerY = height / 2;
@@ -196,6 +197,7 @@ export function MiniStand() {
     let nextStar = 0;
     let drag: { id: number; sx: number; sy: number; moved: boolean; t: number; vx: number; vy: number } | null = null;
     const visits = countVisit();
+    visitsRef.current = visits;
     const seen = new Set<string>();
     const scrollLog: { t: number; y: number }[] = [];
 
@@ -211,8 +213,8 @@ export function MiniStand() {
         typing = { text: "", shown: 0, next: 0 };
         return;
       }
-      lastLine = text;
       lastSpokeAt = performance.now();
+      if (text !== linesRef.current.sleep) saidLog.current = [...saidLog.current, text].slice(-4);
       bubble.style.width = "";
       bubble.textContent = text;
       const tone = toneOf(text, linesRef.current.sleep);
@@ -227,6 +229,10 @@ export function MiniStand() {
       typing = { text, shown: instant ? text.length : 0, next: performance.now() };
       if (!instant) bubble.textContent = "";
       bubbleUntil = ms === Infinity ? Infinity : performance.now() + ms + text.length * TYPE_MS;
+    };
+    poke.current = () => {
+      lastActivity = performance.now();
+      sleeping = false;
     };
     act.current = (kind, ms) => {
       const now = performance.now();
@@ -246,17 +252,21 @@ export function MiniStand() {
       window.setTimeout(() => node.remove(), LIFE[kind]);
     }
 
-    // Estela al volar rapido: copias del cuadro que se desvanecen.
-    function ghost() {
+    // Copia del cuadro actual (estela al volar, o la copia quieta del tiempo detenido).
+    function snapshot(className: string) {
       const copy = document.createElement("canvas");
       copy.width = canvas!.width;
       copy.height = canvas!.height;
       copy.style.width = canvas!.style.width;
       copy.style.height = canvas!.style.height;
       copy.style.transform = canvas!.style.transform;
-      copy.className = "stand-ghost";
+      copy.className = className;
       copy.getContext("2d")?.drawImage(canvas!, 0, 0);
       fx!.appendChild(copy);
+      return copy;
+    }
+    function ghost() {
+      const copy = snapshot("stand-ghost");
       window.setTimeout(() => copy.remove(), 320);
     }
 
@@ -335,9 +345,10 @@ export function MiniStand() {
         sleeping = false;
         lastActivity = now;
       }
-      const line = pickFresh(short(linesRef.current.events[kind]), lastLine);
-      if (kind === "timestop") act.current("freeze", 3000);
-      else if (kind === "thrown") act.current("dizzy", 2000);
+      const line = pickLine(short(linesRef.current.events[kind]));
+      // El tiempo detenido lo maneja onTimeStop: ahi el Stand es el unico que se mueve.
+      if (kind === "timestop") return;
+      if (kind === "thrown") act.current("dizzy", 2000);
       else if (kind === "ora" || kind === "barrage") act.current("punch", 900);
       else if (kind === "muda" || kind === "arrow" || kind === "fastScroll" || kind === "themeLight" || kind === "resize") act.current("shock", 1400);
       else if (kind === "whatsapp" || kind === "sent" || kind === "bottom" || kind === "chapter") {
@@ -349,12 +360,141 @@ export function MiniStand() {
       say.current(line, ms);
     };
 
+    // --- Tiempo detenido ----------------------------------------------
+    /*
+      Con el tiempo detenido (toque en el retrato o ZA WARUDO) nadie se
+      mueve salvo el: deja una copia quieta donde estaba, vuela a lo que
+      haya en esta parte de la pagina, le clava cuchillos que quedan
+      suspendidos, se burla segun la seccion y se va a otro sitio. Al
+      reanudarse, los cuchillos caen, la copia desaparece y el ya esta
+      en otro lado: el efecto de "se teletransporto".
+    */
+    type Point = { x: number; y: number };
+    let stop: {
+      start: number;
+      ms: number;
+      a: Point;
+      b: Point;
+      prank: DOMRect | null;
+      knives: HTMLElement[];
+      frozen: HTMLCanvasElement;
+      threw: boolean;
+      taunted: boolean;
+    } | null = null;
+    let hold: Point | null = null;
+    let holdUntil = 0;
+
+    function sectionId() {
+      if (mode === "home") return "hero";
+      return current?.id ?? "default";
+    }
+    function clampPoint(p: Point): Point {
+      const spriteW = SPRITE_W * scale;
+      return {
+        x: Math.min(width - spriteW / 2 - 8, Math.max(spriteW / 2 + 8, p.x)),
+        y: Math.min(height - 8, Math.max(SPRITE_H * scale + 70, p.y)),
+      };
+    }
+    function beginStop(ms: number) {
+      const now = performance.now();
+      sleeping = false;
+      lastActivity = now;
+      action = null;
+      say.current(null);
+      const rects = piecesOnScreen(24)
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.width > 40 && r.height > 16);
+      const far = (r: DOMRect, from: Point) => Math.hypot(r.left + r.width / 2 - from.x, r.top + r.height / 2 - from.y);
+      const origin = { x: body.x, y: body.y };
+      // La broma: algo grande y lejos de donde estaba.
+      const prank = [...rects].sort((p, q) => far(q, origin) * Math.sqrt(q.width * q.height) - far(p, origin) * Math.sqrt(p.width * p.height))[0] ?? null;
+      const a = prank
+        ? clampPoint({ x: prank.right + SPRITE_W * scale * 0.6, y: prank.top - 6 })
+        : clampPoint({ x: width / 2, y: height * 0.4 });
+      // Y termina en otro lado: lo mas lejos posible de donde estaba.
+      const dest = rects.filter((r) => r !== prank).sort((p, q) => far(q, origin) - far(p, origin))[0];
+      const b = dest
+        ? clampPoint({ x: dest.left + Math.min(dest.width * 0.7, SPRITE_W * scale * 1.4), y: dest.top - 1 })
+        : clampPoint({ x: width - origin.x, y: height - origin.y });
+      const frozen = snapshot("stand-frozen");
+      stop = { start: now, ms, a, b, prank, knives: [], frozen, threw: false, taunted: false };
+      const lines = linesRef.current.timeStop.sections;
+      say.current(pickLine(short(lines[sectionId()] ?? lines.default)), Math.min(2600, ms * 0.45));
+      act.current("pose", 700);
+    }
+    function throwKnives() {
+      if (!stop || !stop.prank) return;
+      const r = stop.prank;
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const count = width < 640 ? 4 : 6;
+      for (let i = 0; i < count; i++) {
+        const angle = -Math.PI * 0.9 + (i / (count - 1)) * Math.PI * 0.8 + (Math.random() - 0.5) * 0.2;
+        // En elipse alrededor del blanco, a la vista.
+        const kx = Math.min(width - 30, Math.max(30, cx + Math.cos(angle) * (Math.min(r.width, width * 0.6) / 2 + 60)));
+        const ky = Math.max(80, cy + Math.sin(angle) * (r.height / 2 + 60));
+        const knife = document.createElement("span");
+        knife.className = "stand-knife";
+        const toward = Math.atan2(cy - ky, cx - kx);
+        const hitX = cx + (r.width / 2) * Math.cos(angle) * 0.6;
+        const hitY = cy + (r.height / 2) * Math.sin(angle) * 0.6;
+        knife.style.transform = `translate(${kx.toFixed(0)}px, ${ky.toFixed(0)}px)`;
+        knife.style.setProperty("--ka", `${toward.toFixed(3)}rad`);
+        knife.style.setProperty("--kx", `${(hitX - kx).toFixed(0)}px`);
+        knife.style.setProperty("--ky", `${(hitY - ky).toFixed(0)}px`);
+        knife.style.animationDelay = `${i * 90}ms`;
+        knife.dataset.hit = `${hitX.toFixed(0)},${hitY.toFixed(0)}`;
+        fx!.appendChild(knife);
+        stop.knives.push(knife);
+      }
+      act.current("punch", 600);
+      sfx("シュシュッ", "sfx");
+    }
+    function endStop() {
+      if (!stop) return;
+      const { knives, frozen, b } = stop;
+      stop = null;
+      knives.forEach((knife) => knife.classList.add("is-thrown"));
+      window.setTimeout(() => {
+        knives.forEach((knife, i) => {
+          const [x, y] = (knife.dataset.hit ?? "0,0").split(",").map(Number);
+          if (i % 2 === 0) pop("ズドッ", x, y - 20, "power-pop-word is-gold", 650);
+        });
+      }, 220);
+      window.setTimeout(() => knives.forEach((knife) => knife.classList.add("is-leaving")), 1300);
+      window.setTimeout(() => knives.forEach((knife) => knife.remove()), 1800);
+      frozen.classList.add("is-leaving");
+      window.setTimeout(() => frozen.remove(), 400);
+      hold = b;
+      holdUntil = performance.now() + 4500;
+      lastActivity = performance.now();
+      act.current("pose", 1400);
+      sfx("ドン!", "sfx");
+      window.setTimeout(() => say.current(pickLine(short(linesRef.current.timeStop.resume)), 2400), 250);
+    }
+    const onTimeStop = (event: Event) => {
+      const { active, ms } = (event as CustomEvent<TimeStopDetail>).detail;
+      if (reducedMotion) return;
+      if (active) beginStop(ms);
+      else endStop();
+    };
+    let lastAttemptLine = 0;
+    const onAttempt = () => {
+      const now = performance.now();
+      if (!stop || now - lastAttemptLine < 1600) return;
+      lastAttemptLine = now;
+      act.current("happy", 800);
+      say.current(pickLine(short(linesRef.current.timeStop.attempt)), 1400);
+    };
+    window.addEventListener("jojo:timestop", onTimeStop);
+    window.addEventListener("jojo:timestop-attempt", onAttempt);
+
     // --- Actividad, sueno y gestos ---------------------------------------
     function activity() {
       lastActivity = performance.now();
       if (sleeping) {
         sleeping = false;
-        say.current(pickFresh(short(linesRef.current.wake), lastLine), 2200);
+        say.current(pickLine(short(linesRef.current.wake)), 2200);
       }
     }
     const onPointer = (event: PointerEvent) => {
@@ -505,7 +645,7 @@ export function MiniStand() {
       if (action && now > action.until) action = null;
 
       const frozen = action?.kind === "freeze";
-      if (!sleeping && !panelOpen.current && !casting.current && now - lastActivity > SLEEP_MS) {
+      if (!sleeping && !stop && !panelOpen.current && !casting.current && now - lastActivity > SLEEP_MS) {
         sleeping = true;
         say.current(linesRef.current.sleep, Infinity);
         unlockSecret("sleep");
@@ -517,7 +657,7 @@ export function MiniStand() {
       else if (mode === "out" && heroRect && heroRect.bottom > height * 0.6) {
         mode = "home";
         current = null;
-        say.current(Math.random() < 0.4 && !sleeping ? pickFresh(short(linesRef.current.home), lastLine) : null, 1800);
+        say.current(Math.random() < 0.4 && !sleeping ? pickLine(short(linesRef.current.home)) : null, 1800);
       }
 
       let tx: number;
@@ -527,6 +667,25 @@ export function MiniStand() {
       if (reducedMotion) {
         tx = width - spriteW / 2 - 16;
         ty = height - 16;
+      } else if (stop) {
+        // Tiempo detenido: primero a la broma, luego a su nuevo sitio.
+        const t = (now - stop.start) / stop.ms;
+        const goal = t < 0.55 ? stop.a : stop.b;
+        tx = goal.x;
+        ty = goal.y;
+        perched = true;
+        if (!stop.threw && t > 0.18 && Math.hypot(stop.a.x - body.x, stop.a.y - body.y) < 40) {
+          stop.threw = true;
+          throwKnives();
+        }
+        if (!stop.taunted && t > 0.6) {
+          stop.taunted = true;
+          say.current(pickLine(short(linesRef.current.events.timestop)), 2200);
+        }
+      } else if (hold && now < holdUntil) {
+        tx = hold.x;
+        ty = hold.y;
+        perched = true;
       } else if (dialog) {
         const rect = dialog.getBoundingClientRect();
         tx = rect.right - spriteW;
@@ -603,8 +762,8 @@ export function MiniStand() {
           body.vy *= -0.6;
         }
       } else if (!frozen && !(sleeping && !flying)) {
-        const k = dialog ? 140 : 60;
-        const c = dialog ? 18 : 11;
+        const k = stop ? 120 : dialog ? 140 : 60;
+        const c = stop ? 16 : dialog ? 18 : 11;
         const bob = flying ? 3 * Math.sin(now / 160) : 0;
         body.vx += ((tx - body.x) * k - c * body.vx) * dt;
         body.vy += ((ty - body.y + bob) * k - c * body.vy) * dt;
@@ -621,11 +780,11 @@ export function MiniStand() {
       const resting = !flying && !free && speed < 40;
 
       // Aterrizaje: ドン y, un rato despues, la frase del lugar.
-      if (mode === "out" && current && resting && !sleeping && !dialog) {
+      if (mode === "out" && current && resting && !sleeping && !dialog && !stop && now > holdUntil) {
         settledSince ||= now;
         if (!landedHere && !reducedMotion) {
           landedHere = true;
-          if (Math.random() < 0.55) sfx(pickFresh(linesRef.current.landing, null), "sfx");
+          if (Math.random() < 0.55) sfx(pickLine(linesRef.current.landing), "sfx");
           // Polvo a los lados al tocar suelo.
           sfx("", "dust", -spriteW * 0.45, -2);
           sfx("", "dust", spriteW * 0.45, -2);
@@ -664,7 +823,7 @@ export function MiniStand() {
         }
         // Lleva rato callado y hay alguien leyendo: piensa en voz alta.
         if (mode === "out" && now - lastSpokeAt > 22000 && now - lastActivity < 5000 && now - settledSince > 2500) {
-          say.current(pickFresh(short(linesRef.current.musings), lastLine), 2600);
+          say.current(pickLine(short(linesRef.current.musings)), 2600);
         }
       }
       // Mareado: estrellitas.
@@ -690,10 +849,10 @@ export function MiniStand() {
           say.current(linesRef.current.night, 3200);
           unlockSecret("night");
         } else if (visits > 1 && Math.random() < 0.5) {
-          say.current(pickFresh(short(greetings.visit), null).replace("{n}", String(visits)), 2800);
+          say.current(pickLine(short(greetings.visit)).replace("{n}", String(visits)), 2800);
         } else {
           const list = hour < 12 ? greetings.morning : hour < 19 ? greetings.afternoon : greetings.evening;
-          say.current(pickFresh(short(list), null), 2800);
+          say.current(pickLine(short(list)), 2800);
         }
       }
 
@@ -799,6 +958,8 @@ export function MiniStand() {
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("jojo:timestop", onTimeStop);
+      window.removeEventListener("jojo:timestop-attempt", onAttempt);
       button.removeEventListener("pointerdown", onGrab);
       button.removeEventListener("pointermove", onDrag);
       button.removeEventListener("pointerup", onDrop);
@@ -839,34 +1000,75 @@ export function MiniStand() {
     casting.current = true;
     const lines = linesRef.current;
     const power = lines.powers[id];
+    // Variante distinta cada vez (sin repetir las ultimas).
+    const options = POWER_VARIANTS[id];
+    const variant = options ? pickFrom(options) : undefined;
+    const variantLines = variant ? power.variants?.[variant] : undefined;
+    // Lo ultimo que dijo antes de usar el poder (Bites the Dust lo repite).
+    const before = saidLog.current.at(-1);
     act.current("pose", 900);
-    say.current(pickFresh(power.say, null), 1600);
+    say.current(pickLine(variantLines?.say ?? power.say), 1600);
     await wait(700);
     const info = probe.current();
     if (id === "starplatinum" || id === "crazydiamond") act.current("punch", 1500);
-    else if (id === "madeinheaven") act.current("twirl", 3000);
-    const done = runPower(id, { ...info, reducedMotion });
+    else if (id === "madeinheaven") act.current("twirl", 2600);
+
+    const found = readSecrets().length;
+    const minutes = Math.max(1, Math.round(performance.now() / 60000));
+    const values = {
+      min: `${minutes} min`,
+      parts: `${info.seen}/${info.total}`,
+      secrets: `${found}/${SECRET_IDS.length}`,
+      visits: `#${visitsRef.current}`,
+    };
+    const photo = {
+      title: lines.hermitPhoto.title,
+      rows: [
+        [lines.hermitPhoto.time, values.min],
+        [lines.hermitPhoto.parts, values.parts],
+        [lines.hermitPhoto.secrets, values.secrets],
+        [lines.hermitPhoto.visits, values.visits],
+      ] as [string, string][],
+    };
+    const done = runPower(id, {
+      ...info,
+      reducedMotion,
+      variant,
+      photo,
+      universe: lines.universe,
+      onStop: () => {
+        act.current("pose", 1600);
+        say.current(pickLine(lines.universe.stop), 2400);
+      },
+    });
     if (id === "hermit") {
-      const found = readSecrets().length;
-      const minutes = Math.max(1, Math.round(performance.now() / 60000));
       const facts = lines.hermit.map((line) =>
         line
-          .replace("{min}", `${minutes} min`)
+          .replace("{min}", values.min)
           .replace("{parts}", String(info.seen))
           .replace("{total}", String(info.total))
-          .replace("{secrets}", `${found}/${SECRET_IDS.length}`),
+          .replace("{secrets}", values.secrets)
+          .replace("{visits}", String(visitsRef.current)),
       );
-      for (const fact of facts) {
-        await wait(900);
+      // Dos de las cosas que "ve", no siempre las mismas.
+      for (const fact of [pickLine(facts), pickLine(facts)]) {
+        await wait(1500);
         say.current(fact, 1700);
       }
     }
     const perfect = await done.catch(() => false);
     casting.current = false;
-    const closing = perfect && power.bonus ? power.bonus : power.done;
+    poke.current();
+    if (id === "bitesthedust" && before) {
+      // Deja vu: repite lo que dijo antes, como si nada.
+      act.current("shock", 1200);
+      say.current(`${before} ${pickLine(lines.dejaVu)}`, 2800);
+      return;
+    }
+    const closing = perfect && power.bonus ? power.bonus : (variantLines?.done ?? power.done);
     if (closing.length) {
       act.current(perfect ? "twirl" : "happy", perfect ? 800 : 1200);
-      say.current(pickFresh(closing, null), 2600);
+      say.current(pickLine(closing), 2600);
     }
   }
 
@@ -874,7 +1076,7 @@ export function MiniStand() {
   function guide(id: GuideId) {
     setPanel(null);
     act.current("pose", 1200);
-    say.current(pickFresh(linesRef.current.chat.guide[id].say, null), 2200);
+    say.current(pickLine(linesRef.current.chat.guide[id].say), 2200);
     window.setTimeout(() => {
       const link = document.createElement("a");
       link.href = `#${id}`;
