@@ -125,7 +125,7 @@ export const standLines: Record<Language, StandLines> = {
         "Hasta una peluquería canina. Guau.",
         "Licorera 24/7. Yo no bebo.",
         "Camionetas en Barrancabermeja. ブロロロ.",
-        "Ocho páginas. Ocho capítulos.",
+        "Nueve páginas. Nueve capítulos.",
         "Zapatos, bebés, perros. Variedad.",
       ],
       audit: [
@@ -486,7 +486,7 @@ export const standLines: Record<Language, StandLines> = {
       guidePrompt: ["¿A dónde? Yo vuelo, tú miras.", "Elige destino. Agárrate.", "¿A dónde vamos, compañero?", "Destino. Elige con cuidado."],
       guide: {
         projects: { label: "Sus proyectos", say: ["¡A los capítulos!", "Proyectos. Sujétate.", "Vamos a los casos. ドン!"] },
-        sites: { label: "Las páginas", say: ["Páginas en línea. ¡Vamos!", "A la tira de páginas.", "Ocho sitios. ¡Vuela!"] },
+        sites: { label: "Las páginas", say: ["Páginas en línea. ¡Vamos!", "A la tira de páginas.", "Nueve sitios. ¡Vuela!"] },
         pricing: { label: "Los precios", say: ["Precios. Sin miedo.", "Vamos a lo concreto.", "A la tabla. Respira."] },
         contact: { label: "Hablar con él", say: ["¡Al contacto! ドン!", "Buena decisión. Vamos.", "Directo a él. ¡Vamos!"] },
       },
@@ -635,7 +635,7 @@ export const standLines: Record<Language, StandLines> = {
         "Even a dog groomer. Woof.",
         "24/7 liquor store. I don't drink.",
         "Truck rentals. ブロロロ.",
-        "Eight sites. Eight chapters.",
+        "Nine sites. Nine chapters.",
         "Shoes, babies, dogs. Range.",
       ],
       audit: [
@@ -881,7 +881,7 @@ export const standLines: Record<Language, StandLines> = {
     timeStop: {
       sections: {
         hero: ["I touched your portrait. You missed it.", "Strolled the hero. All frozen.", "Not even WhatsApp moved. I did."],
-        sites: ["Checked all eight sites. You: frozen.", "Visited them all. You didn't see.", "The strip stopped. I didn't."],
+        sites: ["Checked all nine sites. You: frozen.", "Visited them all. You didn't see.", "The strip stopped. I didn't."],
         audit: ["Audited while you couldn't.", "Your link waited. I didn't.", "Scan paused. Muda."],
         about: ["Read his whole story. Done.", "Not even he moved. I did.", "I moved. Did you notice?"],
         standcard: ["Speed B… and still I moved.", "Posed for the arrow.", "My card and me. The only ones."],
@@ -942,7 +942,7 @@ export const standLines: Record<Language, StandLines> = {
         "Has 32K+ followers built on his own content.",
         "Works in Spanish and English.",
         "Message him on WhatsApp; he usually replies same day.",
-        "Has eight live websites for businesses.",
+        "Has nine live websites for businesses.",
         "He built one for a hotel in Santa Marta.",
         "Works with businesses all over Colombia and abroad.",
         "The domain and hosting stay in the client's name.",
@@ -978,7 +978,7 @@ export const standLines: Record<Language, StandLines> = {
       guidePrompt: ["Where to? I fly, you watch.", "Pick a destination. Hold on.", "Where are we going, partner?", "Destination. Choose wisely."],
       guide: {
         projects: { label: "His projects", say: ["To the chapters!", "Projects. Hold tight.", "To the cases. ドン!"] },
-        sites: { label: "The websites", say: ["Live websites. Let's go!", "To the strip of sites.", "Eight sites. Fly!"] },
+        sites: { label: "The websites", say: ["Live websites. Let's go!", "To the strip of sites.", "Nine sites. Fly!"] },
         pricing: { label: "The prices", say: ["Prices. No fear.", "Straight to the point.", "To the table. Breathe."] },
         contact: { label: "Talk to him", say: ["To the contact! ドン!", "Good call. Let's go.", "Straight to him. Go!"] },
       },
