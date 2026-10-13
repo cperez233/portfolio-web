@@ -15,6 +15,7 @@ export const SECRET_IDS = [
   "barrage",
   "arrow",
   "janken",
+  "darby",
   "sleep",
   "night",
   "console",

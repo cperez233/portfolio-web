@@ -16,7 +16,7 @@ import { pickLine } from "./pick";
  */
 
 type Message = { id: number; from: "stand" | "you"; text: string };
-type Choice = "who" | "cris" | "guide" | "trivia" | "power" | "janken" | "bye";
+type Choice = "who" | "cris" | "guide" | "trivia" | "power" | "janken" | "darby" | "bye";
 const GUIDE_IDS: GuideId[] = ["projects", "sites", "pricing", "contact"];
 
 interface Props {
@@ -29,6 +29,7 @@ interface Props {
   onPower: (id: PowerId) => void;
   onGuide: (id: GuideId) => void;
   onJanken: () => void;
+  onDarby: () => void;
   /** El Stand gesticula mientras habla. */
   onTalk: () => void;
 }
@@ -67,7 +68,7 @@ function Typed({ text, onDone }: { text: string; onDone?: () => void }) {
   );
 }
 
-export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide, onJanken, onTalk }: Props) {
+export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide, onJanken, onDarby, onTalk }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [queue, setQueue] = useState<string[]>([]);
   const [typing, setTyping] = useState(false);
@@ -125,6 +126,8 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
       setQueue([pick(lines.powerPrompt)]);
     } else if (choice === "janken") {
       onJanken();
+    } else if (choice === "darby") {
+      onDarby();
     } else {
       setQueue([pick(lines.bye)]);
       window.setTimeout(onClose, 1300);

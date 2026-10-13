@@ -8,6 +8,7 @@ import type { StandEvent } from "@/lib/stand-events";
 import { drawStand, SPRITE_H, SPRITE_W, type Frame } from "./sprite";
 import { standLines, type GuideId, type PowerId, type StandLines } from "./lines";
 import { Janken } from "./janken";
+import { Darby } from "./darby";
 import { StandChat } from "./stand-chat";
 import { POWER_VARIANTS, runPower } from "./powers";
 import { piecesOnScreen, pop } from "./power-kit";
@@ -119,7 +120,7 @@ export function MiniStand() {
   const fxRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<StandLines>(standLines[language]);
 
-  const [panel, setPanel] = useState<"chat" | "janken" | null>(null);
+  const [panel, setPanel] = useState<"chat" | "janken" | "darby" | null>(null);
   const [chats, setChats] = useState(0);
   // Tras arrastrarlo, el clic que llega al soltar no abre la conversacion.
   const dragged = useRef(false);
@@ -1168,6 +1169,21 @@ export function MiniStand() {
     }
   }
 
+  // Reaccion del Stand a cada ronda de un juego (jan-ken, apuesta de almas).
+  function reactToRound(result: "win" | "lose" | "draw") {
+    // "lose" es que perdiste tu: el Stand se pone engreido.
+    if (result === "lose") {
+      act.current("smug", 1400);
+      markRef.current("ﾌﾌﾌ");
+    } else if (result === "win") {
+      act.current(Math.random() < 0.5 ? "angry" : "sad", 1400);
+      markRef.current(Math.random() < 0.5 ? "＃" : "…");
+    } else {
+      act.current("sweat", 900);
+      markRef.current("!?");
+    }
+  }
+
   // Llevarte a una parte: el Stand avisa y el salto va por el telon de secciones.
   function guide(id: GuideId) {
     setPanel(null);
@@ -1214,6 +1230,7 @@ export function MiniStand() {
           onPower={(id) => void castPower(id)}
           onGuide={guide}
           onJanken={() => setPanel("janken")}
+          onDarby={() => setPanel("darby")}
           onTalk={onTalk}
         />
       ) : null}
@@ -1222,19 +1239,16 @@ export function MiniStand() {
           ref={panelRef}
           lines={standLines[language].janken}
           onClose={closePanel}
-          onRound={(result) => {
-            // "lose" es que perdiste tu: el Stand se pone engreido.
-            if (result === "lose") {
-              act.current("smug", 1400);
-              markRef.current("ﾌﾌﾌ");
-            } else if (result === "win") {
-              act.current(Math.random() < 0.5 ? "angry" : "sad", 1400);
-              markRef.current(Math.random() < 0.5 ? "＃" : "…");
-            } else {
-              act.current("sweat", 900);
-              markRef.current("!?");
-            }
-          }}
+          onRound={reactToRound}
+          say={(text, ms) => say.current(text, ms)}
+        />
+      ) : null}
+      {panel === "darby" ? (
+        <Darby
+          ref={panelRef}
+          lines={standLines[language].darby}
+          onClose={closePanel}
+          onRound={reactToRound}
           say={(text, ms) => say.current(text, ms)}
         />
       ) : null}
