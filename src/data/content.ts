@@ -738,6 +738,7 @@ const en: Dictionary = {
       "Online shoe store",
       "Dog grooming · appointments over WhatsApp",
       "Liquor store · 24/7 delivery in Floridablanca",
+      "Jewelry store in Italy · custom engraved steel pieces",
     ],
   },
   github: {
@@ -1200,6 +1201,7 @@ const es: Dictionary = {
       "Tienda online de calzado",
       "Peluquería canina · citas por WhatsApp",
       "Licorera · domicilio 24/7 en Floridablanca",
+      "Joyería en Italia · piezas de acero grabadas a medida",
     ],
   },
   github: {

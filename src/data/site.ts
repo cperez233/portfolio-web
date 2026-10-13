@@ -298,6 +298,13 @@ export const miniProjects: MiniProject[] = [
     href: "https://www.m10drinkslicorera.com/",
     image: "/sites/m10drinks.jpg",
   },
+  {
+    key: "jovis",
+    name: "Jovi's Gioielli",
+    domain: "joyeria-liart.vercel.app",
+    href: "https://joyeria-liart.vercel.app/",
+    image: "/sites/joyeria.jpg",
+  },
 ];
 
 export type PlanKey = "landing" | "web" | "panel";

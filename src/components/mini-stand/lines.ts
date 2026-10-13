@@ -383,7 +383,7 @@ export const standLines: Record<Language, StandLines> = {
     timeStop: {
       sections: {
         hero: ["Toqué tu retrato. No lo viste.", "Me paseé por el hero. Quieto todo.", "Ni el WhatsApp se movió. Yo sí."],
-        sites: ["Revisé las ocho páginas. Tú, quieto.", "Visité todas. No me viste.", "La tira se detuvo. Yo no."],
+        sites: ["Revisé las nueve páginas. Tú, quieto.", "Visité todas. No me viste.", "La tira se detuvo. Yo no."],
         audit: ["Auditaba mientras no podías.", "Tu link esperó. Yo no.", "Pausé el análisis. Muda."],
         about: ["Leí su historia entera. Ya.", "Ni él se movió. Yo sí.", "Cambié de sitio. ¿Lo notaste?"],
         standcard: ["Velocidad B… y aun así me moví.", "Le hice una pose a la flecha.", "Mi tarjeta y yo. Los únicos."],
@@ -450,7 +450,7 @@ export const standLines: Record<Language, StandLines> = {
         "Tiene más de 32K seguidores con contenido propio.",
         "Trabaja en español y en inglés.",
         "Le escribes por WhatsApp y suele responder el mismo día.",
-        "Tiene ocho páginas web en línea para negocios.",
+        "Tiene nueve páginas web en línea para negocios.",
         "Hizo la de un hotel en Santa Marta.",
         "Trabaja con negocios de toda Colombia y de afuera.",
         "El dominio y el hosting quedan a nombre del cliente.",
