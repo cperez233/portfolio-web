@@ -211,7 +211,23 @@ async function starFinger(ctx: PowerContext, target: HTMLElement) {
 /** Star Platinum: The World: tiempo detenido, golpes que caen al reanudarse. */
 async function starWorld(ctx: PowerContext, target: HTMLElement) {
   const r = target.getBoundingClientRect();
-  const resumed = stopTime(ctx.reducedMotion ? 900 : 2200, "platinum");
+  const ms = ctx.reducedMotion ? 900 : 2200;
+  const resumed = stopTime(ms, "platinum");
+  /*
+    El negativo de ZA WARUDO, pero suyo: la esfera nace del Stand, se
+    abre de golpe y es violeta (el color de Star Platinum), asi que la
+    pagina queda en negativo tenido de violeta y no en blanco y negro.
+    Misma tecnica de dos capas que zaWarudo.
+  */
+  const blend = ctx.reducedMotion ? null : layer("power-spw power-zw-blend", true);
+  if (blend) {
+    const sphere = document.createElement("span");
+    sphere.className = "power-zw-sphere is-platinum";
+    sphere.style.left = `${ctx.x}px`;
+    sphere.style.top = `${ctx.y}px`;
+    sphere.style.animationDuration = `${ms + 300}ms`;
+    blend.appendChild(sphere);
+  }
   const tint = layer("power-spw", true);
   tint.innerHTML = `<span class="power-spw-text">スタープラチナ・ザ・ワールド</span>`;
   const node = layer("power-sp", true);
@@ -232,6 +248,7 @@ async function starWorld(ctx: PowerContext, target: HTMLElement) {
   }
   await resumed;
   tint.classList.add("is-leaving");
+  blend?.classList.add("is-leaving");
   node.querySelectorAll(".power-fist").forEach((el) => el.remove());
   // Todos los golpes llegan a la vez: ドドドド.
   points.forEach(([x, y], i) => window.setTimeout(() => impact(x, y), i * 25));
@@ -241,6 +258,7 @@ async function starWorld(ctx: PowerContext, target: HTMLElement) {
   await wait(600);
   target.classList.remove("power-hit");
   tint.remove();
+  blend?.remove();
   node.remove();
 }
 

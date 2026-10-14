@@ -523,7 +523,8 @@ export function MiniStand() {
       }
       lastActivity = now;
       sleeping = false;
-      if (reducedMotion) return;
+      // Star Platinum: The World ya cierra con la frase del poder; hablar aqui la encimaba.
+      if (reducedMotion || by === "platinum") return;
       const lines = linesRef.current;
       if (by === "page") {
         act.current("sweat", 1800);
@@ -947,7 +948,6 @@ export function MiniStand() {
       const idleBob = !flying && !sleeping && !frozen && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
 
       ctx!.clearRect(0, 0, cw, ch);
-      const dark = document.documentElement.classList.contains("dark");
       drawStand(ctx!, {
         x: cw / 2,
         y: ch - scale * PAD_BOTTOM + idleBob,
@@ -958,7 +958,6 @@ export function MiniStand() {
         look,
         tilt,
         spin,
-        rim: dark ? "#060507" : "#161418",
       });
       canvas!.style.transform = `translate3d(${Math.round(body.x - cw / 2)}px, ${Math.round(body.y - ch + scale * PAD_BOTTOM)}px, 0)`;
       button!.style.transform = `translate3d(${Math.round(body.x - spriteW / 2)}px, ${Math.round(body.y - spriteH)}px, 0)`;

@@ -3032,9 +3032,23 @@ html.time-stopped .stand-hit {
     scale: 0 1;
   }
 }
-.power-spw {
-  background-color: rgba(40, 60, 140, 0.35);
-  mix-blend-mode: multiply;
+/* The World de Star Platinum: negativo violeta que se abre de golpe. */
+.power-zw-sphere.is-platinum {
+  background-color: #d4c8ff;
+  animation-name: power-spw;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes power-spw {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  8%,
+  90% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0);
+  }
 }
 .power-spw-text {
   position: absolute;

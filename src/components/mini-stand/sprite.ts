@@ -12,7 +12,11 @@
  * El nucleo del pecho es un diamante: Diamond is Unbreakable.
  */
 
-export const SPRITE_W = 18;
+/*
+  Los mapas miden 18 columnas, pero el puno derecho toca el borde: rows()
+  agrega una columna 19 para cerrarle el contorno de tinta.
+*/
+export const SPRITE_W = 19;
 
 const PALETTE: Record<string, string> = {
   k: "#161418",
@@ -136,6 +140,10 @@ const TAILS = [
 ];
 
 function rows(frame: Frame, tail: number, look: number) {
+  return mapRows(frame, tail, look).map((row) => row + (row[17] === "." || row[17] === "k" ? "." : "k"));
+}
+
+function mapRows(frame: Frame, tail: number, look: number) {
   const body = frame === "punch" ? BODY_PUNCH : BODY_IDLE;
   const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
   if (frame === "sweat") {
@@ -179,12 +187,10 @@ export interface DrawOptions {
   tilt?: number;
   /** Giro completo alrededor del centro del cuerpo (piruetas). */
   spin?: number;
-  /** Contorno de pegatina alrededor de la silueta (null: sin contorno). */
-  rim?: string | null;
 }
 
 export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
-  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, spin = 0, rim = null } = options;
+  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, spin = 0 } = options;
   const map = rows(frame, tail, look);
   const w = SPRITE_W * scale;
   const h = map.length * scale;
@@ -198,15 +204,6 @@ export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
   }
   ctx.scale(face, 1);
   ctx.translate(-w / 2, -h);
-  if (rim) {
-    ctx.fillStyle = rim;
-    for (let r = 0; r < map.length; r++) {
-      for (let c = 0; c < map[r].length; c++) {
-        if (map[r][c] === ".") continue;
-        ctx.fillRect((c - 1) * scale, (r - 1) * scale, scale * 3, scale * 3);
-      }
-    }
-  }
   for (let r = 0; r < map.length; r++) {
     for (let c = 0; c < map[r].length; c++) {
       const color = PALETTE[map[r][c]];
