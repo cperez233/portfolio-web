@@ -204,6 +204,18 @@ export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
   }
   ctx.scale(face, 1);
   ctx.translate(-w / 2, -h);
+  /*
+    Contorno extra de tinta: medio pixel del sprite alrededor de la
+    silueta. Con uno entero (mas el de tinta del mapa) quedaba muy grueso;
+    sin nada, muy fino.
+  */
+  const rim = Math.max(1, Math.round(scale / 2));
+  ctx.fillStyle = PALETTE.k;
+  for (let r = 0; r < map.length; r++) {
+    for (let c = 0; c < map[r].length; c++) {
+      if (map[r][c] !== ".") ctx.fillRect(c * scale - rim, r * scale - rim, scale + rim * 2, scale + rim * 2);
+    }
+  }
   for (let r = 0; r < map.length; r++) {
     for (let c = 0; c < map[r].length; c++) {
       const color = PALETTE[map[r][c]];

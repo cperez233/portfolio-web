@@ -3032,7 +3032,11 @@ html.time-stopped .stand-hit {
     scale: 0 1;
   }
 }
-/* The World de Star Platinum: negativo violeta que se abre de golpe. */
+/*
+  The World de Star Platinum: negativo violeta que se abre de golpe y,
+  cuando el tiempo vuelve (81%: los ultimos 500 ms de 2700), se recoge
+  hacia el Stand acelerando, como un rebobinado.
+*/
 .power-zw-sphere.is-platinum {
   background-color: #d4c8ff;
   animation-name: power-spw;
@@ -3042,13 +3046,19 @@ html.time-stopped .stand-hit {
   0% {
     transform: translate(-50%, -50%) scale(0);
   }
-  8%,
-  90% {
+  8% {
     transform: translate(-50%, -50%) scale(1);
+  }
+  81% {
+    transform: translate(-50%, -50%) scale(1);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
   }
   100% {
     transform: translate(-50%, -50%) scale(0);
   }
+}
+.power-spw-text.is-resume {
+  color: #ece6d8;
 }
 .power-spw-text {
   position: absolute;

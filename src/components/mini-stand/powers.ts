@@ -225,7 +225,8 @@ async function starWorld(ctx: PowerContext, target: HTMLElement) {
     sphere.className = "power-zw-sphere is-platinum";
     sphere.style.left = `${ctx.x}px`;
     sphere.style.top = `${ctx.y}px`;
-    sphere.style.animationDuration = `${ms + 300}ms`;
+    // Los ultimos 500 ms (fuera del tiempo detenido) la esfera se recoge.
+    sphere.style.animationDuration = `${ms + 500}ms`;
     blend.appendChild(sphere);
   }
   const tint = layer("power-spw", true);
@@ -247,8 +248,9 @@ async function starWorld(ctx: PowerContext, target: HTMLElement) {
     node.appendChild(held);
   }
   await resumed;
-  tint.classList.add("is-leaving");
-  blend?.classList.add("is-leaving");
+  // Salida: la esfera vuelve al Stand y Jotaro lo dice.
+  tint.innerHTML = `<span class="power-spw-text is-resume">そして時は動き出す</span>`;
+  window.setTimeout(() => tint.classList.add("is-leaving"), 450);
   node.querySelectorAll(".power-fist").forEach((el) => el.remove());
   // Todos los golpes llegan a la vez: ドドドド.
   points.forEach(([x, y], i) => window.setTimeout(() => impact(x, y), i * 25));

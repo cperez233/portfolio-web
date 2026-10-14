@@ -730,6 +730,7 @@ const en: Dictionary = {
     newTab: "(opens in a new tab)",
     imageAlt: "Website built for",
     items: [
+      "Restaurant and café in Girón · menu and bookings over WhatsApp",
       "My software studio · custom systems, integrations and audits",
       "Truck rental · monthly quotes in Barrancabermeja",
       "Hotel in Santa Marta · bookings over WhatsApp",
@@ -1193,6 +1194,7 @@ const es: Dictionary = {
     newTab: "(se abre en otra pestaña)",
     imageAlt: "Página web de",
     items: [
+      "Restaurante y café en Girón · carta y reservas por WhatsApp",
       "Mi estudio de software · sistemas a medida, integraciones y auditorías",
       "Renta de camionetas · cotización mensual en Barrancabermeja",
       "Hotel en Santa Marta · reservas por WhatsApp",

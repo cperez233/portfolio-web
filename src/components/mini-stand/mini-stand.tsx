@@ -168,7 +168,10 @@ export function MiniStand() {
     let scale = 3;
     let cw = 0;
     let ch = 0;
+    // Lo ultimo dibujado en el canvas (ver el bucle). Redimensionar lo borra.
+    let drawn = "";
     function size() {
+      drawn = "";
       width = window.innerWidth;
       height = window.innerHeight;
       scale = width < 640 ? 2 : 3;
@@ -310,9 +313,18 @@ export function MiniStand() {
       }
     }
     document.querySelectorAll("[data-spot]").forEach(track);
+    /*
+      Agrupado: cada letra que escribe el globo es una mutacion, y recorrer
+      todo el documento por cada una se notaba en celulares lentos.
+    */
+    let rescan = 0;
     const watcher = new MutationObserver(() => {
-      for (let i = spots.length - 1; i >= 0; i--) if (!spots[i].el.isConnected) spots.splice(i, 1);
-      document.querySelectorAll("[data-spot]").forEach(track);
+      if (rescan) return;
+      rescan = window.setTimeout(() => {
+        rescan = 0;
+        for (let i = spots.length - 1; i >= 0; i--) if (!spots[i].el.isConnected) spots.splice(i, 1);
+        document.querySelectorAll("[data-spot]").forEach(track);
+      }, 250);
     });
     watcher.observe(document.body, { childList: true, subtree: true });
 
@@ -701,6 +713,17 @@ export function MiniStand() {
     window.addEventListener("resize", onResize);
 
     // --- Bucle --------------------------------------------------------
+    /*
+      Medir el layout cada cuadro obliga al navegador a recalcularlo: en
+      celulares lentos eso era el lag al hacer scroll. Los nodos fijos se
+      guardan y el barrido de sitios (que mide todos) va cada 150 ms; el
+      sitio elegido igual espera 450 ms antes de cambiar, no se nota.
+    */
+    let heroEl: Element | null = null;
+    let homeEl: Element | null = null;
+    const cached = (el: Element | null, selector: string) => (el?.isConnected ? el : document.querySelector(selector));
+    let scanned: Spot | null = null;
+    let nextScan = 0;
     function tick(now: number) {
       if (stopped) return;
       // Tiempo detenido: el tambien queda congelado (ni se dibuja).
@@ -728,7 +751,8 @@ export function MiniStand() {
       }
 
       // Destino.
-      const heroRect = document.querySelector("[data-stand-hero]")?.getBoundingClientRect();
+      heroEl = cached(heroEl, "[data-stand-hero]");
+      const heroRect = heroEl?.getBoundingClientRect();
       if (mode === "home" && heroRect && heroRect.bottom < height * 0.45) mode = "out";
       else if (mode === "out" && heroRect && heroRect.bottom > height * 0.6) {
         mode = "home";
@@ -753,7 +777,8 @@ export function MiniStand() {
         ty = rect.top - 1;
         perched = true;
       } else if (mode === "home") {
-        const rect = document.querySelector("[data-stand-home]")?.getBoundingClientRect();
+        homeEl = cached(homeEl, "[data-stand-home]");
+        const rect = homeEl?.getBoundingClientRect();
         if (rect) {
           tx = rect.right - spriteW * 0.25;
           ty = rect.top + spriteH * 0.35;
@@ -765,7 +790,9 @@ export function MiniStand() {
       } else {
         let best: Spot | null = null;
         if (hovered) best = hovered;
+        else if (now < nextScan) best = scanned;
         else {
+          nextScan = now + 150;
           let score = -Infinity;
           for (const spot of spots) {
             const rect = spotRect(spot);
@@ -776,6 +803,7 @@ export function MiniStand() {
               best = spot;
             }
           }
+          scanned = best;
         }
         if (best !== candidate) {
           candidate = best;
@@ -947,18 +975,24 @@ export function MiniStand() {
                 : Math.max(-0.35, Math.min(0.35, body.vx / 900));
       const idleBob = !flying && !sleeping && !frozen && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
 
-      ctx!.clearRect(0, 0, cw, ch);
-      drawStand(ctx!, {
-        x: cw / 2,
-        y: ch - scale * PAD_BOTTOM + idleBob,
-        scale,
-        face: body.face,
-        frame,
-        tail: frozen || sleeping ? 0 : Math.floor(now / 260) % 2,
-        look,
-        tilt,
-        spin,
-      });
+      // Solo se redibuja si algo cambio: quieto, el dibujo es el mismo.
+      const tail = frozen || sleeping ? 0 : Math.floor(now / 260) % 2;
+      const key = `${idleBob}|${body.face}|${frame}|${tail}|${look}|${tilt.toFixed(3)}|${spin.toFixed(3)}`;
+      if (key !== drawn) {
+        drawn = key;
+        ctx!.clearRect(0, 0, cw, ch);
+        drawStand(ctx!, {
+          x: cw / 2,
+          y: ch - scale * PAD_BOTTOM + idleBob,
+          scale,
+          face: body.face,
+          frame,
+          tail,
+          look,
+          tilt,
+          spin,
+        });
+      }
       canvas!.style.transform = `translate3d(${Math.round(body.x - cw / 2)}px, ${Math.round(body.y - ch + scale * PAD_BOTTOM)}px, 0)`;
       button!.style.transform = `translate3d(${Math.round(body.x - spriteW / 2)}px, ${Math.round(body.y - spriteH)}px, 0)`;
 
@@ -1005,6 +1039,7 @@ export function MiniStand() {
       stopped = true;
       cancelAnimationFrame(raf);
       watcher.disconnect();
+      window.clearTimeout(rescan);
       themeWatcher.disconnect();
       seenObserver.disconnect();
       window.removeEventListener("pointermove", onPointer);

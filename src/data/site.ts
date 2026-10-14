@@ -243,6 +243,13 @@ export interface MiniProject {
  */
 export const miniProjects: MiniProject[] = [
   {
+    key: "cruzblanca",
+    name: "Cruz Blanca",
+    domain: "cruz-blanca-red.vercel.app",
+    href: "https://cruz-blanca-red.vercel.app/",
+    image: "/sites/cruz-blanca.jpg",
+  },
+  {
     key: "carpy",
     name: "carpy",
     domain: "carpy.tech",
