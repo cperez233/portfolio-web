@@ -1,7 +1,7 @@
-import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import type { AuditCheckId } from "@/data/content";
 import { runChecks } from "@/lib/audit-checks";
+import { safeGet } from "@/lib/safe-fetch";
 
 /**
  * Revision gratuita de la seccion #audit: descarga el HTML de la pagina
@@ -10,8 +10,9 @@ import { runChecks } from "@/lib/audit-checks";
  *
  * Como el servidor abre una URL que escribe cualquiera, se protege contra
  * SSRF: solo http(s) en su puerto por defecto, sin IPs privadas ni de
- * loopback (tampoco tras resolver el DNS), redirecciones seguidas a mano
- * y revalidadas, tiempo y tamano limitados.
+ * loopback (se comprueba al conectar, ver lib/safe-fetch.ts: asi un DNS
+ * que cambia de respuesta no sirve), redirecciones seguidas a mano y
+ * revalidadas, tiempo y tamano limitados.
  */
 
 export type AuditResponse =
@@ -55,81 +56,46 @@ function normalizeUrl(input: unknown): URL | null {
   }
 }
 
-function isPrivateAddress(address: string) {
-  if (isIP(address) === 4) {
-    const [a, b] = address.split(".").map(Number);
-    return (
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 198 && (b === 18 || b === 19)) ||
-      a >= 224
-    );
-  }
-  const v6 = address.toLowerCase();
-  if (v6.startsWith("::ffff:")) return isPrivateAddress(v6.slice(7));
-  return (
-    v6 === "::" ||
-    v6 === "::1" ||
-    v6.startsWith("fc") ||
-    v6.startsWith("fd") ||
-    v6.startsWith("fe80") ||
-    v6.startsWith("ff")
-  );
-}
-
-async function resolvesToPublic(hostname: string) {
-  try {
-    const addresses = await lookup(hostname, { all: true });
-    return addresses.length > 0 && addresses.every(({ address }) => !isPrivateAddress(address));
-  } catch {
-    return false;
-  }
-}
-
 /** Descarga el HTML siguiendo redirecciones a mano, validando cada salto. */
 async function fetchPage(start: URL): Promise<{ url: URL; html: string; headers: Headers } | null> {
   let url = start;
   const signal = AbortSignal.timeout(TIMEOUT_MS);
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-    if (!(await resolvesToPublic(url.hostname))) return null;
-
-    const response = await fetch(url, {
-      redirect: "manual",
-      signal,
-      headers: {
+    // La IP se valida dentro de la conexion (safe-fetch), no antes.
+    const response = await safeGet(
+      url,
+      {
         "user-agent": "Mozilla/5.0 (compatible; CristianPerezSiteCheck/1.0; +https://www.cristianperez.me)",
         accept: "text/html,application/xhtml+xml",
+        "accept-encoding": "gzip, deflate, br",
       },
-    });
+      signal,
+    );
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
-      await response.body?.cancel();
+      response.body.destroy();
       const next = location ? normalizeUrl(new URL(location, url).href) : null;
       if (!next) return null;
       url = next;
       continue;
     }
 
-    if (!response.ok || !response.body) return null;
+    if (response.status < 200 || response.status >= 300) {
+      response.body.destroy();
+      return null;
+    }
 
     // Lectura con tope: una pagina enorme no llena la memoria.
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
+    const chunks: Buffer[] = [];
     let size = 0;
-    while (size < MAX_BYTES) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      size += value.byteLength;
+    for await (const chunk of response.body) {
+      chunks.push(chunk as Buffer);
+      size += (chunk as Buffer).byteLength;
+      if (size >= MAX_BYTES) break;
     }
-    await reader.cancel().catch(() => {});
+    response.body.destroy();
 
     const html = new TextDecoder().decode(Buffer.concat(chunks));
     return { url, html, headers: response.headers };
@@ -143,6 +109,10 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "rateLimited" } satisfies AuditResponse, { status: 429 });
   }
 
+  // Un cuerpo legitimo es {"url": "..."}: cualquier cosa grande se descarta.
+  if (Number(request.headers.get("content-length") ?? 0) > 2000) {
+    return Response.json({ ok: false, error: "invalid" } satisfies AuditResponse, { status: 413 });
+  }
   const body = await request.json().catch(() => null);
   const url = normalizeUrl(body?.url);
   if (!url) {
