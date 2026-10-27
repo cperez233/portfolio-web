@@ -254,11 +254,14 @@ extraction projects are illustrated with diagrams drawn in code
 (`components/diagrams/`), styled as an editor window that follows the
 theme through the `tech-*` tokens in `globals.css`.
 
-`public/projects/` holds screenshots; only the content-creation project
-displays them today. The FCV shots (`fcv-*.jpg`) are not screenshots:
-the real captures contained names and national ID numbers, so the three
-screens are recreated in HTML with masked data and rendered at 2x with
-headless Chromium. Sources in `assets-src/fcv-mockups/`.
+`public/projects/` holds the case-study screenshots. Tostrivia's are real
+captures of the running app (desktop 1600x1000, phone 780x1688). The FCV
+ones are not captures: the real screens contained names, national ID
+numbers and internal inventory, so they are recreated in HTML (the FCV
+records ones with masked data and rendered at 2x with headless Chromium;
+the assets app with its real CSS and demo data; the wiki with the theme's
+palette and generic content). Sources in `assets-src/`, which is not
+versioned.
 
 `public/sites/` holds the mini-project screenshots: one 16:10 JPEG per
 published site, captured at 1440x900 and resized to 1200x750.

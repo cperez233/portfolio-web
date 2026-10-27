@@ -446,7 +446,41 @@ const en: Dictionary = {
       },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
-        tab: "FCV",
+        tab: "Assets",
+        category: "Custom software · Java · cybersecurity team",
+        title: "From an Excel matrix to an app that classifies every information asset",
+        problem:
+          "The FCV kept its information assets in an Excel matrix: no access control per area and no way to see the risks across the whole foundation at once.",
+        solution:
+          "A web app (Java, Spring Boot and MariaDB) where each area registers its assets, rates confidentiality, integrity and availability, and the app works out the classification on its own. It has roles with per-area access, bulk loading from the original Excel, an approval flow, risks, controls and action plans, a dashboard, and an audit log nobody can edit.",
+        result:
+          "Running in production at the FCV. Built with security from day one: a strict CSP, CSRF protection, a 404 for anything outside a user's area, and automated permission tests.",
+        shotAlts: [
+          "Dashboard with assets by classification level, risk and status (demo data)",
+          "Asset list with filters and classification levels, in dark mode (demo data)",
+          "Form where confidentiality, integrity and availability set the classification (demo data)",
+        ],
+      },
+      {
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "Wiki",
+        category: "Documentation platform · PHP · MediaWiki · cybersecurity team",
+        title: "A wiki that finds what you meant, even with typos",
+        problem:
+          "The cybersecurity team's documentation lived in a stock MediaWiki: the default look and a basic search that missed pages over a typo or a missing accent.",
+        solution:
+          "I wrote a MediaWiki extension (PHP, JavaScript and CSS) with a new theme: dark mode, a table of contents on the right and a redesigned home page. The search ignores accents and capitals, tolerates typos, finds words in any order, looks inside the articles and opens with Ctrl+K.",
+        result:
+          "Live in production since September 2026. The deploy script saves a backup of the previous theme, so rolling back takes three commands.",
+        shotAlts: [
+          "Search finding a page despite a typo (demo content)",
+          "Article page with a table of contents on the right (demo content)",
+          "Wiki home page in dark mode (demo content)",
+        ],
+      },
+      {
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "Records",
         category: "Document AI · cybersecurity team",
         title: "The FCV's paper records, searchable in seconds",
         problem:
@@ -462,21 +496,21 @@ const en: Dictionary = {
         ],
       },
       {
-        client: "criscx1905",
-        tab: "Video",
-        category: "Content & video",
-        title: "Video that explains and sells",
+        client: "Tostrivia",
+        tab: "Tostrivia",
+        category: "Own project · game · React & TypeScript",
+        title: "Tostrivia: a trivia game you play with friends from your phone",
         problem:
-          "A good product loses sales when nobody understands in thirty seconds why they need it.",
+          "Playing trivia with friends usually means an app to install, an account to create and a server somewhere.",
         solution:
-          "I write, record, edit and stream everything myself on TikTok, Instagram and Twitch.",
+          "A web game where a wheel picks the category, then 10 timed questions and points for streaks. Rooms of up to 10 players join from their own phones with a code, with a live scoreboard, chat and emotes. Mayhem mode adds power-ups, like Mario Kart's, that land on your friends' screens. It is React, TypeScript and Vite, with WebRTC (PeerJS), so there is no backend: the room creator's browser runs the match.",
         result:
-          "Over 2M organic impressions from people who stay to watch. I use the same approach for businesses' content.",
-        statLabel: "followers built with my own content",
+          "It plays in the browser with nothing to download and no account, in English and Spanish. It is a static site, so there is no server to maintain.",
+        statLabel: "questions in 146 categories, in English and Spanish",
         shotAlts: [
-          "TikTok profile with 32K+ followers",
-          "Editing in After Effects",
-          "Multistream setup in OBS",
+          "The wheel that picks the category",
+          "Category list with ready-made mixes",
+          "A question with four options and a timer",
         ],
       },
     ],
@@ -910,7 +944,41 @@ const es: Dictionary = {
       },
       {
         client: "Fundación Cardiovascular de Colombia (FCV)",
-        tab: "FCV",
+        tab: "Activos",
+        category: "Software a medida · Java · equipo de ciberseguridad",
+        title: "De una matriz en Excel a una app que clasifica cada activo de información",
+        problem:
+          "La FCV llevaba sus activos de información en una matriz de Excel: sin control de acceso por área y sin forma de ver los riesgos de toda la fundación a la vez.",
+        solution:
+          "Una app web (Java, Spring Boot y MariaDB) donde cada área registra sus activos, valora confidencialidad, integridad y disponibilidad, y la app calcula sola la clasificación. Trae roles con acceso por área, carga masiva desde el Excel original, flujo de aprobación, riesgos, controles y planes de acción, un tablero y una bitácora que nadie puede editar.",
+        result:
+          "En producción en la FCV. Se hizo con seguridad desde el primer día: CSP estricta, protección CSRF, un 404 para todo lo que quede fuera del área de cada usuario y pruebas automáticas de permisos.",
+        shotAlts: [
+          "Tablero con activos por nivel de clasificación, riesgo y estado (datos de demostración)",
+          "Lista de activos con filtros y niveles de clasificación, en modo oscuro (datos de demostración)",
+          "Formulario donde confidencialidad, integridad y disponibilidad definen la clasificación (datos de demostración)",
+        ],
+      },
+      {
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "Wiki",
+        category: "Plataforma de documentación · PHP · MediaWiki · equipo de ciberseguridad",
+        title: "Una wiki que encuentra lo que quisiste buscar, aunque te equivoques al escribir",
+        problem:
+          "La documentación del equipo de ciberseguridad vivía en un MediaWiki sin personalizar: aspecto por defecto y un buscador básico que no encontraba páginas por un error de tipeo o una tilde de menos.",
+        solution:
+          "Escribí una extensión de MediaWiki (PHP, JavaScript y CSS) con un tema nuevo: modo oscuro, tabla de contenido a la derecha y portada rediseñada. El buscador ignora tildes y mayúsculas, tolera errores de tipeo, encuentra las palabras en cualquier orden, busca dentro de los artículos y se abre con Ctrl+K.",
+        result:
+          "En producción desde septiembre de 2026. El script de despliegue guarda una copia del tema anterior, así que volver atrás son tres comandos.",
+        shotAlts: [
+          "Búsqueda que encuentra una página pese a un error de tipeo (contenido de demostración)",
+          "Artículo con tabla de contenido a la derecha (contenido de demostración)",
+          "Portada de la wiki en modo oscuro (contenido de demostración)",
+        ],
+      },
+      {
+        client: "Fundación Cardiovascular de Colombia (FCV)",
+        tab: "Actas",
         category: "IA documental · equipo de ciberseguridad",
         title: "Las actas de la FCV, encontradas en segundos",
         problem:
@@ -926,21 +994,21 @@ const es: Dictionary = {
         ],
       },
       {
-        client: "criscx1905",
-        tab: "Video",
-        category: "Contenido y video",
-        title: "Video que explica y vende",
+        client: "Tostrivia",
+        tab: "Tostrivia",
+        category: "Proyecto propio · juego · React y TypeScript",
+        title: "Tostrivia: un juego de trivia para jugar con amigos desde el celular",
         problem:
-          "Un buen producto pierde ventas cuando nadie entiende en treinta segundos por qué lo necesita.",
+          "Jugar trivia con amigos suele pedir una app que instalar, una cuenta que crear y un servidor en algún lado.",
         solution:
-          "Escribo, grabo, edito y transmito todo yo, en TikTok, Instagram y Twitch.",
+          "Un juego web donde una ruleta elige la categoría, y luego vienen 10 preguntas con reloj y puntos por racha. Las salas de hasta 10 jugadores entran desde su celular con un código, con marcador en vivo, chat y emotes. El modo Locura agrega poderes, como los de Mario Kart, que le caen a la pantalla de tus amigos. Es React, TypeScript y Vite, con WebRTC (PeerJS): no hay backend, la partida la corre el navegador de quien creó la sala.",
         result:
-          "Más de 2M de impresiones orgánicas de gente que se queda a ver. Uso el mismo enfoque para el contenido de negocios.",
-        statLabel: "seguidores construidos con contenido propio",
+          "Se juega en el navegador, sin descargar nada ni crear cuenta, en español e inglés. Es un sitio estático: no hay servidor que mantener.",
+        statLabel: "preguntas en 146 categorías, en español e inglés",
         shotAlts: [
-          "Perfil de TikTok con 32K+ seguidores",
-          "Edición en After Effects",
-          "Montaje multistream en OBS",
+          "La ruleta que elige la categoría",
+          "Lista de categorías con mezclas ya armadas",
+          "Una pregunta con cuatro opciones y reloj",
         ],
       },
     ],

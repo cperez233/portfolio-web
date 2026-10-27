@@ -133,6 +133,26 @@ export const cases: CaseStudy[] = [
     liveUrl: "https://www.carpy.tech/",
   },
   {
+    // App interna: no hay enlace ni repositorio publico. Las capturas son
+    // recreaciones con el CSS real de la app y datos de demostracion
+    // (assets-src/ no se versiona): nada del inventario real.
+    key: "activos",
+    shots: [
+      desktopShot("/projects/activos-inicio.jpg"),
+      desktopShot("/projects/activos-lista.jpg"),
+      desktopShot("/projects/activos-formulario.jpg"),
+    ],
+  },
+  {
+    // Wiki interna: recreada con la paleta del tema y contenido generico.
+    key: "wiki",
+    shots: [
+      desktopShot("/projects/wiki-busqueda.jpg"),
+      desktopShot("/projects/wiki-articulo.jpg"),
+      desktopShot("/projects/wiki-portal.jpg"),
+    ],
+  },
+  {
     key: "fcv",
     stat: "746",
     shots: [
@@ -145,13 +165,20 @@ export const cases: CaseStudy[] = [
     repoUrl: "https://github.com/cperez233/digitalizacion-actas-fcv",
   },
   {
-    key: "content",
-    stat: "32K+",
-    shots: [
-      { src: "/projects/content-social.jpg", width: 2000, height: 1248 },
-      { src: "/projects/content-editing.jpg", width: 2000, height: 1250 },
-      { src: "/projects/content-streaming.jpg", width: 2000, height: 1248 },
+    // Capturas reales de la app corriendo (datos del juego, nada personal).
+    key: "tostrivia",
+    stat: "8.5K+",
+    mobileShots: [
+      phoneShot("/projects/tostrivia-m-ruleta.jpg"),
+      phoneShot("/projects/tostrivia-m-categorias.jpg"),
+      phoneShot("/projects/tostrivia-m-partida.jpg"),
     ],
+    shots: [
+      desktopShot("/projects/tostrivia-ruleta.jpg"),
+      desktopShot("/projects/tostrivia-categorias.jpg"),
+      desktopShot("/projects/tostrivia-partida.jpg"),
+    ],
+    repoUrl: "https://github.com/cperez233/Tostrivia-gg",
   },
 ];
 
