@@ -513,6 +513,24 @@ const en: Dictionary = {
           "A question with four options and a timer",
         ],
       },
+      {
+        client: "Radar K-pop",
+        tab: "Radar",
+        category: "Own project · fans · JavaScript & Python",
+        title: "Radar K-pop: where your favorite groups play next, and how far that is from you",
+        problem:
+          "Tour dates are scattered across label posts, ticket sites and fan accounts, and none of them tells you how far a show is from where you live.",
+        solution:
+          "A page with a small 3D globe where ten groups stand as chibis on their next tour stop, each with a countdown, the distance to you and a map of the venue's neighborhood. It has alerts for new dates and releases, a show-night mode and a sonar view of every group around you. It is plain HTML, CSS and JavaScript with no framework, and a GitHub Action refreshes the data every 15 minutes and rebuilds the page.",
+        result:
+          "It only uses public, official schedules and posts, at city level, with no tracking of people. It installs as an app on your phone and works in English and Spanish.",
+        statLabel: "hand-made chibis, one for every member of ten groups",
+        shotAlts: [
+          "The 3D globe with each group standing on its next tour stop",
+          "Sonar view of every group around you, by distance",
+          "A group card with its countdown and distance, on a phone",
+        ],
+      },
     ],
   },
   footer: {
@@ -1009,6 +1027,24 @@ const es: Dictionary = {
           "La ruleta que elige la categoría",
           "Lista de categorías con mezclas ya armadas",
           "Una pregunta con cuatro opciones y reloj",
+        ],
+      },
+      {
+        client: "Radar K-pop",
+        tab: "Radar",
+        category: "Proyecto propio · fans · JavaScript y Python",
+        title: "Radar K-pop: dónde tocan tus grupos favoritos y qué tan lejos te queda",
+        problem:
+          "Las fechas de las giras están regadas entre publicaciones de las disqueras, páginas de boletas y cuentas de fans, y ninguna te dice qué tan lejos te queda un show.",
+        solution:
+          "Una página con un globo 3D donde diez grupos aparecen como chibis sobre su próxima parada de gira, cada uno con cuenta regresiva, la distancia hasta ti y un mapa del barrio del recinto. Trae alertas de fechas y lanzamientos nuevos, un modo para la noche del concierto y una vista de sonar con todos los grupos a tu alrededor. Es HTML, CSS y JavaScript puros, sin framework, y un GitHub Action actualiza los datos cada 15 minutos y reconstruye la página.",
+        result:
+          "Solo usa calendarios y publicaciones públicas y oficiales, a nivel de ciudad, sin rastrear a nadie. Se instala como app en el celular y funciona en español e inglés.",
+        statLabel: "chibis hechos a mano, uno por cada integrante de diez grupos",
+        shotAlts: [
+          "El globo 3D con cada grupo sobre su próxima parada de gira",
+          "Vista de sonar con todos los grupos a tu alrededor, por distancia",
+          "Tarjeta de un grupo con su cuenta regresiva y distancia, en celular",
         ],
       },
     ],

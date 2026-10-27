@@ -178,7 +178,26 @@ export const cases: CaseStudy[] = [
       desktopShot("/projects/tostrivia-categorias.jpg"),
       desktopShot("/projects/tostrivia-partida.jpg"),
     ],
+    liveUrl: "https://www.tostrivia.games/",
     repoUrl: "https://github.com/cperez233/Tostrivia-gg",
+  },
+  {
+    // Capturas reales. Sin la vista de un grupo en escritorio: lleva una
+    // foto oficial de la banda, que no es mia. En celular la tarjeta del
+    // grupo solo lleva los chibis.
+    key: "radar",
+    stat: "68",
+    mobileShots: [
+      phoneShot("/projects/radar-m-globo.jpg"),
+      phoneShot("/projects/radar-m-sonar.jpg"),
+      phoneShot("/projects/radar-m-grupo.jpg"),
+    ],
+    shots: [
+      desktopShot("/projects/radar-globo.jpg"),
+      desktopShot("/projects/radar-sonar.jpg"),
+    ],
+    liveUrl: "https://radar-kpop.vercel.app/",
+    repoUrl: "https://github.com/cperez233/radar-kpop",
   },
 ];
 
