@@ -146,7 +146,7 @@ export const standLines: Record<Language, StandLines> = {
         "Hasta una peluquería canina. Guau.",
         "Licorera 24/7. Yo no bebo.",
         "Camionetas en Barrancabermeja. ブロロロ.",
-        "Nueve páginas. Nueve capítulos.",
+        "A la medida. Una por una.",
         "Zapatos, bebés, perros. Variedad.",
       ],
       audit: [
@@ -579,7 +579,7 @@ export const standLines: Record<Language, StandLines> = {
       guidePrompt: ["¿A dónde? Yo vuelo, tú miras.", "Elige destino. Agárrate.", "¿A dónde vamos, compañero?", "Destino. Elige con cuidado.", "Dime a dónde y vuelo.", "¿Destino? Yo conduzco, tú observas.", "Escoge. Te llevo en un parpadeo."],
       guide: {
         projects: { label: "Sus proyectos", say: ["¡A los capítulos!", "Proyectos. Sujétate.", "Vamos a los casos. ドン!"] },
-        sites: { label: "Las páginas", say: ["Páginas en línea. ¡Vamos!", "A la tira de páginas.", "Nueve sitios. ¡Vuela!"] },
+        sites: { label: "Las páginas", say: ["Páginas en línea. ¡Vamos!", "A la tira de páginas.", "Páginas a la medida. ¡Vuela!"] },
         pricing: { label: "Los precios", say: ["Precios. Sin miedo.", "Vamos a lo concreto.", "A la tabla. Respira."] },
         contact: { label: "Hablar con él", say: ["¡Al contacto! ドン!", "Buena decisión. Vamos.", "Directo a él. ¡Vamos!"] },
       },
@@ -759,7 +759,7 @@ export const standLines: Record<Language, StandLines> = {
         "Even a dog groomer. Woof.",
         "24/7 liquor store. I don't drink.",
         "Truck rentals. ブロロロ.",
-        "Nine sites. Nine chapters.",
+        "Made to measure. One by one.",
         "Shoes, babies, dogs. Range.",
       ],
       audit: [
@@ -1170,7 +1170,7 @@ export const standLines: Record<Language, StandLines> = {
       guidePrompt: ["Where to? I fly, you watch.", "Pick a destination. Hold on.", "Where are we going, partner?", "Destination. Choose wisely.", "Tell me where and I fly.", "Destination? I drive, you watch.", "Choose. I'll take you in a blink."],
       guide: {
         projects: { label: "His projects", say: ["To the chapters!", "Projects. Hold tight.", "To the cases. ドン!"] },
-        sites: { label: "The websites", say: ["Live websites. Let's go!", "To the strip of sites.", "Nine sites. Fly!"] },
+        sites: { label: "The websites", say: ["Live websites. Let's go!", "To the strip of sites.", "Custom pages. Fly!"] },
         pricing: { label: "The prices", say: ["Prices. No fear.", "Straight to the point.", "To the table. Breathe."] },
         contact: { label: "Talk to him", say: ["To the contact! ドン!", "Good call. Let's go.", "Straight to him. Go!"] },
       },
