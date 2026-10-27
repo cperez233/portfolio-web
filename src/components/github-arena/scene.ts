@@ -411,6 +411,14 @@ export function createArena(options: ArenaOptions): Arena {
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(canvas);
 
+  // Si el sistema le quita el contexto (poca memoria), three lo recupera
+  // solo; aqui se pide un cuadro para que no quede el panel en blanco.
+  function onContextRestored() {
+    dirty = true;
+    start();
+  }
+  canvas.addEventListener("webglcontextrestored", onContextRestored);
+
   // ---- Bucle --------------------------------------------------------------
   let visible = false;
   let frame = 0;
@@ -538,6 +546,7 @@ export function createArena(options: ArenaOptions): Arena {
     dispose() {
       if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
+      canvas.removeEventListener("webglcontextrestored", onContextRestored);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);

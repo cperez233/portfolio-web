@@ -8,10 +8,12 @@ interface Controllable {
   dispose: () => void;
 }
 
+/** Prueba de soporte. Suelta el contexto: los celulares aguantan pocos a la vez. */
 function hasWebGL() {
   try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    const gl = document.createElement("canvas").getContext("webgl2");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return Boolean(gl);
   } catch {
     return false;
   }

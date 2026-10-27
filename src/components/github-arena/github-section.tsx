@@ -45,10 +45,12 @@ function readColors(): ArenaColors {
   };
 }
 
+/** Prueba de soporte. Suelta el contexto: los celulares aguantan pocos a la vez. */
 function hasWebGL() {
   try {
-    const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+    const gl = document.createElement("canvas").getContext("webgl2");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return Boolean(gl);
   } catch {
     return false;
   }
@@ -130,12 +132,19 @@ export function GithubSection({ data }: { data: ContributionYear }) {
         arenaRef.current?.setVisible(entry.isIntersecting);
         // Los ゴ solo flotan con el tablero en pantalla.
         panel.classList.toggle("is-live", entry.isIntersecting);
-        if (entry.intersectionRatio > 0.35 && !risen && arenaRef.current) {
+        /*
+          `>= 0.2` y no `> 0.35`: el navegador avisa justo al cruzar un
+          umbral y puede informar exactamente ese valor. En celular el
+          panel mide 320px, 35% son 112px exactos, y con `>` las columnas
+          se quedaban planas para siempre. Los umbrales de arriba dan
+          otra lectura al seguir entrando.
+        */
+        if (entry.intersectionRatio >= 0.2 && !risen && arenaRef.current) {
           risen = true;
           arenaRef.current.rise();
         }
       },
-      { threshold: [0, 0.35] },
+      { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] },
     );
 
     const loader = new IntersectionObserver(
@@ -143,9 +152,9 @@ export function GithubSection({ data }: { data: ContributionYear }) {
         if (!entry.isIntersecting) return;
         loader.disconnect();
         if (!hasWebGL()) return;
-        const { createArena } = await import("./scene");
-        if (disposed) return;
         try {
+          const { createArena } = await import("./scene");
+          if (disposed) return;
           arenaRef.current = createArena({
             canvas,
             days: data.days,
@@ -183,7 +192,8 @@ export function GithubSection({ data }: { data: ContributionYear }) {
           });
           visibility.observe(panel);
         } catch {
-          // Sin contexto WebGL real (GPU en lista negra): queda el plano.
+          // Sin contexto WebGL real (GPU en lista negra) o sin red para el
+          // modulo 3D: queda el plano.
         }
       },
       { rootMargin: "600px 0px" },
