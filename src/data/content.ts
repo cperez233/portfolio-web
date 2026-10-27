@@ -335,7 +335,7 @@ const en: Dictionary = {
   hero: {
     tagline: "Websites and software that run your business, and video that sells it.",
     description:
-      "I design, build and explain the systems small teams depend on. Without the jargon.",
+      "I design, build and explain the systems small teams depend on, without the jargon.",
     badgeAvailability: "Open to new projects",
     badgeLocation: "Bucaramanga, Colombia · remote",
     ctaPrimary: "Let's Talk on WhatsApp",
@@ -385,7 +385,7 @@ const en: Dictionary = {
         name: "Websites & custom software",
         tag: "Next.js / React / Laravel / PostgreSQL",
         description: "Your website, your online store or the system your team works with, built from scratch.",
-        deliverable: "Published in your name, with the code and a manual. Bigger projects, with the carpy team.",
+        deliverable: "Published in your name, with the code and a manual. Bigger projects are built with the carpy team.",
       },
       {
         name: "Found on Google and AI",
@@ -403,7 +403,7 @@ const en: Dictionary = {
         name: "Review & advisory",
         tag: "Website / Sales / Security",
         description: "I review your website, how you sell online and where your data sits, and tell you what to fix first.",
-        deliverable: "A report with what to fix first, in order of impact.",
+        deliverable: "A report with the fixes ranked by impact.",
         auditLink: true,
       },
       {
@@ -471,7 +471,7 @@ const en: Dictionary = {
         solution:
           "I write, record, edit and stream everything myself on TikTok, Instagram and Twitch.",
         result:
-          "Over 2M organic impressions from people who stay to watch. I bring that same connection to content that helps businesses grow.",
+          "Over 2M organic impressions from people who stay to watch. I use the same approach for businesses' content.",
         statLabel: "followers built with my own content",
         shotAlts: [
           "TikTok profile with 32K+ followers",
@@ -681,8 +681,8 @@ const en: Dictionary = {
       preview: { label: "Preview on WhatsApp", pass: "Shows an image when shared", fail: "Shared as a bare link, no image" },
       indexable: { label: "Visible on Google", pass: "Google is allowed to list it", fail: "It is asking Google not to list it" },
     },
-    hookTitle: "This is only the surface.",
-    hookBody: "Real speed on phones, how you rank against your competition and what AI says about you: I review it and send it to you for free over WhatsApp.",
+    hookTitle: "What the free check doesn't cover.",
+    hookBody: "Real speed on phones, how you rank against your competition and what AI says about you. I review all three and send you the results free on WhatsApp.",
     cta: "Get the full review",
     whatsappMessage: "Hi Cristian, I checked {url} on your site and it scored {n}/{total}. Can you send me the full review?",
     again: "Check another site",
@@ -799,7 +799,7 @@ const es: Dictionary = {
   hero: {
     tagline: "Páginas web y software que hacen funcionar tu negocio, y video que lo vende.",
     description:
-      "Diseño, construyo y explico los sistemas de los que depende un equipo pequeño. Sin jerga.",
+      "Diseño, construyo y explico, sin jerga, los sistemas de los que depende un equipo pequeño.",
     badgeAvailability: "Disponible para proyectos nuevos",
     badgeLocation: "Bucaramanga, Colombia · remoto",
     ctaPrimary: "Hablemos por WhatsApp",
@@ -849,7 +849,7 @@ const es: Dictionary = {
         name: "Páginas web y software a medida",
         tag: "Next.js / React / Laravel / PostgreSQL",
         description: "Tu página, tu tienda en línea o el sistema con el que trabaja tu equipo, hecho desde cero.",
-        deliverable: "Publicado a tu nombre, con el código y un manual. Los proyectos grandes, con el equipo de carpy.",
+        deliverable: "Publicado a tu nombre, con el código y un manual. Los proyectos grandes los hago con el equipo de carpy.",
       },
       {
         name: "Que te encuentren en Google y en la IA",
@@ -867,7 +867,7 @@ const es: Dictionary = {
         name: "Revisión y asesoría",
         tag: "Página web / Ventas / Seguridad",
         description: "Reviso tu página, cómo vendes por internet y dónde están tus datos, y te digo qué arreglar primero.",
-        deliverable: "Un informe con qué arreglar primero, en orden de impacto.",
+        deliverable: "Un informe con los arreglos ordenados por impacto.",
         auditLink: true,
       },
       {
@@ -935,7 +935,7 @@ const es: Dictionary = {
         solution:
           "Escribo, grabo, edito y transmito todo yo, en TikTok, Instagram y Twitch.",
         result:
-          "Más de 2M de impresiones orgánicas de gente que se queda a ver. Esa misma conexión la llevo a contenido que ayuda a crecer negocios.",
+          "Más de 2M de impresiones orgánicas de gente que se queda a ver. Uso el mismo enfoque para el contenido de negocios.",
         statLabel: "seguidores construidos con contenido propio",
         shotAlts: [
           "Perfil de TikTok con 32K+ seguidores",
@@ -1145,8 +1145,8 @@ const es: Dictionary = {
       preview: { label: "Vista previa en WhatsApp", pass: "Sale con imagen al compartirla", fail: "Se comparte como link suelto, sin imagen" },
       indexable: { label: "Visible en Google", pass: "Google puede mostrarla", fail: "Le está pidiendo a Google que no la muestre" },
     },
-    hookTitle: "Esto es solo la superficie.",
-    hookBody: "La velocidad real en celular, cómo quedas frente a tu competencia y qué dice la IA de ti: lo reviso y te lo mando gratis por WhatsApp.",
+    hookTitle: "Lo que la revisión gratis no cubre.",
+    hookBody: "La velocidad real en celular, cómo quedas frente a tu competencia y qué dice la IA de ti. Reviso los tres puntos y te mando el resultado gratis por WhatsApp.",
     cta: "Quiero la revisión completa",
     whatsappMessage: "Hola Cristian, revisé {url} en tu página y salió {n}/{total}. ¿Me mandas la revisión completa?",
     again: "Revisar otra página",
