@@ -357,7 +357,7 @@ const en: Dictionary = {
       },
       {
         title: "Brand & content",
-        body: "A website works better when the brand behind it is clear. I built an audience of 32K+ on TikTok by talking to people the way they talk, and I use that to make content that brings your business customers, not just views. Logo and colours included.",
+        body: "A website works better when the brand behind it is clear. I built a TikTok audience of 35K+ followers and 2.5M likes by talking to people the way they talk, and I use that to make content that brings your business customers, not just views. Logo and colours included.",
         traits: [
           { label: "Visual identity", detail: "logo, colours, fonts" },
           { label: "Content for social media", detail: "scripts and editing that hold attention" },
@@ -873,7 +873,7 @@ const es: Dictionary = {
       },
       {
         title: "Marca y contenido",
-        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 32K+ en TikTok hablándole a la gente en su idioma, y eso mismo lo pongo en contenido que le trae clientes a tu negocio, no solo vistas. Logo y colores incluidos.",
+        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 35K+ seguidores y 2.5M de likes en TikTok hablándole a la gente en su idioma, y eso mismo lo pongo en contenido que le trae clientes a tu negocio, no solo vistas. Logo y colores incluidos.",
         traits: [
           { label: "Identidad visual", detail: "logo, colores, tipografías" },
           { label: "Contenido para redes", detail: "guiones y edición que retienen" },

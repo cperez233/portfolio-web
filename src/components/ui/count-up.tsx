@@ -6,7 +6,7 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Cifra que cuenta desde cero al entrar en pantalla. Solo la parte
- * numerica inicial ("32" de "32K+", "8.5" de "8.5K+", con sus decimales);
+ * numerica inicial ("35" de "35K+", "8.5" de "8.5K+", con sus decimales);
  * lo que no empieza por numero se pinta tal cual. El HTML del servidor trae el valor final, que es lo
  * que leen buscadores y lectores de pantalla.
  */

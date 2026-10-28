@@ -27,12 +27,12 @@ export function AboutSection() {
 
   /*
     Datos reales, no inventados: el numero de sitios sale de la lista de
-    trabajo reciente (sube solo al anadir uno), y los 32K+ son la misma
+    trabajo reciente (sube solo al anadir uno), y los 35K+ son la misma
     cifra que ya cuenta el bloque de Comunicacion.
   */
   const facts = [
     { value: String(miniProjects.length), label: t.about.facts.sites, href: "#sites" },
-    { value: "32K+", label: t.about.facts.audience },
+    { value: "35K+", label: t.about.facts.audience },
     { value: "ES · EN", label: t.about.facts.languages, wide: true },
   ];
 
