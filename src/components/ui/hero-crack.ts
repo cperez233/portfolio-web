@@ -4,9 +4,9 @@ import { pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
 
 /*
-  Grietas en la pantalla cuando el Stand se manifiesta, y Crazy Diamond que
-  las repara cuando se hace chico (ver el efecto del relevo en
-  portfolio-hero.tsx). Es la version barata del poder de Crazy Diamond del
+  Grietas en la pantalla cuando el Stand grande remata su rafaga contra el
+  nombre (ドラァ!), y Crazy Diamond que las repara hacia su puno (ver el
+  efecto del relevo en portfolio-hero.tsx). Es la version barata del poder de Crazy Diamond del
   mini Stand (powers.ts): solo la telarana de grietas, sin romper ni mover
   ninguna pieza de la pagina, sin filtros y sin tocar el DOM del resto.
 
@@ -63,7 +63,7 @@ function web(x: number, y: number, w: number, h: number, letters: DOMRect[]) {
 }
 
 export interface HeroCrack {
-  /** Repara las grietas hacia (x, y) en `ms` y se retira. */
+  /** Repara las grietas hacia (x, y) en `ms` y se retira. Solo la primera vez. */
   heal: (x: number, y: number, ms: number) => void;
   /** Quita todo ya, sin animar. */
   cancel: () => void;
@@ -107,8 +107,12 @@ export function playHeroCrack(x: number, y: number, letters: DOMRect[] = []): He
     node.remove();
   };
 
+  // Se repara una sola vez: el relevo vuelve a pedirlo por si el poder no llego a hacerlo.
+  let healed = false;
   return {
     heal(tx, ty, ms) {
+      if (healed) return;
+      healed = true;
       node.classList.add("is-healing");
       playSfx("heal");
       grow.commitStyles();
@@ -132,19 +136,28 @@ export function playHeroCrack(x: number, y: number, letters: DOMRect[] = []): He
 }
 
 export interface Shattered {
-  /** Las letras vuelven a su sitio, una tras otra (Crazy Diamond las arregla). */
+  /** Las letras vuelven a su sitio, una tras otra (Crazy Diamond las arregla). Solo la primera vez. */
   mend: (ms: number) => void;
   cancel: () => void;
 }
 
 /**
- * Las letras del nombre saltan un poco de su sitio, torcidas, como piezas
- * de vidrio roto, y vuelven con un rebote cuando Crazy Diamond las arregla.
- * Solo `translate` y `rotate` (compositor): se suman al `transform` de la
- * animacion de entrada de las letras sin pisarla.
+ * Las letras del nombre saltan de su sitio, torcidas, como piezas de vidrio
+ * roto, y vuelven con un rebote cuando Crazy Diamond las arregla. Con
+ * `from` (el punto del golpe) salen despedidas desde ahi: las de cerca,
+ * mas lejos. Solo `translate` y `rotate` (compositor): se suman al
+ * `transform` de la animacion de entrada de las letras sin pisarla.
  */
-export function shatterLetters(letters: HTMLElement[]): Shattered {
-  const states = letters.map((el) => ({ el, x: rand(-9, 9), y: rand(2, 13), r: rand(-8, 8) }));
+export function shatterLetters(letters: HTMLElement[], from?: { x: number; y: number }): Shattered {
+  const states = letters.map((el) => {
+    if (!from) return { el, x: rand(-9, 9), y: rand(2, 13), r: rand(-8, 8) };
+    const box = el.getBoundingClientRect();
+    const dx = box.left + box.width / 2 - from.x;
+    const dy = box.top + box.height / 2 - from.y;
+    const d = Math.max(40, Math.hypot(dx, dy));
+    const push = rand(10, 18) * Math.min(2.4, 260 / d + 0.7);
+    return { el, x: (dx / d) * push + rand(-3, 3), y: (dy / d) * push + rand(2, 8), r: rand(-13, 13) };
+  });
   const animations: Animation[] = states.map(({ el, x, y, r }) =>
     el.animate(
       [
@@ -154,8 +167,11 @@ export function shatterLetters(letters: HTMLElement[]): Shattered {
       { duration: 150, easing: "cubic-bezier(0.2, 0.9, 0.3, 1.3)", fill: "forwards" },
     ),
   );
+  let mended = false;
   return {
     mend(ms) {
+      if (mended) return;
+      mended = true;
       states.forEach(({ el, x, y, r }, i) => {
         animations.push(
           el.animate(

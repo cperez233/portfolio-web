@@ -26,7 +26,8 @@ import { unlockSecret } from "@/lib/secrets";
 import { SPRITE_W } from "@/components/mini-stand/sprite";
 import { HeroStand } from "./hero-stand";
 import { playHeroCrack, shatterLetters, type HeroCrack, type Shattered } from "./hero-crack";
-import { runPower } from "@/components/mini-stand/powers";
+import { fist, impact, runPower, speedLines } from "@/components/mini-stand/powers";
+import { layer as effectLayer, pop } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
 
 interface SlamTextProps {
@@ -72,18 +73,18 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     420   PEREZ cae, mas pesado
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
-    1150  el Stand se levanta junto al retrato, enorme (0.4s)
-    1230  y pasa una de dos cosas, una vez cada una (ver pickIntro):
-          · Crazy Diamond: su presencia agrieta la pantalla desde su pecho
-            (con ドラ en rosa, una parada de impacto y las letras del nombre
-            saltando como vidrio roto)
-          · ZA WARUDO: detiene el tiempo (esfera, mundo congelado, solo el
-            Stand se mueve)
-    1750  (ZA WARUDO: 1600) se hace el mini Stand: viaja hasta donde el
-          chico espera y se cambian sin que se note. Crazy Diamond repara
-          las grietas y las letras hacia donde aterriza y el chico saluda;
-          con ZA WARUDO el chico se teletransporta, habla, vuelve a su
-          lugar y habla otra vez
+    1150  el Stand se levanta junto al retrato, enorme (0.4s), y SE QUEDA
+          grande mientras hace una de dos cosas (ver pickIntro y DIAMOND /
+          WORLD):
+          · Crazy Diamond: ráfaga de punos ドラララ contra el nombre, un
+            golpe final ドラァ! que agrieta la pantalla desde el impacto y
+            despide las letras, un respiro con todo roto, y lo repara todo
+            de vuelta hacia su puno
+          · ZA WARUDO: grita ザ・ワールド, detiene el tiempo, y con todo
+            quieto lanza cuchillos que se quedan colgados en el aire; al
+            volver el tiempo se clavan en el nombre
+          Al terminar se hace el mini Stand: viaja hasta donde el chico
+          espera y se cambian sin que se note.
 */
 const ENTRY = {
   firstName: 100,
@@ -93,19 +94,22 @@ const ENTRY = {
   portrait: 840,
   impact: 1080,
   stand: 1150,
-  /** Cuando se agrieta la pantalla, en el reloj de la animacion del Stand. */
-  crack: 1230,
-  /**
-   * Momento (en el reloj de la animacion del Stand, que ya cuenta su
-   * retardo) en que el grande deja de sostenerse y viaja a convertirse en
-   * el mini Stand. Ver el efecto del relevo.
-   */
-  standCondense: 1750,
-  /** Igual, pero con ZA WARUDO: el grande no espera a nada y el tiempo corre. */
-  worldCondense: 1600,
   menacing: 1300,
   copy: 1150,
 } as const;
+
+/*
+  Crazy Diamond, en el reloj de la animacion del Stand (que ya cuenta su
+  retardo): la rafaga, el golpe final, la reparacion y el relevo.
+*/
+const DIAMOND = { rush: 1600, hits: 11, step: 62, finisher: 2380, heal: 3250, healMs: 700, condense: 4200 } as const;
+
+/*
+  ZA WARUDO, en el mismo reloj: el grito, el tiempo detenido (stop + ms),
+  los cuchillos (uno cada knifeStep) y el relevo, que llega cuando los
+  cuchillos ya se clavaron y se fue el 時は動き出す.
+*/
+const WORLD = { shout: 1580, stop: 1800, ms: 2300, knives: 2050, knifeStep: 110, condense: 5250 } as const;
 
 /* El copy entra justo despues del golpe, cada pieza 80ms tras la anterior. */
 function riseDelay(index: number): React.CSSProperties {
@@ -135,9 +139,6 @@ function pickIntro(): Intro {
     return "diamond";
   }
 }
-
-/** ZA WARUDO de la entrada, en ms desde que se detiene el tiempo. */
-const WORLD = { stop: 1500, teleport: 1000, back: 2100, end: 2250 } as const;
 
 /**
  * Profundidad con el puntero: cada capa se desplaza segun su distancia,
@@ -257,25 +258,28 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     verse en su sitio, junto al retrato: la clase stand-manifest la pone
     StandManifestGate desde el primer pintado (ver ese componente: si la
     pusiera este efecto, el chico ya se habria dibujado y se veria como un
-    fantasma que se apaga). Cuando el grande termina de sostenerse viaja
-    hasta ese mismo lugar, se encoge al tamano exacto del chico, y en ese
-    momento uno desaparece y el otro aparece: es el mismo dibujo, el mismo
-    sitio y el mismo tamano, asi que se lee como un solo personaje que se
-    hace pequeno.
+    fantasma que se apaga). Cuando el grande termina su poder viaja hasta
+    ese mismo lugar, se encoge al tamano exacto del chico, y en ese momento
+    uno desaparece y el otro aparece: es el mismo dibujo, el mismo sitio y
+    el mismo tamano, asi que se lee como un solo personaje que se hace
+    pequeno.
 
-    Mientras esta grande pasa algo de JoJo, una de dos (pickIntro):
-    - Crazy Diamond: su presencia agrieta la pantalla y parte las letras del
-      nombre (hero-crack.ts); al hacerse chico repara todo hacia el punto
-      donde aterriza.
+    Mientras esta grande hace una de dos (pickIntro), y no se encoge hasta
+    terminarla:
+    - Crazy Diamond: una rafaga de punos contra las letras del nombre (el
+      Stand embiste hacia cada golpe), un golpe final que agrieta la
+      pantalla desde el impacto y despide las letras (hero-crack.ts), y la
+      reparacion: grietas y letras vuelven hacia su puno.
     - ZA WARUDO: detiene el tiempo de verdad (el poder del mini Stand, con
-      su esfera); el grande sigue moviendose, se hace chico, y el chico se
-      teletransporta a otro sitio, habla, vuelve a su lugar y habla otra
-      vez (los pasos los hace mini-stand.tsx al recibir "jojo:intro").
+      su esfera). Solo el se mueve: lanza cuchillos que se quedan colgados
+      en el aire, y al volver el tiempo se clavan en el nombre. El chico
+      habla al final (mini-stand.tsx, "jojo:intro").
 
     El reloj es el de la propia animacion CSS del grande (no el de la
-    pagina): si hidrata tarde, espera lo que falte; si ya paso, suelta al
-    chico y el desvanecido CSS del grande lo despide. Con reduced motion el
-    grande no sale.
+    pagina): si hidrata tarde, espera lo que falte; si ya paso el momento
+    del poder, se lo salta y se hace chico enseguida; si ya paso todo,
+    suelta al chico y esconde al grande. Con reduced motion el grande no
+    sale.
   */
   useEffect(() => {
     const giant = standRef.current;
@@ -294,71 +298,332 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const heroBox = heroRef.current?.getBoundingClientRect();
     // Ya paso el momento (hidrato muy tarde), o el hero no esta a la vista
     // (la pagina se abrio ya bajada): no hay relevo que ver.
-    if (!run || run.playState === "finished" || elapsed > ENTRY.standCondense + 600) return skip();
+    if (!run || run.playState === "finished" || elapsed > ENTRY.stand + 1500) return skip();
     if (heroBox && heroBox.bottom < window.innerHeight * 0.45) return skip();
 
     introRef.current ??= pickIntro();
     const intro = introRef.current;
-    const condenseAt = intro === "world" ? ENTRY.worldCondense : ENTRY.standCondense;
+    // El poder solo si no quedo atras (hidratacion tardia); sin el, el
+    // grande se hace chico en cuanto termina de subir.
+    const show = elapsed < (intro === "world" ? WORLD.shout : DIAMOND.rush) + 250;
+    const condenseAt = show ? (intro === "world" ? WORLD.condense : DIAMOND.condense) : Math.max(elapsed, ENTRY.stand + 450);
 
     const timers: number[] = [];
     const animations: Animation[] = [];
+    const layers: HTMLElement[] = [];
     let crack: HeroCrack | null = null;
     let shattered: Shattered | null = null;
     let worldOn = false;
     root.classList.add("stand-manifest");
     const stage = stickyRef.current?.firstElementChild as HTMLElement | null | undefined;
+    const svg = core.querySelector("svg");
+    const vw = window.innerWidth;
+    const small = vw < 640;
+
+    /** Programa `fn` en el reloj del Stand (sirve igual desde dentro de otro paso). */
+    const born = performance.now() - elapsed;
+    const at = (ms: number, fn: () => void) =>
+      timers.push(window.setTimeout(fn, Math.max(0, born + ms - performance.now())));
+    const keep = (animation: Animation) => {
+      animations.push(animation);
+      return animation;
+    };
 
     /** El pecho del Stand grande, en px de la ventana: de ahi nace todo. */
     const heart = () => {
-      const from = core.querySelector("svg")?.getBoundingClientRect();
+      const from = svg?.getBoundingClientRect();
       return from?.width ? { x: from.left + from.width * 0.5, y: from.top + from.height * 0.55 } : null;
     };
 
-    // Crazy Diamond: agrieta la pantalla, parte el nombre y sacude el hero.
-    const manifestDiamond = () => {
-      const at = heart();
-      if (!at) return;
-      const letters = [...(stage?.querySelectorAll<HTMLElement>(".hero-slam") ?? [])];
-      crack = playHeroCrack(at.x, at.y, letters.map((el) => el.getBoundingClientRect()));
-      shattered = shatterLetters(letters);
-      if (stage) {
-        // Parada de impacto: un instante en que todo se queda quieto (menos el Stand).
-        stage.classList.add("hero-hitstop");
-        timers.push(window.setTimeout(() => stage.classList.remove("hero-hitstop"), 120));
-        animations.push(
-          stage.animate(
-            [
-              { translate: "0 0" },
-              { translate: "-6px 5px" },
-              { translate: "5px -4px" },
-              { translate: "-3px 2px" },
-              { translate: "0 0" },
-            ],
-            { duration: 320, easing: "ease-out" },
-          ),
-        );
-      }
+    /*
+      Las letras del nombre que se pueden golpear: las que se ven, sin las
+      que tapan el retrato o el propio Stand (un golpe ahi no se veria). Si
+      no queda ninguna, todas.
+    */
+    const targets = () => {
+      const covers = [portraitRef.current?.getBoundingClientRect(), svg?.getBoundingClientRect()].filter(
+        (box): box is DOMRect => !!box?.width,
+      );
+      const all = [...(stage?.querySelectorAll<HTMLElement>(".hero-slam") ?? [])]
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .filter(({ r }) => r.width && r.right > 0 && r.left < vw);
+      const clear = all.filter(({ r }) => {
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        return !covers.some((box) => cx > box.left && cx < box.right && cy > box.top && cy < box.bottom);
+      });
+      return clear.length ? clear : all;
+    };
+    const pointIn = (r: DOMRect) => ({
+      x: r.left + r.width * (0.25 + Math.random() * 0.5),
+      y: r.top + r.height * (0.3 + Math.random() * 0.45),
+    });
+
+    /** El Stand embiste hacia (x, y) y vuelve: el golpe se ve salir de el. */
+    const lunge = (x: number, y: number, reach: number, ms: number) => {
+      const from = heart();
+      if (!svg || !from) return;
+      const dx = x - from.x;
+      const dy = y - from.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const px = Math.min(reach, d * 0.4);
+      keep(
+        svg.animate(
+          [
+            { translate: "0 0" },
+            { translate: `${((dx / d) * px).toFixed(1)}px ${((dy / d) * px).toFixed(1)}px`, offset: 0.35 },
+            { translate: "0 0" },
+          ],
+          { duration: ms, easing: "ease-out" },
+        ),
+      );
     };
 
-    // ZA WARUDO: el tiempo se detiene; solo el Stand se mueve.
-    const manifestWorld = () => {
-      const at = heart();
-      if (!at) return;
-      worldOn = true;
-      window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start" } }));
-      void runPower("zawarudo", { x: at.x, y: at.y, reducedMotion: false, pastScroll: 0, ms: WORLD.stop });
-      // El tiempo se detuvo para todos menos para el: el grande sigue subiendo.
-      run.play();
-      const say = (phase: string) => window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase } }));
-      timers.push(
-        window.setTimeout(() => say("teleport"), WORLD.teleport),
-        window.setTimeout(() => say("back"), WORLD.back),
-        window.setTimeout(() => {
-          say("end");
-          worldOn = false;
-        }, WORLD.end),
+    /** Una letra tiembla al recibir el golpe. */
+    const jolt = (el: HTMLElement, px: number, ms: number) => {
+      keep(
+        el.animate(
+          [
+            { translate: "0 0" },
+            { translate: `${px}px ${-px * 0.7}px` },
+            { translate: `${-px}px ${px * 0.6}px` },
+            { translate: "0 0" },
+          ],
+          { duration: ms, easing: "linear", composite: "add" },
+        ),
       );
+    };
+
+    /** Sacude el hero entero. */
+    const shake = (px: number, ms: number) => {
+      if (!stage) return;
+      keep(
+        stage.animate(
+          [
+            { translate: "0 0" },
+            { translate: `${-px}px ${px * 0.8}px` },
+            { translate: `${px * 0.8}px ${-px * 0.7}px` },
+            { translate: `${-px * 0.5}px ${px * 0.4}px` },
+            { translate: "0 0" },
+          ],
+          { duration: ms, easing: "ease-out" },
+        ),
+      );
+    };
+
+    /*
+      Onomatopeya grande junto al Stand, sin salirse de la pantalla: se
+      centra en x, asi que se aparta del borde la mitad de lo que mide.
+    */
+    const shout = (text: string, x: number, y: number, className: string, life: number) => {
+      const font = Math.min(88, Math.max(41.6, vw * 0.08));
+      const half = Math.min(vw / 2, (text.length * font * 0.95) / 2);
+      pop(text, Math.min(vw - half, Math.max(half, x)), Math.max(font + 70, y), className, life);
+    };
+
+    /** Capa fija para los efectos de la entrada; se quita al desmontar. */
+    const fxLayer = () => {
+      const node = effectLayer("power-sp", true);
+      layers.push(node);
+      return node;
+    };
+
+    /*
+      Crazy Diamond: DORARARA. Cada golpe sale del Stand (embiste hacia el)
+      y cae en una letra, que tiembla; el ultimo es el fuerte.
+    */
+    const manifestDiamond = () => {
+      const list = targets();
+      const from = heart();
+      if (!list.length || !from || !stage) return;
+      const fx = fxLayer();
+      const center = list.reduce(
+        (acc, { r }) => ({ x: acc.x + (r.left + r.width / 2) / list.length, y: acc.y + (r.top + r.height / 2) / list.length }),
+        { x: 0, y: 0 },
+      );
+      const lines = speedLines(center.x, center.y);
+      layers.push(lines);
+      shout("ドラララ", from.x, from.y - (svg?.getBoundingClientRect().height ?? 200) * 0.3, "power-pop-word is-pink is-big", 1000);
+
+      for (let i = 0; i < DIAMOND.hits; i++) {
+        at(DIAMOND.rush + i * DIAMOND.step, () => {
+          const origin = heart();
+          const { el, r } = list[Math.floor(Math.random() * list.length)];
+          const hit = pointIn(r);
+          if (!origin) return;
+          lunge(hit.x, hit.y, small ? 14 : 26, DIAMOND.step + 30);
+          fist(fx, origin.x, origin.y, hit.x, hit.y, 0, 200).classList.add("is-diamond", ...(small ? [] : ["is-big"]));
+          timers.push(
+            window.setTimeout(() => {
+              impact(hit.x, hit.y);
+              jolt(el, small ? 3 : 5, 160);
+              if (i % 3 === 1) pop("ドラ", hit.x, hit.y - r.height * 0.4, "power-pop-word is-pink", 650);
+            }, 150),
+          );
+        });
+      }
+
+      // ドラァ!: el golpe final, en la letra mas cercana al Stand.
+      at(DIAMOND.finisher, () => {
+        const origin = heart();
+        if (!origin) return;
+        const near = [...list].sort(
+          (p, q) =>
+            Math.hypot(p.r.left + p.r.width / 2 - origin.x, p.r.top + p.r.height / 2 - origin.y) -
+            Math.hypot(q.r.left + q.r.width / 2 - origin.x, q.r.top + q.r.height / 2 - origin.y),
+        )[0];
+        const hit = { x: near.r.left + near.r.width / 2, y: near.r.top + near.r.height / 2 };
+        lunge(hit.x, hit.y, small ? 30 : 60, 260);
+        const big = fist(fx, origin.x, origin.y, hit.x, hit.y, 0, 170);
+        big.classList.add("is-diamond", small ? "is-big" : "is-huge");
+        timers.push(
+          window.setTimeout(() => {
+            lines.classList.add("is-leaving");
+            timers.push(window.setTimeout(() => lines.remove(), 450));
+            impact(hit.x, hit.y, true);
+            shout("ドラァ!", hit.x, hit.y - near.r.height * 0.7, "power-pop-word is-pink is-big", 1300);
+            const letters = [...stage.querySelectorAll<HTMLElement>(".hero-slam")];
+            crack = playHeroCrack(hit.x, hit.y, letters.map((el) => el.getBoundingClientRect()));
+            shattered = shatterLetters(letters, hit);
+            // Parada de impacto: un instante en que todo se queda quieto (menos el Stand).
+            stage.classList.add("hero-hitstop");
+            timers.push(window.setTimeout(() => stage.classList.remove("hero-hitstop"), 140));
+            shake(small ? 6 : 10, 420);
+          }, 130),
+        );
+      });
+
+      // Crazy Diamond lo arregla: grietas y letras vuelven hacia su puno.
+      at(DIAMOND.heal, () => {
+        const origin = heart();
+        if (!origin) return;
+        pop("ドララ", origin.x, origin.y - (svg?.getBoundingClientRect().height ?? 200) * 0.45, "power-pop-word is-pink", 900);
+        if (svg) {
+          keep(
+            svg.animate(
+              [{ filter: "none" }, { filter: "drop-shadow(0 0 14px #e891c4)" }, { filter: "none" }],
+              { duration: DIAMOND.healMs + 200, easing: "ease-in-out" },
+            ),
+          );
+        }
+        crack?.heal(origin.x, origin.y, DIAMOND.healMs);
+        shattered?.mend(DIAMOND.healMs);
+      });
+    };
+
+    /*
+      ZA WARUDO: el grito, el tiempo detenido y los cuchillos. Con todo
+      quieto solo el Stand se mueve: lanza y los cuchillos se quedan
+      colgados donde el tiempo los paro; al volver, se clavan.
+    */
+    const manifestWorld = () => {
+      const from = heart();
+      if (!from) return;
+      const tall = svg?.getBoundingClientRect().height ?? 200;
+      shout("ザ・ワールド!", from.x, from.y - tall * 0.35, "power-pop-word is-gold is-big", 1300);
+      keep(
+        core.animate([{ scale: "1" }, { scale: "1.06" }, { scale: "1" }], { duration: 260, easing: "ease-out" }),
+      );
+
+      const knives: { node: HTMLElement; el: HTMLElement; hang: { x: number; y: number }; hit: { x: number; y: number } }[] = [];
+      let fx: HTMLElement | null = null;
+
+      at(WORLD.stop, () => {
+        const at0 = heart();
+        if (!at0) return;
+        worldOn = true;
+        window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start" } }));
+        // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia los cuchillos.
+        root.classList.add("intro-banner-low");
+        void runPower("zawarudo", { x: at0.x, y: at0.y, reducedMotion: false, pastScroll: 0, ms: WORLD.ms }).finally(() =>
+          root.classList.remove("intro-banner-low"),
+        );
+        // El tiempo se detuvo para todos menos para el: sigue respirando.
+        giant.getAnimations({ subtree: true }).forEach((a) => a.play());
+        fx = fxLayer();
+      });
+
+      /*
+        Cuchillos a letras distintas, repartidas por el nombre. Salen del
+        Stand, giran en el aire para apuntar y el tiempo los deja colgados
+        alrededor del nombre, cada uno hacia afuera de su letra: un anillo
+        de cuchillos esperando a que el tiempo vuelva.
+      */
+      const list = targets().sort(() => Math.random() - 0.5);
+      const count = Math.min(list.length, small ? 6 : 9);
+      const name = list.reduce(
+        (acc, { r }) => ({ x: acc.x + (r.left + r.width / 2) / list.length, y: acc.y + (r.top + r.height / 2) / list.length }),
+        { x: 0, y: 0 },
+      );
+      for (let i = 0; i < count; i++) {
+        at(WORLD.knives + i * WORLD.knifeStep, () => {
+          const origin = heart();
+          if (!origin || !fx) return;
+          const { el, r } = list[i];
+          const hit = pointIn(r);
+          // Hacia afuera del nombre, torcido al azar, sin salirse de la pantalla.
+          const out = Math.atan2(hit.y - name.y || -1, hit.x - name.x) + (Math.random() - 0.5) * 0.9;
+          const gap = (small ? 50 : 85) + Math.random() * (small ? 25 : 45);
+          const hx = Math.min(vw - 20, Math.max(20, hit.x + Math.cos(out) * gap));
+          const hy = Math.max(70, hit.y + Math.sin(out) * gap);
+          const hang = { x: hx - hit.x, y: hy - hit.y };
+          const aim = Math.atan2(-hang.y, -hang.x);
+          const flight = Math.atan2(hy - origin.y, hx - origin.x);
+          lunge(hx, hy, small ? 12 : 22, 160);
+          const knife = document.createElement("span");
+          knife.className = small ? "stand-knife" : "stand-knife is-big";
+          knife.style.animation = "none";
+          knife.style.left = `${hit.x.toFixed(0)}px`;
+          knife.style.top = `${hit.y.toFixed(0)}px`;
+          knife.style.setProperty("--ka", `${aim.toFixed(3)}rad`);
+          fx.appendChild(knife);
+          keep(
+            knife.animate(
+              [
+                { translate: `${(origin.x - hit.x).toFixed(1)}px ${(origin.y - hit.y).toFixed(1)}px`, rotate: `${flight.toFixed(3)}rad`, opacity: 0 },
+                { opacity: 1, offset: 0.2 },
+                { translate: `${hang.x.toFixed(1)}px ${hang.y.toFixed(1)}px`, rotate: `${aim.toFixed(3)}rad`, opacity: 1 },
+              ],
+              { duration: 260, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "forwards" },
+            ),
+          );
+          knives.push({ node: knife, el, hang, hit });
+          if (i % 3 === 0) pop("無駄", origin.x + (Math.random() - 0.5) * 80, origin.y - tall * 0.35, "power-pop-word is-gold", 700);
+        });
+      }
+
+      // そして時は動き出す: los cuchillos terminan su viaje de golpe.
+      at(WORLD.stop + WORLD.ms + 40, () => {
+        knives.forEach(({ node, el, hang, hit }, i) => {
+          const fly = keep(
+            node.animate(
+              [{ translate: `${hang.x.toFixed(1)}px ${hang.y.toFixed(1)}px` }, { translate: "0px 0px" }],
+              { duration: 110, delay: i * 30, easing: "cubic-bezier(0.6, 0, 0.9, 0.4)", fill: "forwards" },
+            ),
+          );
+          fly.onfinish = () => {
+            impact(hit.x, hit.y);
+            jolt(el, small ? 3 : 5, 200);
+          };
+        });
+        const list2 = knives.map(({ hit }) => hit);
+        if (list2.length) {
+          const top = Math.min(...list2.map((p) => p.y));
+          const mid = list2.reduce((sum, p) => sum + p.x, 0) / list2.length;
+          timers.push(
+            window.setTimeout(() => {
+              shout("ズドドドッ", mid, top - 30, "power-pop-word is-gold is-big", 1100);
+              shake(small ? 5 : 8, 380);
+            }, 120),
+          );
+        }
+        // Se quedan clavados un momento y se desvanecen.
+        timers.push(
+          window.setTimeout(() => {
+            knives.forEach(({ node }) => keep(node.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, fill: "forwards" })));
+          }, 1500),
+        );
+      });
     };
 
     /*
@@ -368,16 +633,22 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       transicion de la capa del chico solo este fotograma.
     */
     const finish = () => {
-      const layer = document.querySelector<HTMLElement>(".stand-layer");
-      if (layer) layer.style.transition = "none";
+      const layerEl = document.querySelector<HTMLElement>(".stand-layer");
+      if (layerEl) layerEl.style.transition = "none";
       root.classList.remove("stand-manifest");
       giant.style.visibility = "hidden";
-      requestAnimationFrame(() => requestAnimationFrame(() => layer && (layer.style.transition = "")));
+      requestAnimationFrame(() => requestAnimationFrame(() => layerEl && (layerEl.style.transition = "")));
+      // Las capas de efectos, cuando ya se desvanecio lo que llevan.
+      timers.push(window.setTimeout(() => layers.forEach((node) => node.remove()), 1500));
+      // ZA WARUDO: el chico remata (mini-stand.tsx).
+      if (worldOn) {
+        worldOn = false;
+        window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end" } }));
+      }
     };
 
     const condense = () => {
       const mini = document.querySelector<HTMLElement>(".stand-hit");
-      const svg = core.querySelector("svg");
       const from = svg?.getBoundingClientRect();
       const to = mini?.getBoundingClientRect();
       if (!from?.width || !to?.width) {
@@ -393,27 +664,28 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const dy = to.top - miniCell / 2 - from.top;
       // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
       const duration = elapsed > condenseAt + 150 ? 280 : 380;
-      const move = core.animate(
-        [
-          { transform: "translate(0, 0) scale(1)" },
-          { transform: `translate(${dx}px, ${dy}px) scale(${miniCell / bigCell})` },
-        ],
-        { duration, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+      const move = keep(
+        core.animate(
+          [
+            { transform: "translate(0, 0) scale(1)" },
+            { transform: `translate(${dx}px, ${dy}px) scale(${miniCell / bigCell})` },
+          ],
+          { duration, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+        ),
       );
-      animations.push(move);
       move.onfinish = () => {
         finish();
         // Las letras ya estan en su sitio: se suelta lo que las sujeta.
         timers.push(window.setTimeout(() => shattered?.cancel(), 700));
       };
-      // Crazy Diamond repara las grietas y las letras hacia donde aterriza.
+      // Si el poder no llego a repararlas (hidratacion tardia), se reparan aqui.
       crack?.heal(to.left + to.width / 2, to.top + to.height / 2, duration);
       shattered?.mend(duration + 120);
       // El contorno de tinta crece hasta el grosor del chico (ver hero-stand.tsx).
       const rim = core.querySelector(".hero-stand-rim");
       const rimPx = Math.max(1, Math.round(miniCell / 2));
       if (rim) {
-        animations.push(
+        keep(
           rim.animate([{ strokeWidth: "0.6" }, { strokeWidth: String((rimPx * 2) / miniCell) }], {
             duration,
             easing: "cubic-bezier(0.65, 0, 0.35, 1)",
@@ -423,18 +695,17 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       }
     };
 
-    // El golpe solo si no quedo atras (hidratacion tardia).
-    if (elapsed < ENTRY.crack + 250) {
-      timers.push(window.setTimeout(intro === "world" ? manifestWorld : manifestDiamond, Math.max(0, ENTRY.crack - elapsed)));
-    }
-    timers.push(window.setTimeout(condense, Math.max(0, condenseAt - elapsed)));
+    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.rush, intro === "world" ? manifestWorld : manifestDiamond);
+    at(condenseAt, condense);
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
       animations.forEach((a) => a.cancel());
+      layers.forEach((node) => node.remove());
       crack?.cancel();
       shattered?.cancel();
       stage?.classList.remove("hero-hitstop");
-      if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end" } }));
+      root.classList.remove("intro-banner-low");
+      if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "cancel" } }));
       root.classList.remove("stand-manifest");
     };
   }, []);

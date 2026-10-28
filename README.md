@@ -190,24 +190,26 @@ The render loop stops off-screen.
   from first paint. Speed lines converge, the name slams in letter by
   letter and gets its hard shadow, the portrait is pasted on with a
   shake and a ドン, then a giant Paranoid Android (`ui/hero-stand.tsx`,
-  the mini Stand's own pixel map drawn as SVG) rises beside it and
-  shrinks into the exact spot and size of the mini Stand (same frame, a
+  the mini Stand's own pixel map drawn as SVG) rises beside it, stays
+  big for its whole power, and only then shrinks into the exact spot and size of the mini Stand (same frame, a
   one-frame cut, no fade). The mini Stand is hidden from the first paint
   by `ui/stand-manifest-gate.tsx` (a server-rendered script that sets
   `html.stand-manifest`); it used to be set after hydration and left a
   fading ghost. While the Stand is big, one of two things happens, and
   they alternate on every load (remembered in `localStorage`, force one
   with `?intro=diamond` or `?intro=world`):
-  - **Crazy Diamond** (`ui/hero-crack.ts`): its presence cracks the
-    screen from its chest (ドラ in pink, a 120 ms hit-stop, cracks that
-    also cut through each letter), the letters of the name jump out of
-    place like broken glass, and when it shrinks Crazy Diamond repairs
-    cracks and letters toward where it lands. The cracks are one SVG
-    drawn once; only its `clip-path` animates.
-  - **ZA WARUDO**: the Stand stops time for real (`lib/time-stop.ts`,
-    the mini Stand's own power with its sphere). The giant keeps moving,
-    becomes the mini Stand, which teleports somewhere else, says
-    something, comes back to its spot and says something else
+  - **Crazy Diamond** (`ui/hero-crack.ts`): a ドラララ barrage of pink
+    fists from the Stand into the letters of the name (it lunges toward
+    each hit), then a ドラァ! finisher on the nearest letter: a 140 ms
+    hit-stop, the screen cracks from the impact (cracks also cut through
+    each letter) and the letters fly away from it like broken glass.
+    After a beat Crazy Diamond repairs cracks and letters back toward its
+    fist. The cracks are one SVG drawn once; only its `clip-path` animates.
+  - **ZA WARUDO**: the Stand shouts ザ・ワールド and stops time for real
+    (`lib/time-stop.ts`, the mini Stand's own power with its sphere). In
+    the frozen world only it moves: it throws knives that freeze in a
+    ring around the name, each aimed at a letter; when time resumes they
+    all land (ズドドドッ) and the mini Stand closes with a line
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines in
     `lines.ts` under `intro`).
 

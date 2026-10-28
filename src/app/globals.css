@@ -810,12 +810,12 @@ html.lenis body {
 }
 
 /*
-  El Stand se manifiesta: sube desde detras del retrato y se sostiene
-  respirando. De ahi en adelante lo lleva el JS (portfolio-hero.tsx): viaja
-  hasta el mini Stand y se hace el. El desvanecido del final solo cuenta si
-  el JS no llega: sin el, el grande se va y listo. Dura 1.3s: sube en
-  0.4s, se sostiene (agrietando la pantalla) y el JS lo lleva
-  (portfolio-hero.tsx).
+  El Stand se manifiesta: sube desde detras del retrato en 0.4s y se queda,
+  enorme, mientras hace su poder (Crazy Diamond o ZA WARUDO). De ahi en
+  adelante lo lleva el JS (portfolio-hero.tsx): ataca, se sostiene y al
+  final viaja hasta el mini Stand y se hace el. Dura 6s solo para que el
+  desvanecido del final cuente si el JS no llega: sin el, el grande se va
+  solo. 0.4s de 6s = 6.67%.
 */
 @keyframes hero-stand {
   0% {
@@ -823,17 +823,24 @@ html.lenis body {
     transform: translateY(16%) scale(0.78);
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  31% {
+  6.67% {
     opacity: 1;
     transform: none;
   }
-  92% {
+  96% {
     opacity: 1;
     transform: none;
   }
   100% {
     opacity: 0;
     transform: none;
+  }
+}
+
+/* Mientras se sostiene, respira: el unico que se mueve con el tiempo detenido. */
+@keyframes hero-stand-idle {
+  to {
+    translate: 0 -1.6%;
   }
 }
 
@@ -931,7 +938,7 @@ html.lenis body {
     height: 210%;
     transform-origin: 40% 50%;
     opacity: 0;
-    animation: hero-stand 1.3s both;
+    animation: hero-stand 6s both;
   }
 
   /* Origen arriba a la izquierda: el viaje al mini Stand escala desde ahi. */
@@ -942,6 +949,7 @@ html.lenis body {
 
   .hero-stand svg {
     scale: -1 1;
+    animation: hero-stand-idle 0.9s ease-in-out infinite alternate;
   }
 
   @media (width >= 40rem) {
@@ -3161,6 +3169,20 @@ html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
 .stand-knife.is-leaving {
   opacity: 0;
 }
+/* Los cuchillos del Stand grande en la entrada: a su escala. */
+.stand-knife.is-big {
+  width: 86px;
+  height: 19px;
+  margin: -9.5px 0 0 -79px;
+}
+/*
+  En la entrada con ZA WARUDO el rotulo va abajo: arriba taparia el nombre,
+  que es donde cuelgan los cuchillos.
+*/
+html.intro-banner-low .power-zw-text {
+  top: auto;
+  bottom: 12%;
+}
 @keyframes stand-knife-hit {
   0% {
     opacity: 0;
@@ -3297,6 +3319,27 @@ html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
   rotate: var(--fa);
   opacity: 0;
   animation: power-fist 0.26s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+/* Los punos de Crazy Diamond (entrada del hero): rosa y celeste. */
+.power-fist.is-diamond {
+  background:
+    linear-gradient(90deg, transparent 0 62%, #161418 62% 66%, transparent 66%) 0 0 / 100% 100% no-repeat,
+    repeating-linear-gradient(180deg, #8fd3f4 0 6px, #161418 6px 8px) 100% 50% / 30% 100% no-repeat,
+    #e891c4;
+  box-shadow:
+    -12px 0 0 -3px rgba(232, 145, 196, 0.55),
+    -24px 0 0 -7px rgba(232, 145, 196, 0.25);
+}
+.power-fist.is-big {
+  width: 58px;
+  height: 48px;
+  margin: -24px 0 0 -29px;
+}
+.power-fist.is-huge {
+  width: 96px;
+  height: 80px;
+  margin: -40px 0 0 -48px;
+  border-width: 4px;
 }
 .power-fist.is-held {
   animation: power-fist-held 0.3s ease-out both;

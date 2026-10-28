@@ -74,11 +74,10 @@ export interface StandLines {
   landing: string[];
   events: Record<StandEvent, string[]>;
   /**
-   * Entrada con ZA WARUDO: el Stand detiene el tiempo al cargar, se
-   * teletransporta y vuelve. stopped: lo que dice en el otro sitio;
-   * back: lo que dice al volver a su lugar.
+   * Entrada con ZA WARUDO: el Stand grande detiene el tiempo al cargar y
+   * clava cuchillos en el nombre. world: lo que dice ya hecho el chico.
    */
-  intro: { stopped: string[]; back: string[] };
+  intro: { world: string[] };
   /**
    * Tiempo detenido (toque en el retrato o ZA WARUDO): el Stand es el
    * unico que se mueve. sections: burlas segun donde ocurre (ids de
@@ -473,21 +472,13 @@ export const standLines: Record<Language, StandLines> = {
       dropped: ["¡Bájame! Ah, ya.", "Aterrizaje elegante.", "¿Me moviste? Valiente.", "Gracias por el viaje.", "Bonita vista desde aquí.", "Ya. Aterricé. Con gracia.", "Qué vista tan bonita.", "Gracias. Aquí me quedo."],
     },
     intro: {
-      stopped: [
-        "ZA WARUDO. Ya me moví.",
-        "Nadie se movió. Salvo yo.",
-        "Fui y volví. Tú, quieto.",
-        "Me paseé por tu hero.",
-        "Tiempo detenido. Mi turno.",
-        "Ni el tiempo se movió. Yo sí.",
-      ],
-      back: [
+      world: [
         "そして時は動き出す。",
-        "Y el tiempo vuelve a correr.",
-        "Siempre estuve aquí.",
-        "¿Me moví? Nunca.",
-        "A mi sitio. Como si nada.",
-        "Tiempo, sigue. Yo, aquí.",
+        "Dos segundos. Para ti, cero.",
+        "¿Lo viste? Nadie lo ve.",
+        "Tiempo detenido. Cuchillos listos.",
+        "Mi turno ya pasó. Ahora el tuyo.",
+        "El tiempo vuelve a correr.",
       ],
     },
     timeStop: {
@@ -1145,21 +1136,13 @@ export const standLines: Record<Language, StandLines> = {
       dropped: ["Put me down! Oh, ok.", "Elegant landing.", "You moved me? Brave.", "Thanks for the ride.", "Nice view from here.", "Landed. With grace.", "Nice view from here.", "Thanks. I'll stay here."],
     },
     intro: {
-      stopped: [
-        "ZA WARUDO. Already moved.",
-        "Nobody moved. Except me.",
-        "Went and came back. You: frozen.",
-        "Strolled your hero.",
-        "Time stopped. My turn.",
-        "Time froze. I didn't.",
-      ],
-      back: [
+      world: [
         "そして時は動き出す。",
+        "Two seconds. For you, zero.",
+        "Did you see it? Nobody does.",
+        "Time stopped. Knives ready.",
+        "My turn's over. Yours now.",
         "And time moves again.",
-        "I was here all along.",
-        "Did I move? Never.",
-        "Back in place. Like nothing.",
-        "Time, go on. Me, here.",
       ],
     },
     timeStop: {

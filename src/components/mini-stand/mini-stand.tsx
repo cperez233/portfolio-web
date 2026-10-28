@@ -478,20 +478,6 @@ export function MiniStand() {
       landedHere = true;
       return point;
     }
-    /** Vuelve a su sitio (el retrato) sin volar: deja su silueta y reaparece. */
-    function goHome() {
-      const rect = document.querySelector("[data-stand-home]")?.getBoundingClientRect();
-      hold = null;
-      holdUntil = 0;
-      if (!rect) return;
-      const left = snapshot("stand-frozen");
-      window.setTimeout(() => left.classList.add("is-leaving"), 40);
-      window.setTimeout(() => left.remove(), 450);
-      body.x = rect.right - SPRITE_W * scale * 0.25;
-      body.y = rect.top + SPRITE_H * scale * 0.35;
-      body.vx = 0;
-      body.vy = 0;
-    }
     /** Cuchillos que "ya estaban ahi" al volver el tiempo, y se clavan. */
     function knives() {
       const rects = visibleRects();
@@ -588,34 +574,26 @@ export function MiniStand() {
     };
     /*
       La entrada con ZA WARUDO la dirige el hero (portfolio-hero.tsx) con
-      "jojo:intro": start (el tiempo se detiene), teleport (aparece en otro
-      sitio y habla), back (vuelve a su lugar y habla) y end.
+      "jojo:intro": start (el tiempo se detiene; el grande hace todo y el
+      chico espera escondido), end (el grande ya se hizo el chico: remata
+      con una frase) y cancel (se desmonto a medias: solo se limpia).
     */
     const onIntro = (event: Event) => {
       const phase = (event as CustomEvent<{ phase: string }>).detail?.phase;
-      const intro = linesRef.current.intro;
       const root = document.documentElement;
       if (phase === "start") {
         introWorld = true;
-        // El saludo lo sustituyen las frases de la entrada.
+        // El saludo lo sustituye la frase del final.
         greeted = true;
         root.classList.add("intro-world");
-      } else if (phase === "teleport") {
-        teleport(undefined, 60000);
+        return;
+      }
+      introWorld = false;
+      root.classList.remove("intro-world");
+      if (phase === "end") {
         act.current("smug", 1800);
         sfx("ﾌﾌﾌ", "mark");
-        sfx("ドン!", "sfx");
-        say.current(pickLine(short(intro.stopped)), 2200);
-      } else if (phase === "back") {
-        goHome();
-        act.current("pose", 1200);
-        sfx("ドン!", "sfx");
-        say.current(pickLine(short(intro.back)), 2400);
-      } else if (phase === "end") {
-        introWorld = false;
-        hold = null;
-        holdUntil = 0;
-        root.classList.remove("intro-world");
+        say.current(pickLine(short(linesRef.current.intro.world)), 2800);
       }
     };
     window.addEventListener("jojo:intro", onIntro);
@@ -921,7 +899,7 @@ export function MiniStand() {
         act.current("emerge", 800);
         sfx("ドン!", "sfx");
         // Apenas cae a su tamano: la bienvenida (en la entrada con ZA WARUDO
-        // la sustituyen las frases del Stand al teletransportarse).
+        // la sustituye la frase del final, ver onIntro).
         if (!introWorld) greet();
       }
       wasManifesting = manifesting;

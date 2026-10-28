@@ -107,7 +107,7 @@ async function zaWarudo(ctx: PowerContext) {
 /* Star Platinum                                                       */
 /* ------------------------------------------------------------------ */
 
-function impact(x: number, y: number, big = false) {
+export function impact(x: number, y: number, big = false) {
   const node = layer(big ? "power-impact is-big" : "power-impact", true);
   node.style.left = `${x}px`;
   node.style.top = `${y}px`;
@@ -115,7 +115,7 @@ function impact(x: number, y: number, big = false) {
   window.setTimeout(() => node.remove(), 500);
 }
 
-function fist(node: HTMLElement, fromX: number, fromY: number, toX: number, toY: number, delay: number, ms = 260) {
+export function fist(node: HTMLElement, fromX: number, fromY: number, toX: number, toY: number, delay: number, ms = 260) {
   const el = document.createElement("span");
   el.className = "power-fist";
   el.style.left = `${toX}px`;
@@ -127,9 +127,10 @@ function fist(node: HTMLElement, fromX: number, fromY: number, toX: number, toY:
   el.style.animationDuration = `${ms}ms`;
   node.appendChild(el);
   window.setTimeout(() => el.remove(), delay + ms + 50);
+  return el;
 }
 
-function speedLines(x: number, y: number) {
+export function speedLines(x: number, y: number) {
   const node = layer("power-speedlines", true);
   node.style.setProperty("--sx", `${x}px`);
   node.style.setProperty("--sy", `${y}px`);
