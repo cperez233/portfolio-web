@@ -25,7 +25,9 @@ import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 import { SPRITE_W } from "@/components/mini-stand/sprite";
 import { HeroStand } from "./hero-stand";
-import { playHeroCrack, type HeroCrack } from "./hero-crack";
+import { playHeroCrack, shatterLetters, type HeroCrack, type Shattered } from "./hero-crack";
+import { runPower } from "@/components/mini-stand/powers";
+import { playSfx } from "@/lib/sfx";
 
 interface SlamTextProps {
   text: string;
@@ -71,11 +73,17 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
     1150  el Stand se levanta junto al retrato, enorme (0.4s)
-    1230  y su presencia agrieta la pantalla (la sacude y las grietas se
-          propagan desde su pecho, con ドラ en rosa)
-    1750  se hace el mini Stand: viaja hasta donde el chico espera, las
-          grietas se reparan hacia el (Crazy Diamond) y se cambian sin que
-          se note; ahi mismo saluda
+    1230  y pasa una de dos cosas, una vez cada una (ver pickIntro):
+          · Crazy Diamond: su presencia agrieta la pantalla desde su pecho
+            (con ドラ en rosa, una parada de impacto y las letras del nombre
+            saltando como vidrio roto)
+          · ZA WARUDO: detiene el tiempo (esfera, mundo congelado, solo el
+            Stand se mueve)
+    1750  (ZA WARUDO: 1600) se hace el mini Stand: viaja hasta donde el
+          chico espera y se cambian sin que se note. Crazy Diamond repara
+          las grietas y las letras hacia donde aterriza y el chico saluda;
+          con ZA WARUDO el chico se teletransporta, habla, vuelve a su
+          lugar y habla otra vez
 */
 const ENTRY = {
   firstName: 100,
@@ -93,6 +101,8 @@ const ENTRY = {
    * el mini Stand. Ver el efecto del relevo.
    */
   standCondense: 1750,
+  /** Igual, pero con ZA WARUDO: el grande no espera a nada y el tiempo corre. */
+  worldCondense: 1600,
   menacing: 1300,
   copy: 1150,
 } as const;
@@ -105,6 +115,29 @@ function riseDelay(index: number): React.CSSProperties {
 function delay(ms: number): React.CSSProperties {
   return { animationDelay: `${ms}ms` };
 }
+
+/*
+  Que entrada toca. Se alternan: cada carga hace la otra que la anterior (se
+  recuerda en este navegador), asi quien vuelve ve las dos. `?intro=world` o
+  `?intro=diamond` fuerzan una, para verlas o probarlas.
+*/
+type Intro = "diamond" | "world";
+const INTRO_KEY = "jojo-intro";
+
+function pickIntro(): Intro {
+  try {
+    const forced = new URLSearchParams(window.location.search).get("intro");
+    if (forced === "world" || forced === "diamond") return forced;
+    const next: Intro = window.localStorage.getItem(INTRO_KEY) === "diamond" ? "world" : "diamond";
+    window.localStorage.setItem(INTRO_KEY, next);
+    return next;
+  } catch {
+    return "diamond";
+  }
+}
+
+/** ZA WARUDO de la entrada, en ms desde que se detiene el tiempo. */
+const WORLD = { stop: 1500, teleport: 1000, back: 2100, end: 2250 } as const;
 
 /**
  * Profundidad con el puntero: cada capa se desplaza segun su distancia,
@@ -129,6 +162,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const portraitRef = useRef<HTMLButtonElement>(null);
   const standRef = useRef<HTMLDivElement>(null);
   const standCoreRef = useRef<HTMLDivElement>(null);
+  // Que entrada toca: se decide una vez (y sobrevive al doble efecto de StrictMode).
+  const introRef = useRef<Intro | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
   /*
@@ -147,6 +182,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
     emitStandEvent("timestop");
     unlockSecret("timestop");
+    playSfx("warudo");
     // De verdad: nadie se mueve (salvo el Stand) mientras dura la esfera.
     void freezeTime(3200);
     const portraitBox = portraitEl.getBoundingClientRect();
@@ -227,9 +263,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     sitio y el mismo tamano, asi que se lee como un solo personaje que se
     hace pequeno.
 
-    Mientras esta grande, su presencia agrieta la pantalla (hero-crack.ts)
-    y la sacude; al hacerse chico, Crazy Diamond repara las grietas hacia
-    el punto donde aterriza.
+    Mientras esta grande pasa algo de JoJo, una de dos (pickIntro):
+    - Crazy Diamond: su presencia agrieta la pantalla y parte las letras del
+      nombre (hero-crack.ts); al hacerse chico repara todo hacia el punto
+      donde aterriza.
+    - ZA WARUDO: detiene el tiempo de verdad (el poder del mini Stand, con
+      su esfera); el grande sigue moviendose, se hace chico, y el chico se
+      teletransporta a otro sitio, habla, vuelve a su lugar y habla otra
+      vez (los pasos los hace mini-stand.tsx al recibir "jojo:intro").
 
     El reloj es el de la propia animacion CSS del grande (no el de la
     pagina): si hidrata tarde, espera lo que falte; si ya paso, suelta al
@@ -256,18 +297,35 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     if (!run || run.playState === "finished" || elapsed > ENTRY.standCondense + 600) return skip();
     if (heroBox && heroBox.bottom < window.innerHeight * 0.45) return skip();
 
+    introRef.current ??= pickIntro();
+    const intro = introRef.current;
+    const condenseAt = intro === "world" ? ENTRY.worldCondense : ENTRY.standCondense;
+
     const timers: number[] = [];
     const animations: Animation[] = [];
     let crack: HeroCrack | null = null;
+    let shattered: Shattered | null = null;
+    let worldOn = false;
     root.classList.add("stand-manifest");
+    const stage = stickyRef.current?.firstElementChild as HTMLElement | null | undefined;
 
-    // Presencia del Stand: sacude el hero y agrieta la pantalla desde su pecho.
-    const manifest = () => {
+    /** El pecho del Stand grande, en px de la ventana: de ahi nace todo. */
+    const heart = () => {
       const from = core.querySelector("svg")?.getBoundingClientRect();
-      if (!from?.width) return;
-      crack = playHeroCrack(from.left + from.width * 0.5, from.top + from.height * 0.55);
-      const stage = stickyRef.current?.firstElementChild;
+      return from?.width ? { x: from.left + from.width * 0.5, y: from.top + from.height * 0.55 } : null;
+    };
+
+    // Crazy Diamond: agrieta la pantalla, parte el nombre y sacude el hero.
+    const manifestDiamond = () => {
+      const at = heart();
+      if (!at) return;
+      const letters = [...(stage?.querySelectorAll<HTMLElement>(".hero-slam") ?? [])];
+      crack = playHeroCrack(at.x, at.y, letters.map((el) => el.getBoundingClientRect()));
+      shattered = shatterLetters(letters);
       if (stage) {
+        // Parada de impacto: un instante en que todo se queda quieto (menos el Stand).
+        stage.classList.add("hero-hitstop");
+        timers.push(window.setTimeout(() => stage.classList.remove("hero-hitstop"), 120));
         animations.push(
           stage.animate(
             [
@@ -281,6 +339,26 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           ),
         );
       }
+    };
+
+    // ZA WARUDO: el tiempo se detiene; solo el Stand se mueve.
+    const manifestWorld = () => {
+      const at = heart();
+      if (!at) return;
+      worldOn = true;
+      window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start" } }));
+      void runPower("zawarudo", { x: at.x, y: at.y, reducedMotion: false, pastScroll: 0, ms: WORLD.stop });
+      // El tiempo se detuvo para todos menos para el: el grande sigue subiendo.
+      run.play();
+      const say = (phase: string) => window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase } }));
+      timers.push(
+        window.setTimeout(() => say("teleport"), WORLD.teleport),
+        window.setTimeout(() => say("back"), WORLD.back),
+        window.setTimeout(() => {
+          say("end");
+          worldOn = false;
+        }, WORLD.end),
+      );
     };
 
     /*
@@ -304,6 +382,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const to = mini?.getBoundingClientRect();
       if (!from?.width || !to?.width) {
         crack?.cancel();
+        shattered?.cancel();
         return finish();
       }
       // La rejilla del chico (SPRITE_W celdas) y la del grande (una celda
@@ -313,7 +392,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const dx = to.left - miniCell / 2 - from.left;
       const dy = to.top - miniCell / 2 - from.top;
       // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
-      const duration = elapsed > ENTRY.standCondense + 150 ? 280 : 380;
+      const duration = elapsed > condenseAt + 150 ? 280 : 380;
       const move = core.animate(
         [
           { transform: "translate(0, 0) scale(1)" },
@@ -322,9 +401,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         { duration, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
       );
       animations.push(move);
-      move.onfinish = finish;
-      // Crazy Diamond repara las grietas hacia donde aterriza.
+      move.onfinish = () => {
+        finish();
+        // Las letras ya estan en su sitio: se suelta lo que las sujeta.
+        timers.push(window.setTimeout(() => shattered?.cancel(), 700));
+      };
+      // Crazy Diamond repara las grietas y las letras hacia donde aterriza.
       crack?.heal(to.left + to.width / 2, to.top + to.height / 2, duration);
+      shattered?.mend(duration + 120);
       // El contorno de tinta crece hasta el grosor del chico (ver hero-stand.tsx).
       const rim = core.querySelector(".hero-stand-rim");
       const rimPx = Math.max(1, Math.round(miniCell / 2));
@@ -339,13 +423,18 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       }
     };
 
-    // Las grietas solo si el golpe no quedo atras (hidratacion tardia).
-    if (elapsed < ENTRY.crack + 250) timers.push(window.setTimeout(manifest, Math.max(0, ENTRY.crack - elapsed)));
-    timers.push(window.setTimeout(condense, Math.max(0, ENTRY.standCondense - elapsed)));
+    // El golpe solo si no quedo atras (hidratacion tardia).
+    if (elapsed < ENTRY.crack + 250) {
+      timers.push(window.setTimeout(intro === "world" ? manifestWorld : manifestDiamond, Math.max(0, ENTRY.crack - elapsed)));
+    }
+    timers.push(window.setTimeout(condense, Math.max(0, condenseAt - elapsed)));
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
       animations.forEach((a) => a.cancel());
       crack?.cancel();
+      shattered?.cancel();
+      stage?.classList.remove("hero-hitstop");
+      if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end" } }));
       root.classList.remove("stand-manifest");
     };
   }, []);

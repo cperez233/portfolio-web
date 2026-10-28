@@ -74,6 +74,12 @@ export interface StandLines {
   landing: string[];
   events: Record<StandEvent, string[]>;
   /**
+   * Entrada con ZA WARUDO: el Stand detiene el tiempo al cargar, se
+   * teletransporta y vuelve. stopped: lo que dice en el otro sitio;
+   * back: lo que dice al volver a su lugar.
+   */
+  intro: { stopped: string[]; back: string[] };
+  /**
    * Tiempo detenido (toque en el retrato o ZA WARUDO): el Stand es el
    * unico que se mueve. sections: burlas segun donde ocurre (ids de
    * data-spot, "hero" y "default"); attempt: si intentas moverte;
@@ -85,7 +91,7 @@ export interface StandLines {
     close: string;
     greet: string[];
     greetAgain: string[];
-    options: { who: string; cris: string; guide: string; trivia: string; power: string; janken: string; darby: string; bye: string };
+    options: { who: string; cris: string; guide: string; trivia: string; power: string; janken: string; darby: string; sound: string; bye: string };
     who: string[][];
     cris: string[];
     trivia: string[];
@@ -94,6 +100,8 @@ export interface StandLines {
     powerPrompt: string[];
     bye: string[];
     back: string;
+    /** Sonido (apagado por defecto): etiqueta para apagarlo y lo que dice al cambiarlo. */
+    sound: { stop: string; on: string[]; off: string[] };
   };
   powers: Record<PowerId, PowerLines>;
   /** Hermit Purple: lo que "ve" de la visita. {min}, {parts}, {total}, {secrets}, {visits}. */
@@ -464,6 +472,24 @@ export const standLines: Record<Language, StandLines> = {
       thrown: ["¡WRYYYYY!", "¡Oye! ¡Me mareo!", "¡No soy una pelota!", "Todo da vueltas…", "¡Nigerundayo… ah!", "¡Bájame, humano!", "¡Estoy volando! ¡Wryyy!", "¡Bájame con cariño!", "¡Esto es Speed King!"],
       dropped: ["¡Bájame! Ah, ya.", "Aterrizaje elegante.", "¿Me moviste? Valiente.", "Gracias por el viaje.", "Bonita vista desde aquí.", "Ya. Aterricé. Con gracia.", "Qué vista tan bonita.", "Gracias. Aquí me quedo."],
     },
+    intro: {
+      stopped: [
+        "ZA WARUDO. Ya me moví.",
+        "Nadie se movió. Salvo yo.",
+        "Fui y volví. Tú, quieto.",
+        "Me paseé por tu hero.",
+        "Tiempo detenido. Mi turno.",
+        "Ni el tiempo se movió. Yo sí.",
+      ],
+      back: [
+        "そして時は動き出す。",
+        "Y el tiempo vuelve a correr.",
+        "Siempre estuve aquí.",
+        "¿Me moví? Nunca.",
+        "A mi sitio. Como si nada.",
+        "Tiempo, sigue. Yo, aquí.",
+      ],
+    },
     timeStop: {
       sections: {
         hero: ["Toqué tu retrato. No lo viste.", "Me paseé por el hero. Quieto todo.", "Ni el WhatsApp se movió. Yo sí."],
@@ -527,6 +553,7 @@ export const standLines: Record<Language, StandLines> = {
         power: "Usa un poder",
         janken: "Juguemos jan-ken",
         darby: "Apostemos almas",
+        sound: "Activar sonido",
         bye: "Nada, sigue",
       },
       who: [
@@ -639,6 +666,23 @@ export const standLines: Record<Language, StandLines> = {
       ],
       bye: ["Arrivederci.", "Me voy a posar por ahí.", "Yare yare. Adiós.", "Nos vemos en el próximo capítulo.", "Sayonara. ゴゴゴ.", "Aquí estaré. Posando.", "Hasta pronto, usuario.", "Que la flecha te acompañe.", "Me quedo vigilando. Ve.", "Ve con cuidado. Yo no me muevo. Casi."],
       back: "Otra cosa",
+      sound: {
+        stop: "Silenciar",
+        on: [
+          "Sonido encendido. Ya me oyes.",
+          "Ahora sí hay ドン de verdad.",
+          "Con sonido. Que tiemble el cristal.",
+          "Listo. Los golpes suenan.",
+          "Sonido on. Cuidado con los oídos.",
+        ],
+        off: [
+          "Silencio. Como un Stand de verdad.",
+          "Sonido apagado. Pose muda.",
+          "Mudo otra vez. Muda, muda.",
+          "Callado. Sigo posando.",
+          "Apagado. Las grietas, en silencio.",
+        ],
+      },
     },
     powers: {
       zawarudo: {
@@ -1100,6 +1144,24 @@ export const standLines: Record<Language, StandLines> = {
       thrown: ["WRYYYYY!", "Hey! I'm dizzy!", "I'm not a ball!", "Everything's spinning…", "Nigerundayo… ah!", "Put me down, human!", "I'm flying! Wryyy!", "Put me down gently!", "This is Speed King!"],
       dropped: ["Put me down! Oh, ok.", "Elegant landing.", "You moved me? Brave.", "Thanks for the ride.", "Nice view from here.", "Landed. With grace.", "Nice view from here.", "Thanks. I'll stay here."],
     },
+    intro: {
+      stopped: [
+        "ZA WARUDO. Already moved.",
+        "Nobody moved. Except me.",
+        "Went and came back. You: frozen.",
+        "Strolled your hero.",
+        "Time stopped. My turn.",
+        "Time froze. I didn't.",
+      ],
+      back: [
+        "そして時は動き出す。",
+        "And time moves again.",
+        "I was here all along.",
+        "Did I move? Never.",
+        "Back in place. Like nothing.",
+        "Time, go on. Me, here.",
+      ],
+    },
     timeStop: {
       sections: {
         hero: ["I touched your portrait. You missed it.", "Strolled the hero. All frozen.", "Not even WhatsApp moved. I did."],
@@ -1153,6 +1215,7 @@ export const standLines: Record<Language, StandLines> = {
         power: "Use a power",
         janken: "Let's play jan-ken",
         darby: "Bet our souls",
+        sound: "Turn sound on",
         bye: "Nothing, carry on",
       },
       who: [
@@ -1265,6 +1328,23 @@ export const standLines: Record<Language, StandLines> = {
       ],
       bye: ["Arrivederci.", "I'll go perch somewhere.", "Yare yare. Bye.", "See you next chapter.", "Sayonara. ゴゴゴ.", "I'll be here. Posing.", "See you soon, user.", "May the arrow be with you.", "I'll keep watch. Go.", "Take care. I'm not moving. Mostly."],
       back: "Something else",
+      sound: {
+        stop: "Mute",
+        on: [
+          "Sound on. Now you hear me.",
+          "Now the ドン is real.",
+          "With sound. Let the glass shake.",
+          "Done. The hits are audible.",
+          "Sound on. Mind your ears.",
+        ],
+        off: [
+          "Silence. Like a real Stand.",
+          "Sound off. Mute pose.",
+          "Mute again. Muda, muda.",
+          "Quiet. Still posing.",
+          "Off. The cracks, in silence.",
+        ],
+      },
     },
     powers: {
       zawarudo: {

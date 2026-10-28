@@ -2890,6 +2890,21 @@ html.stand-front .stand-layer {
 html.time-stopped .stand-hit {
   pointer-events: none;
 }
+/*
+  Entrada con ZA WARUDO (hero): mientras el tiempo esta detenido el Stand
+  grande y el chico siguen moviendose (el globo, las onomatopeyas, su
+  silueta al teletransportarse, la subida del grande).
+*/
+html.time-stopped.intro-world :is(.stand-layer, .hero-stand),
+html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *,
+html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::before,
+html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
+  animation-play-state: running !important;
+}
+/* Parada de impacto (grietas): todo se queda quieto un instante, menos el grande. */
+.hero-hitstop :not(.hero-stand, .hero-stand *) {
+  animation-play-state: paused !important;
+}
 
 .power-zw,
 .power-btd,

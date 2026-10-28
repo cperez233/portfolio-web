@@ -7,6 +7,7 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { GuideId, PowerId, StandLines } from "./lines";
 import { POWER_IDS } from "./powers";
 import { pickLine } from "./pick";
+import { setSound, soundEnabled } from "@/lib/sfx";
 
 /**
  * Conversacion con el Stand, en vineta de manga: el Stand habla (letra a
@@ -16,7 +17,7 @@ import { pickLine } from "./pick";
  */
 
 type Message = { id: number; from: "stand" | "you"; text: string };
-type Choice = "who" | "cris" | "guide" | "trivia" | "power" | "janken" | "darby" | "bye";
+type Choice = "who" | "cris" | "guide" | "trivia" | "power" | "janken" | "darby" | "sound" | "bye";
 const GUIDE_IDS: GuideId[] = ["projects", "sites", "pricing", "contact"];
 
 interface Props {
@@ -76,6 +77,12 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
   // Cada "¿quien eres?" cuenta otra version; datos y frases no repiten las ultimas 3 (pick.ts).
   const [whoTurn, setWhoTurn] = useState(0);
   const firstOption = useRef<HTMLButtonElement>(null);
+  // Apagado por defecto; la eleccion se recuerda (lib/sfx.ts).
+  const [soundOn, setSoundOn] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSoundOn(soundEnabled());
+  }, []);
 
   // El Stand dice las frases de la cola una tras otra.
   useEffect(() => {
@@ -109,7 +116,7 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
   }
 
   function choose(choice: Choice) {
-    you(lines.options[choice]);
+    you(choice === "sound" && soundOn ? lines.sound.stop : lines.options[choice]);
     if (choice === "who") {
       const set = lines.who[whoTurn % lines.who.length];
       setWhoTurn(whoTurn + 1);
@@ -128,6 +135,11 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
       onJanken();
     } else if (choice === "darby") {
       onDarby();
+    } else if (choice === "sound") {
+      const next = !soundOn;
+      setSound(next);
+      setSoundOn(next);
+      setQueue([pick(next ? lines.sound.on : lines.sound.off)]);
     } else {
       setQueue([pick(lines.bye)]);
       window.setTimeout(onClose, 1300);
@@ -192,7 +204,7 @@ export function StandChat({ ref, lines, powers, again, onClose, onPower, onGuide
                   onClick={() => choose(choice)}
                   className="stand-chat-option"
                 >
-                  {lines.options[choice]}
+                  {choice === "sound" && soundOn ? lines.sound.stop : lines.options[choice]}
                 </button>
               ))
             : mode === "guide"

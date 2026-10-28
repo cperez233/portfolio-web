@@ -187,13 +187,39 @@ The render loop stops off-screen.
   section. Same toon shading and ink outlines as the GitHub board, loaded
   on demand through `use-lazy-scene.ts`.
 - **Hero entrance** (`ui/portfolio-hero.tsx`, timings in `ENTRY`): CSS
-  only, from first paint. Speed lines converge, the name slams in letter
-  by letter and gets its hard shadow, the portrait is pasted on with a
+  from first paint. Speed lines converge, the name slams in letter by
+  letter and gets its hard shadow, the portrait is pasted on with a
   shake and a ドン, then a giant Paranoid Android (`ui/hero-stand.tsx`,
   the mini Stand's own pixel map drawn as SVG) rises beside it and
-  condenses into the portrait's corner, where the mini Stand appears
-  (`html.stand-manifest` hides it until then). With a mouse the layers
-  move with the pointer; on scroll the two name lines split apart.
+  shrinks into the exact spot and size of the mini Stand (same frame, a
+  one-frame cut, no fade). The mini Stand is hidden from the first paint
+  by `ui/stand-manifest-gate.tsx` (a server-rendered script that sets
+  `html.stand-manifest`); it used to be set after hydration and left a
+  fading ghost. While the Stand is big, one of two things happens, and
+  they alternate on every load (remembered in `localStorage`, force one
+  with `?intro=diamond` or `?intro=world`):
+  - **Crazy Diamond** (`ui/hero-crack.ts`): its presence cracks the
+    screen from its chest (ドラ in pink, a 120 ms hit-stop, cracks that
+    also cut through each letter), the letters of the name jump out of
+    place like broken glass, and when it shrinks Crazy Diamond repairs
+    cracks and letters toward where it lands. The cracks are one SVG
+    drawn once; only its `clip-path` animates.
+  - **ZA WARUDO**: the Stand stops time for real (`lib/time-stop.ts`,
+    the mini Stand's own power with its sphere). The giant keeps moving,
+    becomes the mini Stand, which teleports somewhere else, says
+    something, comes back to its spot and says something else
+    (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines in
+    `lines.ts` under `intro`).
+
+  With a mouse the layers move with the pointer; on scroll the two name
+  lines split apart. The mini Stand greets by the visitor's hour in seven
+  bands (night owl, early, morning, midday, afternoon, evening, late)
+  the moment it lands.
+- **Sound** (`lib/sfx.ts`): off by default, synthesized with Web Audio
+  (no files). Turn it on from the Stand's chat ("Turn sound on"); it is
+  remembered. Browsers only let audio start after a first tap, so a first
+  visit's entrance may be silent; the portrait's ZA WARUDO and the powers
+  sound whenever it is on.
 - **Language switch** (`ui/language-curtain.tsx`, driven by
   `lib/language.tsx`): a gold disc with an ink edge grows from the
   pressed EN/ES button, names the destination language, the page text

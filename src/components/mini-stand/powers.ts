@@ -2,6 +2,7 @@
 
 import type { PowerId, StandLines } from "./lines";
 import { stopTime } from "@/lib/time-stop";
+import { playSfx } from "@/lib/sfx";
 import {
   centerTarget,
   layer,
@@ -47,6 +48,8 @@ export interface PowerContext {
   universe?: StandLines["universe"];
   /** Made in Heaven: el Stand frena el reinicio (habla y posa). */
   onStop?: () => void;
+  /** ZA WARUDO: cuanto dura el tiempo detenido (por defecto 3.6s). */
+  ms?: number;
 }
 
 export const POWER_VARIANTS: Partial<Record<PowerId, string[]>> = {
@@ -68,8 +71,9 @@ let uid = 0;
  * vive en mini-stand, porque tambien pasa con el toque del retrato.
  */
 async function zaWarudo(ctx: PowerContext) {
-  const ms = ctx.reducedMotion ? 1600 : 3600;
+  const ms = ctx.ms ?? (ctx.reducedMotion ? 1600 : 3600);
   const resumed = stopTime(ms, "stand");
+  playSfx("warudo");
   /*
     Dos capas: la esfera mezcla en "difference" con la pagina, y para eso
     la mezcla va en la propia capa fija (una capa con z-index aisla a sus
@@ -89,6 +93,7 @@ async function zaWarudo(ctx: PowerContext) {
   const node = layer("power-zw", true);
   node.innerHTML = `<span class="power-zw-text">時よ止まれ!</span>`;
   await resumed;
+  playSfx("resume");
   node.innerHTML = `<span class="power-zw-text is-resume">時は動き出す</span>`;
   await wait(700);
   node.classList.add("is-leaving");
@@ -346,6 +351,7 @@ async function crazyDiamond(ctx: PowerContext) {
     }
   }
   quake(1000, ctx.reducedMotion, true);
+  playSfx("crack");
 
   const main = document.querySelector("main");
   const clears: (() => void)[] = [];
@@ -377,6 +383,7 @@ async function crazyDiamond(ctx: PowerContext) {
     await wait(1400);
     // Arreglado: pieza a pieza, con un brillo rosa.
     node.classList.add("is-healing");
+    playSfx("heal");
     for (const el of pieces) {
       el.classList.remove("power-broken");
       if (!ctx.reducedMotion) el.classList.add("power-healed");

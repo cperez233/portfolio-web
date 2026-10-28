@@ -218,6 +218,8 @@ export function MiniStand() {
     let greeted = false;
     // Ya esta en su sitio de partida (ver el relevo con el Stand grande del hero).
     let placed = false;
+    // Entrada con ZA WARUDO (hero): el Stand se mueve con el tiempo detenido.
+    let introWorld = false;
     let wasManifesting = false;
     let saidBottom = false;
     let freeUntil = 0;
@@ -452,7 +454,7 @@ export function MiniStand() {
         .filter(({ r }) => r.width > 40 && r.height > 16);
     }
     /** Aparece en otro sitio de lo que se ve, sin volar. Devuelve a donde. */
-    function teleport(avoid?: Element) {
+    function teleport(avoid?: Element, holdMs = 4500) {
       const from = { x: body.x, y: body.y };
       const rects = visibleRects().filter(({ el }) => el !== avoid);
       const dist = (r: DOMRect) => Math.hypot(r.left + r.width / 2 - from.x, r.top - from.y);
@@ -472,9 +474,23 @@ export function MiniStand() {
       body.vx = 0;
       body.vy = 0;
       hold = point;
-      holdUntil = performance.now() + 4500;
+      holdUntil = performance.now() + holdMs;
       landedHere = true;
       return point;
+    }
+    /** Vuelve a su sitio (el retrato) sin volar: deja su silueta y reaparece. */
+    function goHome() {
+      const rect = document.querySelector("[data-stand-home]")?.getBoundingClientRect();
+      hold = null;
+      holdUntil = 0;
+      if (!rect) return;
+      const left = snapshot("stand-frozen");
+      window.setTimeout(() => left.classList.add("is-leaving"), 40);
+      window.setTimeout(() => left.remove(), 450);
+      body.x = rect.right - SPRITE_W * scale * 0.25;
+      body.y = rect.top + SPRITE_H * scale * 0.35;
+      body.vx = 0;
+      body.vy = 0;
     }
     /** Cuchillos que "ya estaban ahi" al volver el tiempo, y se clavan. */
     function knives() {
@@ -522,6 +538,9 @@ export function MiniStand() {
     }
     const onTimeStop = (event: Event) => {
       const { active, by } = (event as CustomEvent<TimeStopDetail>).detail;
+      // En la entrada con ZA WARUDO el Stand no se congela ni se burla al
+      // reanudarse: se mueve durante el tiempo detenido (ver onIntro).
+      if (introWorld && by === "stand") return;
       const now = performance.now();
       if (active) {
         stop = { by, at: now, attempted: false };
@@ -567,6 +586,39 @@ export function MiniStand() {
     const onAttempt = () => {
       if (stop) stop.attempted = true;
     };
+    /*
+      La entrada con ZA WARUDO la dirige el hero (portfolio-hero.tsx) con
+      "jojo:intro": start (el tiempo se detiene), teleport (aparece en otro
+      sitio y habla), back (vuelve a su lugar y habla) y end.
+    */
+    const onIntro = (event: Event) => {
+      const phase = (event as CustomEvent<{ phase: string }>).detail?.phase;
+      const intro = linesRef.current.intro;
+      const root = document.documentElement;
+      if (phase === "start") {
+        introWorld = true;
+        // El saludo lo sustituyen las frases de la entrada.
+        greeted = true;
+        root.classList.add("intro-world");
+      } else if (phase === "teleport") {
+        teleport(undefined, 60000);
+        act.current("smug", 1800);
+        sfx("ﾌﾌﾌ", "mark");
+        sfx("ドン!", "sfx");
+        say.current(pickLine(short(intro.stopped)), 2200);
+      } else if (phase === "back") {
+        goHome();
+        act.current("pose", 1200);
+        sfx("ドン!", "sfx");
+        say.current(pickLine(short(intro.back)), 2400);
+      } else if (phase === "end") {
+        introWorld = false;
+        hold = null;
+        holdUntil = 0;
+        root.classList.remove("intro-world");
+      }
+    };
+    window.addEventListener("jojo:intro", onIntro);
     window.addEventListener("jojo:timestop", onTimeStop);
     window.addEventListener("jojo:timestop-attempt", onAttempt);
     markRef.current = (text) => sfx(text, "mark");
@@ -868,8 +920,9 @@ export function MiniStand() {
         // Sigue con el cuadro del grande un momento: no se nota el cambio.
         act.current("emerge", 800);
         sfx("ドン!", "sfx");
-        // Apenas cae a su tamano: la bienvenida.
-        greet();
+        // Apenas cae a su tamano: la bienvenida (en la entrada con ZA WARUDO
+        // la sustituyen las frases del Stand al teletransportarse).
+        if (!introWorld) greet();
       }
       wasManifesting = manifesting;
 
@@ -1093,6 +1146,8 @@ export function MiniStand() {
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("jojo:intro", onIntro);
+      document.documentElement.classList.remove("intro-world");
       window.removeEventListener("jojo:timestop", onTimeStop);
       window.removeEventListener("jojo:timestop-attempt", onAttempt);
       button.removeEventListener("pointerdown", onGrab);
