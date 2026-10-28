@@ -250,13 +250,13 @@ export function MiniStand() {
     /*
       Para que no se vea guionado: cada viaje tiene su propio caracter
       (rapido, perezoso, con rebote o sin el) y una curva hacia un lado
-      al azar, y en cada repisa se para en un punto distinto, no siempre
-      en la punta derecha. Quieto, de vez en cuando se acomoda: da un
-      saltito, camina un poco por la repisa o se voltea.
+      al azar, y en cada sitio se para en un punto distinto (ver
+      choosePerch). Quieto, de vez en cuando se acomoda: da un saltito, se
+      cambia a otro rincon libre del mismo sitio o se voltea. Flotando
+      junto a algo, se mece un poco.
     */
     type Flight = { tx: number; ty: number; d0: number; nx: number; ny: number; amp: number; k: number; c: number; hop: boolean; landed: boolean };
     let flight: Flight | null = null;
-    let perchFrac = 0.8;
     let roam = { x: 0.86, y: 0.38 };
     let hopNext = 0;
     let restFace: 1 | -1 = 1;
@@ -280,13 +280,6 @@ export function MiniStand() {
       const k = hopAmp ? 120 : [38, 52, 64, 90][Math.floor(Math.random() * 4)];
       const zeta = hopAmp ? 0.8 : 0.55 + Math.random() * 0.35;
       return { tx, ty, d0, nx, ny, amp, k, c: 2 * zeta * Math.sqrt(k), hop: hopAmp !== 0, landed: false };
-    }
-    function pickPerch(isTitle: boolean) {
-      // En un titulo, de la mitad hacia el final: al principio taparia el rotulo de la parte.
-      const lo = isTitle ? 0.4 : 0.1;
-      let next = lo + Math.random() * (1 - lo);
-      for (let i = 0; i < 4 && Math.abs(next - perchFrac) < 0.22; i++) next = lo + Math.random() * (1 - lo);
-      perchFrac = next;
     }
     const visits = countVisit();
     visitsRef.current = visits;
@@ -427,6 +420,119 @@ export function MiniStand() {
       }
       range.selectNodeContents(spot.el);
       return range.getBoundingClientRect();
+    }
+
+    /*
+      Donde pararse en cada sitio sin estorbar: se prueban varios puntos
+      alrededor (sobre su borde, flotando a su derecha o a su izquierda,
+      junto al texto del titulo) y se queda con uno de los mas vacios, al
+      azar y si puede del otro lado que la vez pasada. Vacio es sin letras,
+      imagenes, botones ni enlaces debajo del sprite (busyAt), que ademas
+      el sprite le robaria el clic. El punto se guarda relativo al sitio
+      para que viaje con el scroll, y se revisa cada tanto: si algo se abre
+      debajo (una pregunta, un servicio), se cambia.
+    */
+    type Perch = { dx: number; dy: number; air: boolean; side: -1 | 1; face: -1 | 1 };
+    let perch: Perch | null = null;
+    let lastSide = 0;
+    let nextPerchCheck = 0;
+    let focusY = 0.33;
+    let nextFocus = performance.now() + 15000;
+    const BUSY = "img, svg, canvas, video, picture, iframe, input, textarea, select, button, a, label, [role='img'], [role='tab']";
+    const probeRange = document.createRange();
+    function caretAt(x: number, y: number): { node: Node; offset: number } | null {
+      if ("caretPositionFromPoint" in document) {
+        const pos = document.caretPositionFromPoint(x, y);
+        return pos ? { node: pos.offsetNode, offset: pos.offset } : null;
+      }
+      const legacy = document as Document & { caretRangeFromPoint?: (x: number, y: number) => Range | null };
+      const r = legacy.caretRangeFromPoint?.(x, y);
+      return r ? { node: r.startContainer, offset: r.startOffset } : null;
+    }
+    function busyAt(x: number, y: number) {
+      if (x < 4 || x > width - 4 || y < 64 || y > height - 4) return true;
+      const hit = document.elementFromPoint(x, y);
+      if (!hit || hit === document.body || hit === document.documentElement) return false;
+      if (hit.closest(BUSY)) return true;
+      // El rotulo de la parte: su placa ("PARTE 5") es un ::before y no se
+      // detecta como letras. Ocupado hasta donde acaba su texto.
+      const brow = hit.closest(".jojo-eyebrow");
+      if (brow) {
+        probeRange.selectNodeContents(brow);
+        return x <= probeRange.getBoundingClientRect().right + 8;
+      }
+      // Letras: el caracter mas cercano al punto, y si su caja lo contiene.
+      const caret = caretAt(x, y);
+      if (!caret || caret.node.nodeType !== Node.TEXT_NODE) return false;
+      const text = caret.node as Text;
+      if (!text.length || !text.data.trim()) return false;
+      probeRange.setStart(text, Math.max(0, Math.min(text.length - 1, caret.offset - 1)));
+      probeRange.setEnd(text, Math.min(text.length, Math.max(1, caret.offset + 1)));
+      for (const r of probeRange.getClientRects()) {
+        if (x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 6 && y <= r.bottom + 6) return true;
+      }
+      return false;
+    }
+    /** Cuanto de lo que hay debajo taparia, de 0 a 9, parado con los pies en (x, y). */
+    function busyBox(x: number, y: number) {
+      const spriteW = SPRITE_W * scale;
+      const spriteH = SPRITE_H * scale;
+      // Su propia zona de clic no cuenta.
+      const was = button!.style.pointerEvents;
+      button!.style.pointerEvents = "none";
+      let n = 0;
+      for (const fx of [-0.35, 0, 0.35]) for (const fy of [0.15, 0.5, 0.85]) if (busyAt(x + spriteW * fx, y - spriteH * fy)) n++;
+      button!.style.pointerEvents = was;
+      return n;
+    }
+    function choosePerch(spot: Spot, avoid?: Perch | null): Perch {
+      const spriteW = SPRITE_W * scale;
+      const spriteH = SPRITE_H * scale;
+      const base = spotRect(spot);
+      const shapes = [base];
+      // Junto a un titulo con rotulo, tambien a la altura del titulo.
+      if (spot.el.tagName === "H2" && eyebrowOf(spot.el)) {
+        range.selectNodeContents(spot.el);
+        shapes.push(range.getBoundingClientRect());
+      }
+      const center = base.left + base.width / 2;
+      let best: Perch | null = null;
+      let bestScore = Infinity;
+      // El lado cuenta por mitad de pantalla: los titulos van a la izquierda
+      // y, contado por el titulo, terminaba casi siempre del mismo lado.
+      const consider = (x: number, y: number, air: boolean, far: number) => {
+        const side: -1 | 1 = x > width / 2 ? 1 : -1;
+        if (x < spriteW / 2 + 8 || x > width - spriteW / 2 - 8 || y < spriteH + 70 || y > height - 8) return;
+        if (avoid && Math.abs(base.left + avoid.dx - x) < spriteW * 0.8 && Math.abs(base.top + avoid.dy - y) < spriteH * 0.5) return;
+        const score =
+          busyBox(x, y) * 2 +
+          far * 0.35 +
+          (side === lastSide ? 1.3 : 0) +
+          Math.random() * 1.8;
+        if (score < bestScore) {
+          bestScore = score;
+          best = { dx: x - base.left, dy: y - base.top, air, side, face: center > x ? 1 : -1 };
+        }
+      };
+      for (const r of shapes) {
+        // Sobre su borde de arriba, en cuatro puntos (sobre el titulo no:
+        // ahi encima esta su rotulo).
+        for (const f of r === base ? [0.1, 0.37, 0.63, 0.9] : []) {
+          const x = r.left + spriteW / 2 + Math.max(0, r.width - spriteW) * f;
+          consider(x, r.top - 1, false, 0);
+        }
+        // Flotando a los lados, con los pies a la altura de su texto.
+        const feet = r.top + Math.min(Math.max(r.height, spriteH * 0.6), spriteH * 1.1);
+        for (const k of [0.8, 1.7, 2.8]) {
+          consider(r.right + spriteW * k, feet, true, k * 0.6);
+          consider(r.left - spriteW * k, feet, true, k * 0.6);
+        }
+        // Y en el hueco de la misma fila, mas alla (si esta vacio).
+        for (const f of [0.35, 0.6, 0.85]) consider(r.right + (width - r.right) * f, feet, true, 1.2);
+      }
+      const chosen: Perch = best ?? { dx: base.width - spriteW * 0.6, dy: -1, air: false, side: 1, face: -1 };
+      lastSide = chosen.side;
+      return chosen;
     }
 
     function nextLine(spot: Spot) {
@@ -1035,11 +1141,16 @@ export function MiniStand() {
         else if (now < nextScan) best = scanned;
         else {
           nextScan = now + 150;
+          // Cada tanto mira hacia otra altura: con dos sitios a la vista, a veces se cambia al otro.
+          if (now > nextFocus) {
+            focusY = 0.22 + Math.random() * 0.26;
+            nextFocus = now + 15000 + Math.random() * 10000;
+          }
           let score = -Infinity;
           for (const spot of spots) {
             const rect = spotRect(spot);
             if (rect.bottom < 90 || rect.top > height - 90 || rect.width === 0) continue;
-            const value = -Math.abs(rect.top - height * 0.33);
+            const value = -Math.abs(rect.top - height * focusY);
             if (value > score) {
               score = value;
               best = spot;
@@ -1053,10 +1164,10 @@ export function MiniStand() {
         }
         if (candidate !== current && now - candidateSince > 450) {
           current = candidate;
-          if (current) pickPerch(current.el.tagName === "H2" && !eyebrowOf(current.el));
+          perch = null;
           // Sin repisa a la vista: flota a un lado, no siempre el derecho.
-          else roam = { x: Math.random() < 0.5 ? 0.14 : 0.86, y: 0.3 + Math.random() * 0.18 };
-          restFace = Math.random() < 0.2 ? -1 : 1;
+          if (!current) roam = { x: Math.random() < 0.5 ? 0.14 : 0.86, y: 0.3 + Math.random() * 0.18 };
+          restFace = Math.random() < 0.12 ? -1 : 1;
           nextFidget = now + 7000 + Math.random() * 8000;
           spokeHere = false;
           landedHere = false;
@@ -1065,10 +1176,14 @@ export function MiniStand() {
         }
         if (current) {
           const rect = spotRect(current);
-          const lo = rect.left + spriteW * 0.6;
-          const hi = Math.max(lo, Math.min(rect.right, width - 8) - spriteW * 0.6);
-          tx = lo + (hi - lo) * perchFrac;
-          ty = Math.max(70, rect.top - 1);
+          perch ??= choosePerch(current);
+          tx = Math.min(width - spriteW / 2 - 8, Math.max(spriteW / 2 + 8, rect.left + perch.dx));
+          ty = Math.max(70, rect.top + perch.dy);
+          // Flotando junto a algo (no parado encima) se mece, lento.
+          if (perch.air) {
+            tx += Math.sin(now / 1300 + bobPhase[0]) * 4;
+            ty += Math.sin(now / 840 + bobPhase[1]) * 3;
+          }
           perched = true;
         } else {
           tx = Math.min(width - spriteW - 24, Math.max(spriteW + 24, width * roam.x));
@@ -1165,7 +1280,8 @@ export function MiniStand() {
       else if (!flying) {
         // Quieto mira hacia el centro (o, a veces, hacia afuera); con raton cerca, al puntero.
         const near = fine && !dialog && Math.abs(pointerX - body.x) < 320 && Math.abs(pointerY - body.y) < 240;
-        body.face = near ? (pointerX > body.x ? 1 : -1) : ((body.x > width / 2 ? -1 : 1) * restFace) as 1 | -1;
+        const toward = mode === "out" && perch ? perch.face : body.x > width / 2 ? -1 : 1;
+        body.face = near ? (pointerX > body.x ? 1 : -1) : ((toward * restFace) as 1 | -1);
       }
       const resting = !flying && !free && speed < 40;
 
@@ -1176,9 +1292,11 @@ export function MiniStand() {
           landedHere = true;
           squashUntil = now + 240;
           if (Math.random() < 0.55) sfx(pickLine(linesRef.current.landing), "sfx");
-          // Polvo a los lados al tocar suelo.
-          sfx("", "dust", -spriteW * 0.45, -2);
-          sfx("", "dust", spriteW * 0.45, -2);
+          // Polvo a los lados al tocar suelo (flotando no hay suelo).
+          if (!perch?.air) {
+            sfx("", "dust", -spriteW * 0.45, -2);
+            sfx("", "dust", spriteW * 0.45, -2);
+          }
         }
         const recent = now - current.spokeAt < 12000 || now - lastSpokeAt < 4000;
         if (!spokeHere && !recent && now - settledSince > 300) {
@@ -1222,12 +1340,21 @@ export function MiniStand() {
           nextFidget = now + 6000 + Math.random() * 10000;
           const roll = Math.random();
           if (roll < 0.45) {
-            pickPerch(current.el.tagName === "H2" && !eyebrowOf(current.el));
+            // A otro rincon libre del mismo sitio, de un salto.
+            perch = choosePerch(current, perch);
             hopNext = 26 + Math.random() * 24;
           } else if (roll < 0.75) {
             body.vy -= 260 + Math.random() * 120;
             hopLandAt = now + 360;
           } else restFace = restFace === 1 ? -1 : 1;
+        }
+        // Si algo se abrio o se movio debajo (una pregunta, un servicio), a otro rincon.
+        if (mode === "out" && current && perch && now > nextPerchCheck && now > holdUntil) {
+          nextPerchCheck = now + 2500;
+          if (busyBox(body.x, body.y) >= 3) {
+            perch = choosePerch(current, perch);
+            hopNext = 30;
+          }
         }
         /*
           Lleva rato callado y hay alguien leyendo. Primero, una vez, avisa

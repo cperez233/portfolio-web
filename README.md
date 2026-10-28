@@ -133,9 +133,14 @@ The render loop stops off-screen.
   portrait (`data-stand-home`), flies out when the hero scrolls away and
   perches on whatever is being read (`data-spot` elements). It does not
   move on rails: every trip gets its own spring (quick, lazy, bouncy or
-  not) and a curve to a random side, it lands on a different point of
-  each ledge, floats to either side when no ledge is in view, and while
-  perched it hops, takes a few steps or turns around now and then. Its own
+  not) and a curve to a random side. At each spot it tries a dozen points
+  (on its top edge, floating beside it, out in the empty part of the same
+  row), checks what is under the sprite at each one (letters, images,
+  links, buttons, the "Part N" plates) and picks one of the emptiest, on
+  the other half of the screen from last time when it can. If something
+  opens under it, it moves. Floating, it sways a little; perched, it
+  hops, jumps to another free corner or turns around now and then, and
+  every so often it gets curious about another spot on screen. Its own
   JoJo character: it lands with a ドン, gives off ゴ while still, strikes
   poses, and its speech bubbles type themselves out. Each spot has several
   lines in `lines.ts`, shuffled and not repeated. It greets by time of
