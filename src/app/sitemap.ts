@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { LANGUAGE_PATHS } from "@/lib/language-detection";
+import { LANGUAGE_PATHS, PRIVACY_PATHS } from "@/lib/language-detection";
 import { siteUrl } from "@/lib/site-url";
 
 /**
@@ -15,8 +15,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const alternates = { languages: { en, "es-CO": es, "x-default": en } };
   const lastModified = new Date("2026-09-30");
 
+  const privacyEn = new URL(PRIVACY_PATHS.en, siteUrl).href;
+  const privacyEs = new URL(PRIVACY_PATHS.es, siteUrl).href;
+  const privacyAlternates = { languages: { en: privacyEn, "es-CO": privacyEs, "x-default": privacyEn } };
+  const policyModified = new Date("2026-10-28");
+
   return [
     { url: en, lastModified, alternates },
     { url: es, lastModified, alternates },
+    { url: privacyEn, lastModified: policyModified, alternates: privacyAlternates },
+    { url: privacyEs, lastModified: policyModified, alternates: privacyAlternates },
   ];
 }

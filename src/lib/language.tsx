@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { dictionaries, type Dictionary, type Language } from "@/data/content";
-import { LANGUAGE_COOKIE, LANGUAGE_PATHS } from "@/lib/language-detection";
+import { LANGUAGE_COOKIE, PRIVACY_PATHS, pathForLanguage } from "@/lib/language-detection";
 
 /** Un ano: la eleccion manual es una preferencia duradera. */
 const MANUAL_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -70,8 +70,9 @@ export function LanguageProvider({
   */
   useEffect(() => {
     document.documentElement.lang = language;
-    document.title = dictionaries[language].meta.title;
-    const path = LANGUAGE_PATHS[language];
+    const onPrivacy = Object.values(PRIVACY_PATHS).includes(window.location.pathname);
+    document.title = onPrivacy ? dictionaries[language].privacy.title : dictionaries[language].meta.title;
+    const path = pathForLanguage(window.location.pathname, language);
     if (window.location.pathname !== path) {
       window.history.replaceState(
         window.history.state,

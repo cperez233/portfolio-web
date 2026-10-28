@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { emitStandEvent } from "@/lib/stand-events";
 import { ArrowUpRight, Check } from "lucide-react";
 import { site } from "@/data/site";
+import { loadHcaptcha } from "@/lib/hcaptcha";
+import { PRIVACY_PATHS } from "@/lib/language-detection";
 import { useLanguage } from "@/lib/language";
 import { cn } from "@/lib/utils";
 
-type Status = "idle" | "sending" | "success" | "error";
+type Status = "idle" | "sending" | "success" | "error" | "captcha";
 
 // Campo de manga: trazo de tinta y sombra dorada al enfocarlo (manga-field).
 const fieldClass =
@@ -20,16 +22,56 @@ const fieldClass =
  * El envio va desde el navegador porque asi lo exige Web3Forms en el
  * plan gratis. `botcheck` es el honeypot: un campo oculto que solo
  * rellenan los bots, y Web3Forms descarta esos envios.
+ *
+ * hCaptcha va encima del honeypot: se carga al empezar a escribir y su
+ * token viaja como `h-captcha-response`. Hay que tener hCaptcha activado
+ * como "Block Spam" en el panel de Web3Forms para que se compruebe.
  */
 export function ContactForm() {
   const { t, language } = useLanguage();
   const copy = t.footer.form;
   const [status, setStatus] = useState<Status>("idle");
+  const captchaEl = useRef<HTMLDivElement>(null);
+  const captchaId = useRef<string | null>(null);
+  const [wantCaptcha, setWantCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  // Sin captcha (bloqueado o sin red) el envio no puede validarse: se remite a WhatsApp.
+  const [captchaFailed, setCaptchaFailed] = useState(false);
+
+  useEffect(() => {
+    if (!wantCaptcha || !captchaEl.current) return;
+    const el = captchaEl.current;
+    let cancelled = false;
+    loadHcaptcha(language)
+      .then((hcaptcha) => {
+        if (cancelled || el.childElementCount > 0) return;
+        captchaId.current = hcaptcha.render(el, {
+          sitekey: site.hcaptchaSiteKey,
+          callback: (token: string) => setCaptchaToken(token),
+          "expired-callback": () => setCaptchaToken(""),
+          "error-callback": () => setCaptchaToken(""),
+        });
+      })
+      .catch(() => !cancelled && setCaptchaFailed(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [wantCaptcha, language]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (captchaFailed) {
+      setStatus("error");
+      return;
+    }
+    if (!captchaToken) {
+      setWantCaptcha(true);
+      setStatus("captcha");
+      return;
+    }
     const form = event.currentTarget;
     const data = new FormData(form);
+    data.set("h-captcha-response", captchaToken);
     data.append("access_key", site.web3formsKey);
     data.append("subject", copy.subject);
     data.append("from_name", `Portafolio (${language})`);
@@ -49,6 +91,9 @@ export function ContactForm() {
     } catch {
       setStatus("error");
     }
+    // El token solo vale una vez.
+    if (captchaId.current) window.hcaptcha?.reset(captchaId.current);
+    setCaptchaToken("");
   }
 
   const sending = status === "sending";
@@ -57,6 +102,7 @@ export function ContactForm() {
     <form
       id="contact-form"
       onSubmit={handleSubmit}
+      onFocus={() => setWantCaptcha(true)}
       // Una carta en vineta: el titulo va en el cartel de tinta de arriba.
       className="manga-form scroll-mt-24 p-5 sm:p-6"
     >
@@ -109,6 +155,8 @@ export function ContactForm() {
         className="hidden"
       />
 
+      <div ref={captchaEl} className="mt-5" />
+
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
           type="submit"
@@ -127,7 +175,7 @@ export function ContactForm() {
           aria-live="polite"
           className={cn(
             "text-sm leading-relaxed",
-            status === "error" ? "text-accent-ink" : "text-ink-muted",
+            status === "error" || status === "captcha" ? "text-accent-ink" : "text-ink-muted",
           )}
         >
           {status === "success" ? (
@@ -137,9 +185,24 @@ export function ContactForm() {
             </span>
           ) : status === "error" ? (
             copy.error
+          ) : status === "captcha" && !captchaToken ? (
+            copy.captchaError
           ) : null}
         </p>
       </div>
+
+      <p className="mt-4 text-xs leading-relaxed text-ink-subtle">
+        {copy.consent}{" "}
+        <a
+          href={PRIVACY_PATHS[language]}
+          target="_blank"
+          rel="noopener"
+          className="underline underline-offset-4 hover:text-ink"
+        >
+          {copy.consentLink}
+        </a>
+        .
+      </p>
     </form>
   );
 }

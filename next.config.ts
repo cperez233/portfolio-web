@@ -8,12 +8,13 @@ import type { NextConfig } from "next";
 */
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
-  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://js.hcaptcha.com https://*.hcaptcha.com",
+  "style-src 'self' 'unsafe-inline' https://*.hcaptcha.com",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
   "media-src 'self' blob:",
-  "connect-src 'self' https://api.web3forms.com https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+  "frame-src https://*.hcaptcha.com",
+  "connect-src 'self' https://api.web3forms.com https://*.hcaptcha.com https://va.vercel-scripts.com https://vitals.vercel-insights.com",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -31,18 +32,19 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   /*
-    Cabeceras de seguridad. La CSP va en modo Report-Only: no bloquea
-    nada, solo deja avisos en la consola del navegador. Los scripts en
-    linea (tema, JSON-LD, hidratacion de Next) obligan a 'unsafe-inline';
-    pasar a Content-Security-Policy y a nonces es el paso siguiente.
-    HSTS ya lo pone Vercel.
+    Cabeceras de seguridad. La CSP ya se aplica (antes iba en Report-Only):
+    se probo el sitio completo, con el formulario y hCaptcha, sin una sola
+    violacion. Los scripts en linea (tema, JSON-LD, hidratacion de Next)
+    obligan a 'unsafe-inline'; pasar a nonces es el paso siguiente.
+    Si una fuente nueva queda bloqueada, anadela arriba. HSTS ya lo pone
+    Vercel.
   */
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: [
-          { key: "Content-Security-Policy-Report-Only", value: csp },
+          { key: "Content-Security-Policy", value: csp },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

@@ -167,7 +167,22 @@ export interface Dictionary {
       error: string;
       /** Asunto del correo que me llega. */
       subject: string;
+      /** Aviso de autorizacion junto al boton; el enlace va despues. */
+      consent: string;
+      consentLink: string;
+      captchaError: string;
     };
+    /** Enlace a la politica de privacidad, en el pie. */
+    privacy: string;
+  };
+  /** Politica de privacidad: una pagina por idioma (/privacy y /es/privacidad). */
+  privacy: {
+    title: string;
+    description: string;
+    updated: string;
+    back: string;
+    switchLabel: string;
+    sections: { title: string; body: string[] }[];
   };
   languageToggle: { label: string };
   /** Mensaje que se abre ya escrito en WhatsApp. */
@@ -565,9 +580,75 @@ const en: Dictionary = {
       success: "Got it. I'll reply to your email within one business day.",
       error: "It didn't go through. Try again or write to me on WhatsApp.",
       subject: "New message from the portfolio",
+      consent: "By sending, you authorize me to use your details only to reply to you. Your rights are in the",
+      consentLink: "Privacy policy",
+      captchaError: "Tick the box to confirm you are not a robot.",
     },
+    privacy: "Privacy policy",
   },
   languageToggle: { label: "Change language" },
+  privacy: {
+    title: "Privacy policy",
+    description: "How Cristian Pérez handles the personal data that reaches this site through the contact form, WhatsApp and the free website check.",
+    updated: "Effective October 28, 2026",
+    back: "Back to the portfolio",
+    switchLabel: "Español",
+    sections: [
+      {
+        title: "Who is responsible",
+        body: ["Cristian Pérez, in Bucaramanga, Colombia. Email: {email}."],
+      },
+      {
+        title: "What I collect and why",
+        body: [
+          "Contact form: your name, your email and your message. I use them only to reply to you and, if we work together, to prepare the project.",
+          "Free website check: the address you paste is sent to my server, which downloads that page to run the checks. I do not store the address or the result. Your IP address is kept in memory for a few minutes to limit abuse.",
+          "This site is for businesses and adults. Please do not send sensitive data or data about minors.",
+        ],
+      },
+      {
+        title: "How it reaches me",
+        body: [
+          "The form is delivered to my inbox through Web3Forms. If you use WhatsApp, the message leaves from your device and arrives directly.",
+        ],
+      },
+      {
+        title: "Who else handles your data",
+        body: [
+          "I do not sell your data. It passes through the providers that make the site work: Web3Forms (delivers the form), hCaptcha (anti-spam check in the form), Google (my email), Meta (WhatsApp, if you choose it) and Vercel (hosting and visit statistics). Some may be outside Colombia.",
+        ],
+      },
+      {
+        title: "Cookies, analytics and storage",
+        body: [
+          "Vercel Web Analytics counts visits and clicks on WhatsApp without cookies. hCaptcha only loads when you start typing in the form and may store technical data in your browser to tell people from robots.",
+          "Your browser also keeps, on your device, your language choice (a cookie my server reads to show the right version), your light or dark theme and the secrets you find on the site.",
+        ],
+      },
+      {
+        title: "Your rights",
+        body: [
+          "You can access, update, correct and delete your data, withdraw your consent, ask for proof of it and learn how I use it. You can also file a complaint with Colombia's Superintendence of Industry and Commerce (SIC).",
+        ],
+      },
+      {
+        title: "How to exercise them",
+        body: [
+          "Write to {email}. I answer queries within 10 business days and complaints within 15 business days.",
+        ],
+      },
+      {
+        title: "Security and retention",
+        body: [
+          "I apply reasonable measures to protect your data. I keep your messages as long as needed to handle your request, the business relationship and legal obligations, and delete them afterwards.",
+        ],
+      },
+      {
+        title: "Changes",
+        body: ["If this policy changes, I will publish the new version here with its date."],
+      },
+    ],
+  },
   whatsappMessage:
     "Hi Cristian, I saw your portfolio and I would like to talk about a project.",
   diagrams: {
@@ -1081,9 +1162,75 @@ const es: Dictionary = {
       success: "Recibido. Te respondo a tu correo en menos de un día hábil.",
       error: "No se pudo enviar. Inténtalo de nuevo o escríbeme por WhatsApp.",
       subject: "Nuevo mensaje desde el portafolio",
+      consent: "Al enviar, autorizas que use tus datos solo para responderte. Tus derechos están en la",
+      consentLink: "Política de privacidad",
+      captchaError: "Marca la casilla para confirmar que no eres un robot.",
     },
+    privacy: "Política de privacidad",
   },
   languageToggle: { label: "Cambiar idioma" },
+  privacy: {
+    title: "Política de privacidad",
+    description: "Cómo trata Cristian Pérez los datos personales que llegan a este sitio por el formulario, WhatsApp y la revisión gratis de páginas web.",
+    updated: "Vigente desde el 28 de octubre de 2026",
+    back: "Volver al portafolio",
+    switchLabel: "English",
+    sections: [
+      {
+        title: "Quién es el responsable",
+        body: ["Cristian Pérez, en Bucaramanga, Colombia. Correo: {email}."],
+      },
+      {
+        title: "Qué datos recojo y para qué",
+        body: [
+          "Formulario de contacto: tu nombre, tu correo y tu mensaje. Los uso solo para responderte y, si trabajamos juntos, para preparar el proyecto.",
+          "Revisión gratis: la dirección que pegas llega a mi servidor, que descarga esa página para hacer las comprobaciones. No guardo la dirección ni el resultado. Tu dirección IP queda en memoria unos minutos para frenar abusos.",
+          "Este sitio es para empresas y adultos. Por favor no envíes datos sensibles ni de menores de edad.",
+        ],
+      },
+      {
+        title: "Cómo me llegan",
+        body: [
+          "El formulario llega a mi correo a través de Web3Forms. Si usas WhatsApp, el mensaje sale desde tu dispositivo y me llega directo.",
+        ],
+      },
+      {
+        title: "Quién más maneja tus datos",
+        body: [
+          "No vendo tus datos. Pasan por los proveedores que hacen funcionar el sitio: Web3Forms (entrega el formulario), hCaptcha (antispam del formulario), Google (mi correo), Meta (WhatsApp, si lo eliges) y Vercel (alojamiento y estadísticas de visitas). Algunos pueden estar fuera de Colombia.",
+        ],
+      },
+      {
+        title: "Cookies, analítica y almacenamiento",
+        body: [
+          "Vercel Web Analytics cuenta las visitas y los clics en WhatsApp sin usar cookies. hCaptcha solo se carga cuando empiezas a escribir en el formulario y puede guardar datos técnicos en tu navegador para distinguir personas de robots.",
+          "Tu navegador también guarda, en tu dispositivo, el idioma que elijas (una cookie que lee mi servidor para mostrarte la versión correcta), tu tema claro u oscuro y los secretos que encuentres en el sitio.",
+        ],
+      },
+      {
+        title: "Tus derechos",
+        body: [
+          "Puedes conocer, actualizar, rectificar y suprimir tus datos, revocar la autorización, pedir prueba de ella y saber cómo los uso. También puedes presentar una queja ante la Superintendencia de Industria y Comercio.",
+        ],
+      },
+      {
+        title: "Cómo ejercerlos",
+        body: [
+          "Escríbeme a {email}. Respondo las consultas en máximo 10 días hábiles y los reclamos en máximo 15 días hábiles.",
+        ],
+      },
+      {
+        title: "Seguridad y conservación",
+        body: [
+          "Aplico medidas razonables para proteger tus datos. Conservo tus mensajes mientras sean necesarios para atender tu solicitud, la relación comercial y las obligaciones legales; después los elimino.",
+        ],
+      },
+      {
+        title: "Cambios",
+        body: ["Si esta política cambia, publicaré aquí la nueva versión con su fecha."],
+      },
+    ],
+  },
   whatsappMessage:
     "Hola Cristian, vi tu portafolio y me gustaría hablar de un proyecto.",
   diagrams: {

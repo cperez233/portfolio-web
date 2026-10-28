@@ -8,6 +8,7 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight } from "lucide-react";
 import { footerGroups, hero, site } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { PRIVACY_PATHS } from "@/lib/language-detection";
 import { buildWhatsappUrl, trackWhatsappClick } from "@/lib/contact";
 import { ContactForm } from "./contact-form";
 import { FadeSwap } from "./FadeSwap";
@@ -150,6 +151,12 @@ export default function Footer() {
             </p>
           </FadeSwap>
           <div className="flex items-center justify-between gap-6">
+            <a
+              href={PRIVACY_PATHS[language]}
+              className="inline-flex min-h-11 items-center underline-offset-4 hover:text-ink hover:underline"
+            >
+              {t.footer.privacy}
+            </a>
             <SecretsCounter />
             <p>{site.location}</p>
           </div>

@@ -21,6 +21,11 @@ export interface SiteMeta {
    */
   web3formsKey: string;
   /**
+   * Sitekey publica de hCaptcha: la que Web3Forms da a los planes gratis.
+   * Requiere activar hCaptcha como "Block Spam" en el panel de Web3Forms.
+   */
+  hcaptchaSiteKey: string;
+  /**
    * WhatsApp Business, formato internacional E.164. Es la unica copia del
    * numero: los enlaces de WhatsApp, el JSON-LD y llms.txt salen de aqui.
    */
@@ -41,6 +46,7 @@ export const site: SiteMeta = {
   email: "crisperezm879@gmail.com",
   emailHref: "#contact-form",
   web3formsKey: "a2d5baf0-6975-4e68-9e31-76aa17a9822d",
+  hcaptchaSiteKey: "50b2fe65-b00b-4b9e-ad62-3ba471098be2",
   phone: "+573334337931",
   location: "Bucaramanga, Colombia",
   githubUrl: "https://github.com/cperez233",

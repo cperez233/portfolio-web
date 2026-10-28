@@ -18,6 +18,18 @@ export const LANGUAGE_PATHS: Record<Language, string> = {
   es: "/es",
 };
 
+/** Politica de privacidad de cada idioma. */
+export const PRIVACY_PATHS: Record<Language, string> = {
+  en: "/privacy",
+  es: "/es/privacidad",
+};
+
+/** Ruta del idioma equivalente a la actual: la politica si se esta en ella, si no el inicio. */
+export function pathForLanguage(pathname: string, language: Language): string {
+  const onPrivacy = Object.values(PRIVACY_PATHS).includes(pathname);
+  return onPrivacy ? PRIVACY_PATHS[language] : LANGUAGE_PATHS[language];
+}
+
 /** Preferencia manual del toggle. */
 export const LANGUAGE_COOKIE = "portafolio-language";
 
