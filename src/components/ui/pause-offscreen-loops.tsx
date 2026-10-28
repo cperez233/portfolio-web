@@ -4,9 +4,10 @@ import { useEffect } from "react";
 
 /**
  * Pausa las animaciones en bucle (lineas de flujo de los diagramas, el
- * sello del retrato, la flecha del hero, la tira de paginas publicadas)
- * de cada seccion mientras esta fuera de pantalla. Seguian corriendo sin
- * que nadie las viera y gastaban bateria en celulares baratos.
+ * sello del retrato, la flecha del hero) de cada seccion mientras esta
+ * fuera de pantalla. Seguian corriendo sin que nadie las viera y gastaban
+ * bateria en celulares baratos. La tira de sitios se pausa sola (ver
+ * mini-projects.tsx).
  *
  * Observa las secciones y no cada bucle: son pocas, fijas, y cualquier
  * bucle que aparezca despues dentro de ellas (un diagrama que cambia) ya

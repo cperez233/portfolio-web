@@ -859,7 +859,7 @@ const en: Dictionary = {
   miniProjects: {
     eyebrow: "Recent work",
     title: "Websites already live",
-    hint: "Tap any of them to visit it.",
+    hint: "Drag the strip to look around, or tap a site to visit it.",
     newTab: "(opens in a new tab)",
     imageAlt: "Website built for",
     items: [
@@ -1441,7 +1441,7 @@ const es: Dictionary = {
   miniProjects: {
     eyebrow: "Trabajo reciente",
     title: "Páginas web ya publicadas",
-    hint: "Toca cualquiera para visitarla.",
+    hint: "Arrastra la tira para verlas o toca una para visitarla.",
     newTab: "(se abre en otra pestaña)",
     imageAlt: "Página web de",
     items: [

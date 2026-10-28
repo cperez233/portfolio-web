@@ -665,36 +665,30 @@ html.lenis body {
 }
 
 /*
-  Deriva continua de la tira de mini proyectos. Antes solo se movia con
-  el scroll: quien se quedaba quieto veia cuatro sitios y no sabia que
-  habia mas. El recorrido es exactamente un tercio del ancho porque la
-  fila lleva el contenido repetido tres veces: al llegar al final empalma
-  con el mismo fotograma y el bucle no tiene costura.
+  La tira de sitios (mini-projects.tsx): la mueve un bucle de JS, deriva
+  sola y se arrastra. En celular el gesto vertical sigue siendo scroll de
+  pagina; solo el horizontal es de la tira. Sin seleccion de texto ni
+  arrastre de imagenes mientras se agarra.
 */
-@keyframes marquee-drift {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-33.3333%, 0, 0);
-  }
-}
-
 @layer components {
-  .marquee-drift {
-    animation: marquee-drift 44s linear infinite;
-    will-change: transform;
+  .site-strip {
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
-
-  /* Se detiene bajo el raton: da tiempo a leer la tarjeta y pulsarla. */
-  .marquee-drift:hover {
-    animation-play-state: paused;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .marquee-drift {
-      animation: none;
+  @media (hover: hover) and (pointer: fine) {
+    .site-strip {
+      cursor: grab;
     }
+    .site-strip.is-dragging,
+    .site-strip.is-dragging a {
+      cursor: grabbing;
+    }
+  }
+  /* Agarrada, las tarjetas no reaccionan al hover: se ve que la llevas tu. */
+  .site-strip.is-dragging a {
+    pointer-events: none;
   }
 }
 
@@ -3357,6 +3351,25 @@ html.intro-banner-low .power-zw-text {
 @keyframes power-flicker {
   50% {
     opacity: 0.6;
+  }
+}
+/*
+  Al terminar la rafaga se apagan de verdad. El parpadeo anima opacity y
+  una animacion le gana a cualquier regla normal, asi que el opacity: 0
+  de .is-leaving no hacia nada: seguian titilando con el Stand ya quieto.
+  Se cambia el parpadeo por un desvanecido que se queda en 0.
+*/
+.power-speedlines.is-leaving {
+  animation: power-lines-out 0.32s ease-out forwards;
+}
+@keyframes power-lines-out {
+  from {
+    opacity: 0.8;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 1.08;
   }
 }
 .power-hit {

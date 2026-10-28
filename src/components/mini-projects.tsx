@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { miniProjects, type MiniProject } from "@/data/site";
 import { useLanguage } from "@/lib/language";
+import { isTimeStopped } from "@/lib/time-stop";
+import { emitStandEvent } from "@/lib/stand-events";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { FadeIn } from "@/components/ui/FadeIn";
 import { FadeSwap } from "@/components/ui/FadeSwap";
 import { BackgroundOrbs } from "@/components/ui/background-orbs";
@@ -22,23 +26,17 @@ import { cn } from "@/lib/utils";
  * quien contrata es trabajo terminado y en linea, no una lista de
  * herramientas.
  *
- * Dos montajes segun el ancho, elegidos por CSS y no por JS: asi no hay
- * parpadeo al hidratar y el que sobra, al ir en display:none, no es
- * enfocable ni existe para el lector de pantalla.
+ * La misma tira en celular y en escritorio (SiteStrip): deriva sola en
+ * bucle para que se vea que hay mas de cuatro sitios, y se agarra con el
+ * dedo o el raton para moverla a gusto. Al soltarla sigue con el impulso
+ * y despues retoma la deriva hacia el lado al que la lanzaste. Antes en
+ * celular era un carrusel quieto con snap y en escritorio una animacion
+ * CSS que solo se podia pausar.
  *
- * - Hasta md: carrusel que se arrastra con el dedo y engancha tarjeta a
- *   tarjeta. En 390px solo cabe una tarjeta y media, y con la tira en
- *   movimiento ninguna quedaba entera: los nombres se partian a media
- *   palabra.
- * - Desde md: la tira deriva sola en bucle (.marquee-drift). Antes se
- *   movia solo con el scroll, y quien se quedaba quieto veia cuatro
- *   sitios sin saber que habia mas; ahora desfilan los cinco. Se detiene
- *   bajo el raton para leer y pulsar. Es solo para puntero: esta repetida
- *   tres veces y cruza el borde de la pantalla, asi que con teclado el
- *   foco caeria en tarjetas invisibles.
- *
- * Desde md, teclado y lector de pantalla usan una lista de enlaces oculta
- * que solo se ve cuando recibe el foco.
+ * La tira va repetida tres veces y cruza el borde de la pantalla, asi que
+ * es solo para puntero (aria-hidden): con teclado el foco caeria en
+ * tarjetas invisibles. Teclado y lector de pantalla usan una lista de
+ * enlaces oculta que solo se ve cuando recibe el foco.
  */
 export function MiniProjectsSection() {
   const { t } = useLanguage();
@@ -70,51 +68,19 @@ export function MiniProjectsSection() {
           </FadeSwap>
         </FadeIn>
 
-        <ul
-          data-lenis-prevent-horizontal
-          className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-5 px-5 pb-4 pt-3 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden"
-        >
-          {miniProjects.map((project, index) => (
-            <li key={project.key} className="snap-start">
-              <SiteCard
-                project={project}
-                index={index}
-                caption={t.miniProjects.items[index]}
-                imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
-                focusable
-              />
-            </li>
-          ))}
-        </ul>
-
-        <div
-          aria-hidden="true"
-          className="marquee-fade mt-12 hidden overflow-x-clip sm:mt-16 md:block"
-        >
-          <div className="marquee-drift flex w-max gap-4 py-3 sm:gap-7">
-            {[0, 1, 2].map((copy) =>
-              miniProjects.map((project, index) => (
-                <SiteCard
-                  key={`${copy}-${project.key}`}
-                  project={project}
-                  index={index}
-                  caption={t.miniProjects.items[index]}
-                  imageAlt={`${t.miniProjects.imageAlt} ${project.name}`}
-                />
-              )),
-            )}
-          </div>
-        </div>
+        <SiteStrip
+          caption={(index) => t.miniProjects.items[index]}
+          imageAlt={(name) => `${t.miniProjects.imageAlt} ${name}`}
+        />
 
         {/*
           Sin pildoras visibles: repetian los enlaces de las tarjetas y
-          solo metian ruido. Pero la tira de escritorio va con aria-hidden
-          (esta triplicada y cruza el borde de la pantalla), asi que esta
-          lista es el unico camino para teclado y lector de pantalla desde
-          md. Queda oculta y aparece solo cuando el foco entra en ella. En
-          celular no hace falta: el carrusel ya es navegable.
+          solo metian ruido. Pero la tira va con aria-hidden (esta
+          triplicada y cruza el borde de la pantalla), asi que esta lista
+          es el unico camino para teclado y lector de pantalla. Queda
+          oculta y aparece solo cuando el foco entra en ella.
         */}
-        <ul className="sr-only max-md:hidden focus-within:not-sr-only focus-within:mx-auto focus-within:mt-10 focus-within:flex focus-within:w-full focus-within:max-w-6xl focus-within:flex-wrap focus-within:justify-center focus-within:gap-2.5 focus-within:px-10">
+        <ul className="sr-only focus-within:not-sr-only focus-within:mx-auto focus-within:mt-10 focus-within:flex focus-within:w-full focus-within:max-w-6xl focus-within:flex-wrap focus-within:justify-center focus-within:gap-2.5 focus-within:px-5 sm:focus-within:px-10">
           {miniProjects.map((project) => (
             <li key={project.key}>
               <a
@@ -140,6 +106,212 @@ export function MiniProjectsSection() {
   );
 }
 
+/** Px por segundo de la deriva sola. En celular, mas lenta: se alcanza a leer. */
+const DRIFT = { fine: 46, touch: 30 };
+
+/**
+ * La tira de sitios: deriva sola y se arrastra.
+ *
+ * El desplazamiento lo lleva un bucle de requestAnimationFrame y no una
+ * animacion CSS, porque hay que poder agarrarla a mitad de camino:
+ * - Con el dedo o el raton se mueve a la par del puntero. Al soltarla
+ *   sigue con la velocidad que llevaba y frena poco a poco hasta la
+ *   deriva, que desde ahi va hacia el lado al que la lanzaste.
+ * - Bajo el raton se detiene, para leer la tarjeta y pulsarla.
+ * - La rueda horizontal (trackpad) tambien la mueve.
+ * - Un arrastre no abre el enlace: el clic que llega al soltar se descarta.
+ * - En celular el gesto vertical sigue siendo scroll de pagina
+ *   (touch-action: pan-y); solo el horizontal mueve la tira.
+ *
+ * Como la tira lleva el contenido tres veces, el desplazamiento se da
+ * vuelta cada vez que recorre un tercio y el bucle no tiene costura.
+ * Fuera de pantalla y con el tiempo detenido (ZA WARUDO) no avanza. Con
+ * reduced motion no deriva, pero se puede arrastrar.
+ */
+function SiteStrip({
+  caption,
+  imageAlt,
+}: {
+  caption: (index: number) => string;
+  imageAlt: (name: string) => string;
+}) {
+  const viewRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = Boolean(useReducedMotion());
+
+  useEffect(() => {
+    const view = viewRef.current;
+    const track = trackRef.current;
+    if (!view || !track) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const drift = reducedMotion ? 0 : fine ? DRIFT.fine : DRIFT.touch;
+
+    let offset = 0;
+    let velocity = -drift;
+    let direction = -1;
+    let hovered = false;
+    let visible = false;
+    let raf = 0;
+    let last = performance.now();
+    // Hasta cuando sigue quieta despues de soltarla con el dedo (lectura).
+    let restUntil = 0;
+    let drag: { id: number; x: number; y: number; start: number; moved: boolean; samples: { t: number; x: number }[] } | null = null;
+    let swallowClick = false;
+    let lastFling = 0;
+
+    const period = () => track.scrollWidth / 3;
+    function place() {
+      const p = period();
+      if (p > 0) {
+        offset %= p;
+        if (offset > 0) offset -= p;
+      }
+      track!.style.transform = `translate3d(${offset.toFixed(2)}px, 0, 0)`;
+    }
+
+    function tick(now: number) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (!isTimeStopped() && !drag) {
+        const target = hovered || now < restUntil ? 0 : drift * direction;
+        // Despues de un lanzamiento frena en ~1.5s; hacia la deriva, suave.
+        const ease = Math.abs(velocity) > Math.abs(target) + 1 ? 1.8 : 1.1;
+        velocity += (target - velocity) * (1 - Math.exp(-ease * dt));
+        offset += velocity * dt;
+        place();
+      }
+      raf = visible ? requestAnimationFrame(tick) : 0;
+    }
+    function start() {
+      if (raf || !visible) return;
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      start();
+    });
+    observer.observe(view);
+
+    const onDown = (event: PointerEvent) => {
+      if (event.button !== 0 || isTimeStopped()) return;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, start: offset, moved: false, samples: [{ t: event.timeStamp, x: event.clientX }] };
+      velocity = 0;
+    };
+    const onMove = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (!drag.moved) {
+        if (Math.abs(dx) < 6) return;
+        // Gesto vertical: es scroll de pagina, no de la tira.
+        if (Math.abs(dy) > Math.abs(dx)) {
+          drag = null;
+          return;
+        }
+        drag.moved = true;
+        view.setPointerCapture(event.pointerId);
+        view.classList.add("is-dragging");
+      }
+      offset = drag.start + dx;
+      place();
+      drag.samples.push({ t: event.timeStamp, x: event.clientX });
+      if (drag.samples.length > 6) drag.samples.shift();
+    };
+    const onUp = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const { moved, samples } = drag;
+      drag = null;
+      view.classList.remove("is-dragging");
+      if (!moved) return;
+      swallowClick = true;
+      window.setTimeout(() => (swallowClick = false), 0);
+      // Velocidad de los ultimos ~100ms del gesto (o del ultimo tramo, si
+      // los eventos llegan espaciados). Si se quedo quieto antes de
+      // soltar, no hay lanzamiento.
+      const end = samples[samples.length - 1];
+      let from = samples.find((s) => end.t - s.t < 100);
+      if (!from || from === end) from = samples[Math.max(0, samples.length - 2)];
+      const span = Math.max(16, end.t - from.t);
+      const still = event.timeStamp - end.t > 90;
+      velocity = still ? 0 : Math.max(-4200, Math.min(4200, ((end.x - from.x) / span) * 1000));
+      if (Math.abs(velocity) > 120) direction = velocity > 0 ? 1 : -1;
+      if (!fine) restUntil = performance.now() + (Math.abs(velocity) > 400 ? 0 : 2200);
+      // Un buen lanzamiento: el mini Stand lo comenta.
+      if (Math.abs(velocity) > 1500 && performance.now() - lastFling > 4000) {
+        lastFling = performance.now();
+        emitStandEvent("spin");
+      }
+      start();
+    };
+    const onClick = (event: MouseEvent) => {
+      if (!swallowClick) return;
+      event.preventDefault();
+      event.stopPropagation();
+      swallowClick = false;
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      offset -= event.deltaX;
+      velocity = 0;
+      if (Math.abs(event.deltaX) > 2) direction = event.deltaX > 0 ? -1 : 1;
+      place();
+    };
+    const onEnter = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") hovered = true;
+    };
+    const onLeave = () => {
+      hovered = false;
+    };
+
+    view.addEventListener("pointerdown", onDown);
+    view.addEventListener("pointermove", onMove);
+    view.addEventListener("pointerup", onUp);
+    view.addEventListener("pointercancel", onUp);
+    view.addEventListener("click", onClick, true);
+    view.addEventListener("wheel", onWheel, { passive: false });
+    view.addEventListener("pointerenter", onEnter);
+    view.addEventListener("pointerleave", onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      view.removeEventListener("pointerdown", onDown);
+      view.removeEventListener("pointermove", onMove);
+      view.removeEventListener("pointerup", onUp);
+      view.removeEventListener("pointercancel", onUp);
+      view.removeEventListener("click", onClick, true);
+      view.removeEventListener("wheel", onWheel);
+      view.removeEventListener("pointerenter", onEnter);
+      view.removeEventListener("pointerleave", onLeave);
+    };
+  }, [reducedMotion]);
+
+  return (
+    <div
+      ref={viewRef}
+      aria-hidden="true"
+      data-lenis-prevent-horizontal
+      className="site-strip marquee-fade mt-8 overflow-x-clip sm:mt-16"
+    >
+      <div ref={trackRef} className="flex w-max gap-5 py-3 will-change-transform sm:gap-7">
+        {[0, 1, 2].map((copy) =>
+          miniProjects.map((project, index) => (
+            <SiteCard
+              key={`${copy}-${project.key}`}
+              project={project}
+              index={index}
+              caption={caption(index)}
+              imageAlt={imageAlt(project.name)}
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface SiteCardProps {
   project: MiniProject;
   /** Posicion en la lista: alterna el ladeo de la vineta. */
@@ -147,8 +319,6 @@ interface SiteCardProps {
   caption: string;
   /** Alt de la captura: buscadores de imagenes y quien no la ve. */
   imageAlt: string;
-  /** Solo en el carrusel: en la tira el foco caeria fuera de pantalla. */
-  focusable?: boolean;
 }
 
 /**
@@ -161,18 +331,19 @@ function SiteCard({
   index,
   caption,
   imageAlt,
-  focusable = false,
 }: SiteCardProps) {
   return (
     <a
       href={project.href}
-      tabIndex={focusable ? undefined : -1}
+      tabIndex={-1}
       target="_blank"
       rel="noopener noreferrer"
-      // En celular, 80vw deja ver el borde de la siguiente: se entiende
-      // que hay mas y que se arrastra. De md en adelante manda la tira,
-      // y con 20rem entran cuatro tarjetas completas mas dos asomando.
-      className="group block w-[80vw] max-w-80 shrink-0 sm:w-80"
+      // Sin el arrastre nativo de enlaces e imagenes: lo maneja la tira.
+      draggable={false}
+      // En celular, 76vw deja ver el borde de la siguiente: se entiende
+      // que hay mas. En escritorio, con 20rem entran cuatro tarjetas
+      // completas mas dos asomando.
+      className="group block w-[76vw] max-w-80 shrink-0 sm:w-80"
     >
       {/*
         will-change-[translate], no will-change-transform: Tailwind v4
@@ -211,6 +382,7 @@ function SiteCard({
             // que entran desde fuera aparecerian vacias un instante. Son
             // cinco archivos (~280 KB) compartidos por las tres copias.
             loading="eager"
+            draggable={false}
             sizes="(min-width: 640px) 320px, 80vw"
             // object-top: el encuadre util de una web esta arriba.
             className="object-cover object-top transition-transform duration-500 ease-premium group-hover:scale-[1.03]"

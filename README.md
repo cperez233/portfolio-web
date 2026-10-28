@@ -55,7 +55,7 @@ src/
 │  ├─ home-page.tsx   section composition, shared by both languages
 │  ├─ json-ld.tsx     Person / WebSite / ProfilePage structured data
 │  ├─ about.tsx       editorial blocks + highlight grid
-│  ├─ mini-projects.tsx     live sites: swipe on phones, drifts on desktop
+│  ├─ mini-projects.tsx     live sites: a drifting strip you can drag and fling
 │  ├─ projects.tsx    case studies (+ testimonials.tsx at the end)
 │  ├─ pricing.tsx     three plans with "from" prices + custom quote row
 │  ├─ audit.tsx       free 6-point check with a WhatsApp hook
@@ -131,7 +131,11 @@ The render loop stops off-screen.
 - **Mini Stand** (`mini-stand/`): Paranoid Android as a pixel-art sprite
   on a small canvas, moved with spring physics. It lives on the hero
   portrait (`data-stand-home`), flies out when the hero scrolls away and
-  perches on whatever is being read (`data-spot` elements). Its own
+  perches on whatever is being read (`data-spot` elements). It does not
+  move on rails: every trip gets its own spring (quick, lazy, bouncy or
+  not) and a curve to a random side, it lands on a different point of
+  each ledge, floats to either side when no ledge is in view, and while
+  perched it hops, takes a few steps or turns around now and then. Its own
   JoJo character: it lands with a ドン, gives off ゴ while still, strikes
   poses, and its speech bubbles type themselves out. Each spot has several
   lines in `lines.ts`, shuffled and not repeated. It greets by time of
@@ -144,7 +148,9 @@ The render loop stops off-screen.
   eyes follow the mouse sideways and up or down. It reacts to the page
   (theme and language switches, WhatsApp clicks or hovering on it,
   copying, coming back to the tab, scrolling too fast, being stared at,
-  changing project chapter, opening a FAQ, typing in a form, sending it,
+  changing project chapter, opening a FAQ or a service, looking at a plan,
+  reading a review, swiping a case's screenshots, flinging the sites
+  strip, opening a live site or GitHub, typing in a form, sending it,
   reaching the end, the easter eggs) and to you: rub it with the mouse
   and it blushes and lets out hearts, a right click embarrasses it, and
   it notices the mouse leaving the window, the connection dropping or

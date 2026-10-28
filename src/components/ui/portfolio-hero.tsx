@@ -681,7 +681,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           shattered = shatterLetters(letters, { x, y });
           impact(x, y, true);
           shout("ドラァ!", x, y - size * 0.42, "power-pop-word is-pink is-big", 1400);
-          layers.forEach((node) => node.classList.contains("power-speedlines") && node.classList.add("is-leaving"));
+          // Las lineas de la rafaga se apagan con el ultimo golpe: relajado ya no titilan.
+          const speed = layers.filter((node) => node.classList.contains("power-speedlines"));
+          speed.forEach((node) => node.classList.add("is-leaving"));
+          later(650, () => speed.forEach((node) => node.remove()));
           // Destello blanco del vidrio al romperse.
           const flash = fxLayer();
           flash.classList.add("hero-flash");

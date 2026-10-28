@@ -36,7 +36,20 @@ export type StandEvent =
   | "online"
   /** Seleccionas un buen trozo de texto. */
   | "select"
-  | "print";
+  | "print"
+  /** Lanzas la tira de sitios con fuerza (mini-projects.tsx). */
+  | "spin"
+  /** Abres un servicio. */
+  | "service"
+  /** Miras precios: cambias de plan o te quedas sobre uno. */
+  | "plan"
+  /** Lees una resena (te quedas encima o abres a quien la dijo). */
+  | "review"
+  /** Abres un sitio publicado en otra pestana. */
+  | "visit"
+  | "github"
+  /** Deslizas las capturas de un caso. */
+  | "gallery";
 
 export function emitStandEvent(kind: StandEvent) {
   if (typeof window === "undefined") return;

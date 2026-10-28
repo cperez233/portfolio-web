@@ -501,6 +501,13 @@ export const standLines: Record<Language, StandLines> = {
       online: ["Volvió el internet. ¡Uf!", "Conectados otra vez.", "Wifi de vuelta. ドン!", "Volvió la red. Sigamos."],
       select: ["¿Subrayando? Estudioso.", "Eso que marcaste es bueno.", "Selecciona sin miedo.", "¿Vas a copiar eso? Hazlo.", "Buen pedazo elegiste.", "Marcado. Como un Joestar."],
       print: ["¿Me vas a imprimir? ¡Qué honor!", "En papel me veo plano.", "Imprime, que salgo en la foto."],
+      spin: ["¡Wiii! Otra vuelta.", "¡Esa tira vuela!", "Así no se lee, pero qué rico.", "¡Rueda, rueda! ゴゴゴ", "Gira como Gyro.", "Spin de Steel Ball Run.", "Suave, que se marean.", "Cinco páginas en un segundo."],
+      service: ["Ese servicio es bueno.", "Mmm, buena elección.", "Lee lo que recibes.", "¿Ese? Lo pensaste bien.", "Hmm… ese te sirve.", "Ese lo hace con gusto."],
+      plan: ["Haciendo cuentas, ¿eh?", "Ese plan rinde.", "Preguntar no cuesta.", "Echoes hace la suma.", "Calculando… ゴゴゴ.", "Precio justo. Palabra de Stand."],
+      review: ["Ay, qué bonito dicen.", "Me sonrojo y ni es mío.", "Clientes contentos. ♥", "Eso lo dijeron solos.", "Léelo, me pone feliz.", "Esa gente es real."],
+      visit: ["Ve, yo cuido la pestaña.", "Míralo en vivo. ✦", "Ese quedó bonito.", "Vuelve y me cuentas.", "Esa página la vi nacer."],
+      github: ["¿El código? Está limpio.", "Mira los commits. ORA.", "El cuarto de máquinas.", "Revisa sin miedo.", "Ahí no hay bugs. Creo."],
+      gallery: ["Pasa, pasa. Hay más.", "Esa captura es real.", "Mira los detalles.", "Así quedó en vivo.", "Desliza, no muerde."],
     },
     intro: {
       world: [
@@ -1208,6 +1215,13 @@ export const standLines: Record<Language, StandLines> = {
       online: ["Internet's back. Phew!", "Connected again.", "Wifi's back. ドン!", "Back online. Let's go."],
       select: ["Highlighting? Studious.", "Good bit you picked.", "Select away.", "Copying that? Do it.", "Nice choice of words.", "Marked, Joestar style."],
       print: ["Printing me? What an honor!", "I look flat on paper.", "Print it, I'm in the picture."],
+      spin: ["Wheee! Again.", "That strip can fly!", "Can't read it, but fun.", "Spin it! ゴゴゴ", "Spinning like Gyro.", "Steel Ball Run spin.", "Easy, they'll get dizzy.", "Five sites in one second."],
+      service: ["That one's good.", "Hmm, good pick.", "Read what you get.", "That one? Smart.", "Hmm… that fits you.", "He enjoys that one."],
+      plan: ["Doing the math, huh?", "That plan goes far.", "Asking costs nothing.", "Echoes does the sums.", "Calculating… ゴゴゴ.", "Fair price. Stand's word."],
+      review: ["Aw, that's sweet.", "I'm blushing. It's not even me.", "Happy clients. ♥", "Nobody made them say it.", "Read it, it makes me happy.", "Those are real people."],
+      visit: ["Go, I'll guard the tab.", "See it live. ✦", "That one came out nice.", "Come back and tell me.", "I saw that site being born."],
+      github: ["The code? It's clean.", "Check the commits. ORA.", "That's the engine room.", "Look around, no fear.", "No bugs there. I think."],
+      gallery: ["Keep going, there's more.", "That screenshot is real.", "Look at the details.", "That's how it went live.", "Swipe, it won't bite."],
     },
     intro: {
       world: [

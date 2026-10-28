@@ -243,6 +243,47 @@ export function MiniStand() {
     let nextGhost = 0;
     let nextStar = 0;
     let drag: { id: number; sx: number; sy: number; moved: boolean; t: number; vx: number; vy: number } | null = null;
+    /*
+      Para que no se vea guionado: cada viaje tiene su propio caracter
+      (rapido, perezoso, con rebote o sin el) y una curva hacia un lado
+      al azar, y en cada repisa se para en un punto distinto, no siempre
+      en la punta derecha. Quieto, de vez en cuando se acomoda: da un
+      saltito, camina un poco por la repisa o se voltea.
+    */
+    type Flight = { tx: number; ty: number; d0: number; nx: number; ny: number; amp: number; k: number; c: number; hop: boolean; landed: boolean };
+    let flight: Flight | null = null;
+    let perchFrac = 0.8;
+    let roam = { x: 0.86, y: 0.38 };
+    let hopNext = 0;
+    let restFace: 1 | -1 = 1;
+    let nextFidget = performance.now() + 9000;
+    let hopLandAt = 0;
+    // Fase propia del vaiven de reposo: no respira al compas de un metronomo.
+    const bobPhase = [Math.random() * 6.28, Math.random() * 6.28];
+    function newFlight(tx: number, ty: number, hopAmp = 0): Flight {
+      const dx = tx - body.x;
+      const dy = ty - body.y;
+      const d0 = Math.max(1, Math.hypot(dx, dy));
+      const nx = -dy / d0;
+      const ny = dx / d0;
+      let amp = hopAmp;
+      if (hopAmp) {
+        // Un saltito: la curva siempre hacia arriba.
+        if (ny * amp > 0) amp = -amp;
+      } else if (d0 > 90) {
+        amp = (Math.random() < 0.5 ? -1 : 1) * (0.1 + Math.random() * 0.22) * Math.min(d0, 640);
+      }
+      const k = hopAmp ? 120 : [38, 52, 64, 90][Math.floor(Math.random() * 4)];
+      const zeta = hopAmp ? 0.8 : 0.55 + Math.random() * 0.35;
+      return { tx, ty, d0, nx, ny, amp, k, c: 2 * zeta * Math.sqrt(k), hop: hopAmp !== 0, landed: false };
+    }
+    function pickPerch(isTitle: boolean) {
+      // En un titulo, de la mitad hacia el final: al principio taparia el rotulo de la parte.
+      const lo = isTitle ? 0.4 : 0.1;
+      let next = lo + Math.random() * (1 - lo);
+      for (let i = 0; i < 4 && Math.abs(next - perchFrac) < 0.22; i++) next = lo + Math.random() * (1 - lo);
+      perchFrac = next;
+    }
     const visits = countVisit();
     visitsRef.current = visits;
     const seen = new Set<string>();
@@ -419,6 +460,13 @@ export function MiniStand() {
         "rightclick",
         "leave",
         "select",
+        "spin",
+        "service",
+        "plan",
+        "review",
+        "visit",
+        "github",
+        "gallery",
       ].includes(kind);
       if (ambient && now - (lastReaction[kind] ?? -Infinity) < 25000) return;
       lastReaction[kind] = now;
@@ -444,9 +492,9 @@ export function MiniStand() {
         sent: ["love", 1800],
         bottom: ["starry", 1800],
         chapter: ["pose", 1500],
-        faq: ["lookaround", 1600],
-        typing: ["lookaround", 1600],
-        audit: ["lookaround", 1600],
+        faq: Math.random() < 0.5 ? ["think", 1600, "？"] : ["lookaround", 1600],
+        typing: Math.random() < 0.5 ? ["lookaround", 1600] : ["blush", 1400],
+        audit: ["think", 1800, "…"],
         dropped: ["twirl", 700],
         stare: [Math.random() < 0.5 ? "smug" : "blush", 1600, "…"],
         return: ["sad", 1600, "…"],
@@ -461,13 +509,22 @@ export function MiniStand() {
         online: ["happy", 1400, "♪"],
         select: ["think", 1800, "…"],
         print: ["starry", 1800],
+        spin: ["laugh", 1700],
+        service: ["think", 1600, "…"],
+        plan: ["starry", 1600, "$"],
+        review: ["blush", 1800],
+        visit: ["wink", 1400, "✦"],
+        github: ["smug", 1600, "!"],
+        gallery: ["love", 1500],
       };
       const [face, faceMs, mark] = faces[kind] ?? ["happy", 1400];
       act.current(face, faceMs);
       if (mark) sfx(mark, "mark");
       if (kind === "whatsapp" || kind === "sent" || kind === "bottom") sfx("ドン!", "sfx");
       else if (kind === "chapter") sfx("バァーン", "sfx");
+      else if (kind === "spin") sfx("ブン!", "sfx");
       if (kind === "pet" || kind === "whatsapp" || kind === "sent") hearts(kind === "pet" ? 4 : 2);
+      else if (kind === "review" || kind === "gallery") hearts(1);
       say.current(line, ms);
     };
 
@@ -670,14 +727,43 @@ export function MiniStand() {
       if (target.closest("a[href*='wa.me']")) react.current("whatsapp");
       else if (target.closest("#projects [role='tab']")) react.current("chapter");
       else if (target.closest("#faq button[aria-expanded='false']")) react.current("faq");
+      else if (target.closest("#services button[aria-expanded='false']")) react.current("service");
+      else if (target.closest("#pricing [role='tab']")) react.current("plan");
+      else if (target.closest("a[href*='github.com']")) react.current("github");
+      else if (target.closest("figure a[target='_blank']")) react.current("review");
+      else if (target.closest("main a[target='_blank']")) react.current("visit");
     };
-    // Dudar con el puntero sobre WhatsApp: le da animo.
+    /*
+      Quedarse con el puntero encima de algo: dudar sobre WhatsApp le da
+      animo, leer una resena lo sonroja y mirar un plan lo pone a sacar
+      cuentas.
+    */
+    const dwell: [string, StandEvent, number][] = [
+      ["a[href*='wa.me']", "hesitate", 1600],
+      [".speech-panel", "review", 1800],
+      ["#pricing article", "plan", 2000],
+    ];
     let hesitateTimer = 0;
+    let dwellOn: Element | null = null;
     const onOver = (event: PointerEvent) => {
       if (event.pointerType !== "mouse") return;
-      const link = (event.target as Element | null)?.closest?.("a[href*='wa.me']");
+      const target = event.target as Element | null;
+      for (const [selector, kind, ms] of dwell) {
+        const el = target?.closest?.(selector);
+        if (!el) continue;
+        if (el === dwellOn) return;
+        dwellOn = el;
+        window.clearTimeout(hesitateTimer);
+        hesitateTimer = window.setTimeout(() => react.current(kind), ms);
+        return;
+      }
+      dwellOn = null;
       window.clearTimeout(hesitateTimer);
-      if (link) hesitateTimer = window.setTimeout(() => react.current("hesitate"), 1600);
+    };
+    // Deslizar las capturas de un caso (la fila de la galeria).
+    const onAnyScroll = (event: Event) => {
+      const el = event.target as Element | null;
+      if (el instanceof Element && el.matches("#projects ul") && el.scrollLeft > 40) react.current("gallery");
     };
     const onFocusIn = (event: FocusEvent) => {
       const field = event.target as Element | null;
@@ -821,6 +907,7 @@ export function MiniStand() {
     document.addEventListener("copy", onCopy);
     document.addEventListener("visibilitychange", onVisibility);
     document.addEventListener("pointerover", onOver);
+    document.addEventListener("scroll", onAnyScroll, { capture: true, passive: true });
     document.addEventListener("focusin", onFocusIn);
     window.addEventListener("resize", onResize);
     document.addEventListener("contextmenu", onContextMenu);
@@ -946,6 +1033,11 @@ export function MiniStand() {
         }
         if (candidate !== current && now - candidateSince > 450) {
           current = candidate;
+          if (current) pickPerch(current.el.tagName === "H2");
+          // Sin repisa a la vista: flota a un lado, no siempre el derecho.
+          else roam = { x: Math.random() < 0.5 ? 0.14 : 0.86, y: 0.3 + Math.random() * 0.18 };
+          restFace = Math.random() < 0.2 ? -1 : 1;
+          nextFidget = now + 7000 + Math.random() * 8000;
           spokeHere = false;
           landedHere = false;
           settledSince = 0;
@@ -953,12 +1045,14 @@ export function MiniStand() {
         }
         if (current) {
           const rect = spotRect(current);
-          tx = Math.min(rect.right - spriteW * 0.6, Math.max(rect.left + spriteW * 0.6, rect.right - spriteW * 1.6));
+          const lo = rect.left + spriteW * 0.6;
+          const hi = Math.max(lo, Math.min(rect.right, width - 8) - spriteW * 0.6);
+          tx = lo + (hi - lo) * perchFrac;
           ty = Math.max(70, rect.top - 1);
           perched = true;
         } else {
-          tx = width - spriteW - 24;
-          ty = height * 0.38;
+          tx = Math.min(width - spriteW - 24, Math.max(spriteW + 24, width * roam.x));
+          ty = height * roam.y;
         }
       }
 
@@ -1012,13 +1106,35 @@ export function MiniStand() {
           body.vy *= -0.6;
         }
       } else if (!frozen && !(sleeping && !flying)) {
-        const k = dialog ? 140 : 60;
-        const c = dialog ? 18 : 11;
+        // Un viaje nuevo cuando el destino salta; si solo se corre (scroll), lo sigue.
+        if (!flight || hopNext || Math.hypot(tx - flight.tx, ty - flight.ty) > 120) {
+          flight = newFlight(tx, ty, hopNext);
+          hopNext = 0;
+        } else {
+          flight.tx = tx;
+          flight.ty = ty;
+        }
+        // Avance a lo largo del viaje, sin contar el desvio de la curva
+        // (con la distancia total se quedaba flotando a media curva).
+        const left = (tx - body.x) * flight.ny - (ty - body.y) * flight.nx;
+        const p = Math.min(1, Math.max(0, 1 - left / flight.d0));
+        const arc = dialog || reducedMotion ? 0 : flight.amp * Math.sin(Math.PI * p);
+        const k = dialog ? 140 : flight.k;
+        const c = dialog ? 18 : flight.c;
         const bob = flying ? 3 * Math.sin(now / 160) : 0;
-        body.vx += ((tx - body.x) * k - c * body.vx) * dt;
-        body.vy += ((ty - body.y + bob) * k - c * body.vy) * dt;
+        body.vx += ((tx + flight.nx * arc - body.x) * k - c * body.vx) * dt;
+        body.vy += ((ty + flight.ny * arc - body.y + bob) * k - c * body.vy) * dt;
         body.x += body.vx * dt;
         body.y += body.vy * dt;
+        // Llego: si fue un saltito, cae con su aplastada.
+        if (!flight.landed && distance < 6 && Math.hypot(body.vx, body.vy) < 60) {
+          flight.landed = true;
+          if (flight.hop) squashUntil = now + 240;
+        }
+      }
+      if (hopLandAt && now > hopLandAt) {
+        hopLandAt = 0;
+        squashUntil = now + 240;
       }
       const speed = Math.hypot(body.vx, body.vy);
       if (!reducedMotion && !held && speed > 750 && now > nextGhost) {
@@ -1026,7 +1142,11 @@ export function MiniStand() {
         ghost();
       }
       if (Math.abs(body.vx) > 12) body.face = body.vx > 0 ? 1 : -1;
-      else if (!flying) body.face = body.x > width / 2 ? -1 : 1;
+      else if (!flying) {
+        // Quieto mira hacia el centro (o, a veces, hacia afuera); con raton cerca, al puntero.
+        const near = fine && !dialog && Math.abs(pointerX - body.x) < 320 && Math.abs(pointerY - body.y) < 240;
+        body.face = near ? (pointerX > body.x ? 1 : -1) : ((body.x > width / 2 ? -1 : 1) * restFace) as 1 | -1;
+      }
       const resting = !flying && !free && speed < 40;
 
       // Aterrizaje: ドン y, un rato despues, la frase del lugar.
@@ -1076,6 +1196,18 @@ export function MiniStand() {
           const [kind, ms, word] = skits[Math.floor(Math.random() * skits.length)];
           act.current(kind, ms);
           if (word) sfx(word, kind === "yawn" ? "aura" : "sfx");
+        }
+        // Se acomoda en la repisa: saltito, un par de pasos o se voltea.
+        if (mode === "out" && current && !action && now > nextFidget && now > holdUntil) {
+          nextFidget = now + 6000 + Math.random() * 10000;
+          const roll = Math.random();
+          if (roll < 0.45) {
+            pickPerch(current.el.tagName === "H2");
+            hopNext = 26 + Math.random() * 24;
+          } else if (roll < 0.75) {
+            body.vy -= 260 + Math.random() * 120;
+            hopLandAt = now + 360;
+          } else restFace = restFace === 1 ? -1 : 1;
         }
         // Lleva rato callado y hay alguien leyendo: piensa en voz alta.
         if (mode === "out" && now - lastSpokeAt > 22000 && now - lastActivity < 5000 && now - settledSince > 2500) {
@@ -1147,7 +1279,7 @@ export function MiniStand() {
               : held
                 ? Math.sin(now / 70) * 0.18
                 : Math.max(-0.35, Math.min(0.35, body.vx / 900));
-      const idleBob = !flying && !sleeping && !frozen && !emerging && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
+      const idleBob = !flying && !sleeping && !frozen && !emerging && !reducedMotion ? Math.round(Math.sin(now / 420 + bobPhase[0]) * 0.8 + Math.sin(now / 1130 + bobPhase[1]) * 0.6) * scale * 0.5 : 0;
       /*
         Aplastado al aterrizar (se recupera en 240ms) y un poco estirado al
         volar rapido. En pasos de 0.04 para no redibujar cada cuadro.
@@ -1237,6 +1369,7 @@ export function MiniStand() {
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("visibilitychange", onVisibility);
       document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("scroll", onAnyScroll, true);
       document.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("contextmenu", onContextMenu);
