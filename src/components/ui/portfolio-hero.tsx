@@ -475,19 +475,6 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           })}
           className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
         >
-          {/*
-            El Stand se manifiesta detras de su usuario: sale del retrato,
-            enorme y en trama, se sostiene con el ゴゴゴ y se condensa en la
-            esquina del retrato, justo donde se posa el mini Stand, que
-            se hace el mini Stand (ver el efecto del relevo). Va
-            dentro del envoltorio del retrato: delante del nombre, detras
-            de la foto. Una sola vez; con reduced motion no sale.
-          */}
-          <div ref={standRef} aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
-            <div ref={standCoreRef} className="hero-stand-core">
-              <HeroStand />
-            </div>
-          </div>
           <div className="hero-paste" style={delay(ENTRY.portrait)}>
           <button
             ref={portraitRef}
@@ -520,6 +507,21 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             </span>
           </button>
           </div>
+          {/*
+            El Stand se manifiesta al lado de su usuario, enorme y en trama,
+            se sostiene con el ゴゴゴ y se hace el mini Stand (ver el efecto
+            del relevo). Va dentro del envoltorio del retrato y DELANTE de
+            la foto, igual que el mini Stand (que vive por encima de todo):
+            si estuviera detras, al cambiarse saltaria al frente. Por eso
+            se para junto a la foto y no sobre ella. Una sola vez; con
+            reduced motion no sale.
+          */}
+          <div ref={standRef} aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
+            <div ref={standCoreRef} className="hero-stand-core">
+              <HeroStand />
+            </div>
+          </div>
+
           {/*
             ドン: el golpe del retrato al pegarse. Sale una vez, se sostiene
             y se va; no es otro adorno fijo. Con reduced motion no existe.

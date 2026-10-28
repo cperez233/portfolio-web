@@ -915,25 +915,26 @@ html.lenis body {
   }
 
   /*
-    El Stand gigante, dentro del envoltorio del retrato: de pie a su lado
-    y un paso por detras, mirandolo (espejado), con la cola bajo la foto
-    y la cabeza por encima. El origen del transform cae en la esquina
-    superior derecha del retrato: ahi se condensa y ahi se posa el mini
-    Stand.
+    El Stand gigante, dentro del envoltorio del retrato y despues de la foto
+    en el DOM: pinta DELANTE de ella, como el mini Stand (que vive por
+    encima de todo). Antes quedaba detras de la foto y, al hacerse el
+    chico, saltaba al frente. Por eso se para junto a la foto (su borde
+    izquierdo en el borde derecho del retrato) y no sobre ella, y no tapa
+    la cara. Mira hacia ella (espejado), con la cola bajo la foto y la
+    cabeza por encima. El origen del viaje cae en su esquina superior
+    izquierda; ahi no importa: el JS lo lleva hasta el mini Stand.
 
     Cuentas, con P = alto del retrato y el SVG de 20x23 celdas (ancho =
-    0.87 x alto). Escritorio y tableta: alto 1.8P, base 0.3P bajo la foto,
-    borde izquierdo en el centro del retrato; la cabeza queda por debajo
-    de la barra de navegacion. Celular: el retrato es chico y hay aire
-    encima del nombre, asi que 2.6P, corrido un cuarto a la izquierda para
-    no salirse de la pantalla.
+    0.87 x alto). Escritorio y tableta: alto 1.8P, base 0.3P bajo la foto;
+    la cabeza queda por debajo de la barra de navegacion. Celular: hay aire
+    encima del nombre; 2.1P, para que quepa entre la foto y el borde de la
+    pantalla con el puño (que queda a la derecha, espejado) a la vista.
   */
   .hero-stand {
     position: absolute;
-    left: 50%;
+    left: calc(100% + 0.25rem);
     bottom: -30%;
-    height: 260%;
-    translate: -25% 0;
+    height: 210%;
     transform-origin: 40% 50%;
     opacity: 0;
     animation: hero-stand 2.4s both;
@@ -951,8 +952,8 @@ html.lenis body {
 
   @media (width >= 40rem) {
     .hero-stand {
+      left: calc(100% - 0.5rem);
       height: 180%;
-      translate: 0 0;
       transform-origin: 22% 28%;
     }
   }
