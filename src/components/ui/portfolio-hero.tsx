@@ -84,9 +84,11 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
             El golpe final ドラァ! parte la pantalla entera, despide las
             letras y suelta trozos de vidrio. El Stand se da cuenta de lo
             que hizo, se disculpa y lo repara todo hacia su puno.
-          · ZA WARUDO: grita ザ・ワールド y detiene el tiempo. Con todo
-            quieto, el tambien: se queda congelado en una pose JoJo (cada
-            vez una distinta) y se burla de que usó el poder para posar.
+          · ZA WARUDO: grita ザ・ワールド y detiene el tiempo. Mientras
+            esta detenido no se ve nada: el tambien queda quieto. Al
+            volver el tiempo ya esta del otro lado del retrato, posando
+            (cada vez una pose distinta), y se burla de que usó el poder
+            para eso.
           Al terminar se hace el mini Stand: viaja hasta donde el chico
           espera y se cambian sin que se note.
 */
@@ -121,11 +123,12 @@ const DIAMOND = {
 } as const;
 
 /*
-  ZA WARUDO, en el mismo reloj: el grito, el tiempo detenido (stop + ms),
-  el ゴゴゴ, la broma en dos tiempos (joke y punchline, ya con risa) y el
-  relevo, cuando se fue el 時は動き出す.
+  ZA WARUDO, en el mismo reloj: el grito y el tiempo detenido (stop + ms),
+  en el que no pasa nada que se vea. Al volver el tiempo el Stand ya esta
+  en otro sitio, posando (appear); despues la broma en dos tiempos (joke y
+  punchline, ya con risa) y el relevo.
 */
-const WORLD = { shout: 1560, stop: 1860, ms: 4100, menace: 2150, joke: 2450, punchline: 3850, condense: 6850 } as const;
+const WORLD = { shout: 1560, stop: 1860, ms: 2800, appear: 4690, joke: 5150, punchline: 6500, condense: 8000 } as const;
 
 /* Inclinacion de cada pose JoJo, en grados: torcidas, como en el manga. */
 const POSE_TILT: Partial<Record<Body, number>> = { pose: -13, arms: 6, point: 11, wide: -9, high: 14 };
@@ -295,10 +298,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       golpe. El final parte la pantalla, despide las letras y suelta
       vidrio. Se disculpa en un globo y repara todo hacia su puno.
     - ZA WARUDO: detiene el tiempo de verdad (el poder del mini Stand, con
-      su esfera). En ese instante se pone en una pose JoJo y se congela
-      con todo lo demas: no respira ni se mueve. Solo cambian su cara (se
-      rie de su propio chiste) y su globo. El chico remata al final
-      (mini-stand.tsx, "jojo:intro").
+      su esfera). Mientras dura no se ve nada: el queda quieto con todo lo
+      demas. Al volver el tiempo aparece del otro lado del retrato en una
+      pose JoJo, cuenta su chiste y se rie. Desde ahi viaja al chico, que
+      remata al final (mini-stand.tsx, "jojo:intro").
 
     El reloj es el de la propia animacion CSS del grande (no el de la
     pagina): si hidrata tarde, espera lo que falte; si ya paso el momento
@@ -722,18 +725,21 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     };
 
     /*
-      ZA WARUDO: el grito y el tiempo detenido. Justo antes de que el
-      tiempo se pare toma una pose JoJo (una al azar), y queda congelado
-      en ella con todo lo demas: ni respira. Lo unico que cambia es la
-      cara y el globo, con una broma en dos tiempos sobre parar el tiempo
-      para posar.
+      ZA WARUDO como se ve desde afuera en la serie: grita ザ・ワールド, el
+      tiempo se detiene y no pasa nada que se vea (el tambien queda quieto,
+      ni respira: su animacion se pausa con las demas). Cuando el tiempo
+      vuelve ya esta del otro lado del retrato, mirandolo, en una pose JoJo
+      (una al azar, torcida como en una viñeta), y donde estaba queda su
+      silueta un instante. Despues cuenta su broma en dos tiempos sobre
+      parar el tiempo para posar, y se rie.
     */
+    let moved = false;
     const manifestWorld = () => {
       const from = heart();
       if (!from) return;
       const tall = svg?.getBoundingClientRect().height ?? 200;
       frame("stand", { face: "smug" });
-      // Sobre el nombre y no sobre el Stand: la pose tiene que verse.
+      // Sobre el nombre y no sobre el Stand.
       shout("ザ・ワールド!", vw / 2, from.y + tall * 0.2, "power-pop-word is-gold is-big", 1300);
       lunge(0.06, 200);
 
@@ -742,38 +748,59 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const setup = pickLine(jokes.map(([first]) => first));
       const punch = jokes.find(([first]) => first === setup)?.[1] ?? "";
 
-      at(WORLD.stop - 70, () => {
-        frame("stand", { body: pose, face: "smug" });
-        // Torcido y un poco mas grande, como en una viñeta: y asi se queda.
-        if (body) {
-          body.style.rotate = `${POSE_TILT[pose] ?? 0}deg`;
-          body.style.scale = "1.06";
-        }
-        pop("バァーン", Math.min(vw - 70, from.x + (small ? 0 : tall * 0.45)), from.y - tall * 0.2, "power-pop-word is-gold", 900);
-      });
-
       at(WORLD.stop, () => {
         const at0 = heart();
         if (!at0) return;
         worldOn = true;
         window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "world" } }));
-        // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia la pose.
+        // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia al Stand.
         root.classList.add("intro-banner-low");
         void runPower("zawarudo", { x: at0.x, y: at0.y, reducedMotion: false, pastScroll: 0, ms: WORLD.ms }).finally(() =>
           root.classList.remove("intro-banner-low"),
         );
       });
 
-      // ゴゴゴ alrededor de la pose: lo unico que "suena" en el mundo detenido.
-      for (let i = 0; i < 3; i++) {
-        at(WORLD.menace + i * 260, () => {
-          const at0 = heart();
-          if (!at0) return;
-          const side = i % 2 ? -1 : 1;
-          const gx = Math.min(vw - 30, Math.max(30, at0.x + side * tall * rand(0.32, 0.5)));
-          pop("ゴ", gx, Math.max(90, at0.y - tall * rand(0.1, 0.5)), "power-pop-word is-purple", 1500);
+      // そして時は動き出す: ya no esta donde estaba.
+      at(WORLD.appear, () => {
+        const before = svg?.getBoundingClientRect();
+        const photo = portraitRef.current?.getBoundingClientRect();
+        if (!svg || !before?.width || !photo) return;
+        // Su silueta, gris, donde estaba, y se desvanece.
+        const ghost = svg.cloneNode(true) as SVGSVGElement;
+        ghost.classList.add("hero-stand-ghost");
+        Object.assign(ghost.style, {
+          left: `${before.left}px`,
+          top: `${before.top}px`,
+          width: `${before.width}px`,
+          height: `${before.height}px`,
         });
-      }
+        fxLayer().appendChild(ghost);
+        // Del otro lado del retrato si cabe (en celular puede quedar un poco
+        // fuera del borde); si no, mas arriba del mismo lado.
+        moved = true;
+        if (photo.left - before.width > -before.width * 0.12) {
+          giant.style.left = "auto";
+          giant.style.right = small ? "calc(100% + 0.25rem)" : "calc(100% - 0.5rem)";
+          // Mira hacia el retrato, que ahora le queda a la derecha.
+          svg.style.scale = "1 1";
+        } else giant.style.bottom = "10%";
+        frame("stand", { body: pose, face: "smug" });
+        if (body) {
+          body.style.rotate = `${POSE_TILT[pose] ?? 0}deg`;
+          body.style.scale = "1.06";
+        }
+        const now = heart();
+        if (now) pop("バァーン", Math.min(vw - 70, Math.max(70, now.x)), Math.max(90, now.y - tall * 0.65), "power-pop-word is-gold is-big", 1000);
+        for (let i = 0; i < 2; i++) {
+          later(160 + i * 260, () => {
+            const at1 = heart();
+            if (!at1) return;
+            const side = i % 2 ? -1 : 1;
+            const gx = Math.min(vw - 30, Math.max(30, at1.x + side * tall * rand(0.36, 0.5)));
+            pop("ゴ", gx, Math.max(90, at1.y - tall * rand(0.1, 0.45)), "power-pop-word is-purple", 1300);
+          });
+        }
+      });
       at(WORLD.joke, () => talk(setup, 1100));
       at(WORLD.punchline, () => {
         const at0 = heart();
@@ -781,12 +808,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         talk(punch, 1000);
         if (at0) pop(pickLine(lines.laughs), Math.min(vw - 60, at0.x + tall * 0.35), Math.max(90, at0.y - tall * 0.62), "power-pop-word is-gold", 1100);
       });
-      // El tiempo vuelve: deja la pose de golpe, como si nada.
-      at(WORLD.stop + WORLD.ms + 120, () => {
-        hush();
-        if (body) body.style.rotate = body.style.scale = "";
-        frame("stand", { face: "smug" });
-      });
+    };
+
+    /** Devuelve al Stand grande a su sitio (y a su espejo) si ZA WARUDO lo movio. */
+    const unmove = () => {
+      if (!moved) return;
+      moved = false;
+      giant.style.left = giant.style.right = giant.style.bottom = "";
+      if (svg) svg.style.scale = "";
     };
 
     /*
@@ -812,6 +841,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       hush();
       rushArms(false);
       if (body) body.style.rotate = body.style.scale = "";
+      // Vuelve a mirar como el chico (espejado); el viaje sale de donde quedo.
+      if (svg) svg.style.scale = "";
       // El mismo cuadro que recibe el chico: el cambio es pixel por pixel.
       frame("stand");
       const mini = document.querySelector<HTMLElement>(".stand-hit");
@@ -878,6 +909,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       stage?.classList.remove("hero-hitstop");
       if (stage) stage.style.transformOrigin = "";
       if (body) body.style.rotate = body.style.scale = "";
+      unmove();
       rushArms(false);
       if (svg) showHeroFrame(svg, "stand");
       root.classList.remove("intro-banner-low");

@@ -176,7 +176,8 @@ The render loop stops off-screen.
   blocked, CSS and Web Animations pause, videos pause and the 3D scenes
   stop. The Stand freezes too (as seen from outside in the series). When
   the portrait stopped time it comes back sweating ("I couldn't
-  move…!"). When it cast ZA WARUDO itself, on resume it is already
+  move…!"). When it cast ZA WARUDO itself, its bubble goes away for the
+  stop and on resume it is already
   somewhere else on screen in a JoJo pose, laughing, its silhouette
   fades where it was, and it gloats about the section (or about you
   trying to move).
@@ -225,11 +226,13 @@ The render loop stops off-screen.
     and the letters return. Only `clip-path` and transforms animate.
   - **ZA WARUDO**: the Stand shouts ザ・ワールド and stops time for real
     (`lib/time-stop.ts`, the mini Stand's own power with its sphere).
-    Right before the stop it strikes a JoJo pose (a random one of five,
-    tilted like a manga panel) and then it freezes with everything else:
-    it doesn't breathe or move. Only its face and its speech bubble
-    change: it tells a two-part joke about stopping time just to pose
-    and laughs at it (フハハハ, WRYYY). When time resumes it drops the pose.
+    While time is stopped nothing visible happens: it freezes with
+    everything else and doesn't even breathe. When time resumes it is
+    suddenly on the other side of the portrait (or higher up when there
+    is no room), facing it in a JoJo pose (a random one of five, tilted
+    like a manga panel), with its grey silhouette fading where it was.
+    Then it tells a two-part joke about stopping time just to pose and
+    laughs at it (フハハハ, WRYYY).
   - Either way, after the handover the mini Stand closes with a line
     about what just happened and, a few seconds later, greets you
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines

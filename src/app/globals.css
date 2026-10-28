@@ -4859,3 +4859,18 @@ html.intro-banner-low .power-zw-text {
     display: none;
   }
 }
+
+/* La silueta que deja el Stand grande donde estaba cuando el tiempo vuelve (ZA WARUDO). */
+.hero-stand-ghost {
+  position: fixed;
+  scale: -1 1;
+  filter: grayscale(1) contrast(1.2);
+  opacity: 0.7;
+  animation: hero-stand-ghost-out 0.45s ease-out forwards;
+}
+@keyframes hero-stand-ghost-out {
+  to {
+    opacity: 0;
+    filter: grayscale(1) blur(4px);
+  }
+}

@@ -535,6 +535,9 @@ export function MiniStand() {
       const now = performance.now();
       if (active) {
         stop = { by, at: now, attempted: false };
+        // Su ZA WARUDO: mientras el tiempo esta detenido no se ve nada, ni
+        // su globo. Aparece posando en otro sitio cuando vuelve.
+        if (by === "stand") say.current(null);
         return;
       }
       if (!stop) return;
@@ -559,9 +562,11 @@ export function MiniStand() {
         return;
       }
       if (by === "stand") {
+        // Ya esta en otro sitio, en una pose JoJo, y se rie.
         teleport();
         sfx("バァーン", "sfx");
-        act.current("pose", 2000, { face: "laugh" });
+        sfx("ゴゴゴ", "aura");
+        act.current("pose", 2400, { face: "laugh" });
       } else act.current("smug", 2000);
       sfx("フフフ", "mark");
       const sections = lines.timeStop.sections;
