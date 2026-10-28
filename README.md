@@ -186,8 +186,28 @@ The render loop stops off-screen.
   to spin, tap to throw it at the card) and a 3D ゴゴゴ in the contact
   section. Same toon shading and ink outlines as the GitHub board, loaded
   on demand through `use-lazy-scene.ts`.
+- **Hero entrance** (`ui/portfolio-hero.tsx`, timings in `ENTRY`): CSS
+  only, from first paint. Speed lines converge, the name slams in letter
+  by letter and gets its hard shadow, the portrait is pasted on with a
+  shake and a ドン, then a giant Paranoid Android (`ui/hero-stand.tsx`,
+  the mini Stand's own pixel map drawn as SVG) rises beside it and
+  condenses into the portrait's corner, where the mini Stand appears
+  (`html.stand-manifest` hides it until then). With a mouse the layers
+  move with the pointer; on scroll the two name lines split apart.
+- **Language switch** (`ui/language-curtain.tsx`, driven by
+  `lib/language.tsx`): a gold disc with an ink edge grows from the
+  pressed EN/ES button, names the destination language, the page text
+  swaps while covered and the disc shrinks back into the button. Timers,
+  a lock against double clicks, focus stays on the button and the new
+  language is announced in a polite live region.
+- **Theme switch** (`lib/theme.ts`): a same-document View Transition
+  reveals the new theme from the button as a screentone wave (dots that
+  grow and merge, masks in `globals.css`). Without View Transitions it
+  is the plain switch.
 - **Page changes between documents** (404 → home, a language link):
   cross-document View Transitions in `globals.css`, a diagonal reveal.
+- All of the above skip under `prefers-reduced-motion`: the hero rests
+  in its final state, language and theme change instantly.
 
 ## Easter eggs
 

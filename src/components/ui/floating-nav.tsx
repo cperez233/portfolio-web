@@ -331,7 +331,7 @@ export function FloatingNav() {
               variants={itemVariants}
               type="button"
               tabIndex={isExpanded ? undefined : -1}
-              onClick={toggleTheme}
+              onClick={(event) => toggleTheme(event.currentTarget)}
               className="hit-area inline-flex size-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors duration-200 hover:text-accent-ink"
               aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
               aria-pressed={isDark}

@@ -18,7 +18,7 @@
 */
 export const SPRITE_W = 19;
 
-const PALETTE: Record<string, string> = {
+export const PALETTE: Record<string, string> = {
   k: "#161418",
   c: "#ece6d8",
   s: "#c9bfae",
@@ -173,6 +173,14 @@ function mapRows(frame: Frame, tail: number, look: number) {
 }
 
 export const SPRITE_H = rows("idle", 0, 0).length;
+
+/**
+ * El mapa de caracteres de un cuadro, ya cerrado a 19 columnas. Lo usa el
+ * Stand gigante del hero (hero-stand.tsx), que lo dibuja en SVG con trama.
+ */
+export function standMap(frame: Frame, tail = 0, look = 0): string[] {
+  return rows(frame, tail, look);
+}
 
 export interface DrawOptions {
   /** Punta de la cola, en px del contexto. */

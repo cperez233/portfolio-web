@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionStyle,
+  type MotionValue,
+} from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ChevronDown, ArrowUpRight, Download, Mail } from "lucide-react";
 import { hero, portrait, site } from "@/data/site";
@@ -15,28 +23,34 @@ import { Menacing } from "@/components/ui/menacing";
 import { stopTime as freezeTime } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
+import { HeroStand } from "./hero-stand";
 
-interface BlurTextProps {
+interface SlamTextProps {
   text: string;
+  /** Cuando cae la primera letra, en ms desde el primer pintado. */
+  start: number;
   /** Retardo entre letras, en ms. */
-  delay?: number;
+  step: number;
   className?: string;
 }
 
 /**
- * Nombre revelado letra a letra con la animacion CSS .hero-letter (ver
- * globals.css): arranca en el primer pintado, sin esperar a React.
+ * Nombre que cae letra a letra sobre la pagina, como el rotulo de una
+ * portada de manga: cada letra baja grande, se aplasta al tocar y le
+ * sale la sombra dura (.hero-slam en globals.css). Animacion CSS: arranca
+ * en el primer pintado, sin esperar a React, y sin `filter` (el desenfoque
+ * de antes repintaba cada letra en cada cuadro).
  */
-function BlurText({ text, delay = 50, className = "" }: BlurTextProps) {
+function SlamText({ text, start, step, className = "" }: SlamTextProps) {
   // <span> y no <p>: el nombre va dentro de un <p> del hero, y un <p> no
   // puede ir dentro de otro.
   return (
     <span className={`inline-flex ${className}`}>
-      {text.split("").map((letter, i) => (
+      {Array.from(text).map((letter, i) => (
         <span
           key={i}
-          className="hero-letter"
-          style={{ animationDelay: `${i * delay}ms` }}
+          className="hero-slam"
+          style={{ animationDelay: `${start + i * step}ms` }}
         >
           {letter}
         </span>
@@ -46,13 +60,46 @@ function BlurText({ text, delay = 50, className = "" }: BlurTextProps) {
 }
 
 /*
-  El nombre se revela letra a letra: "CRISTIAN" son 8 letras a 90ms de
-  retardo mas 500ms de animacion, asi que termina cerca de 1.13s. El
-  copy arranca en 1.0s, cada pieza 80ms despues de la anterior, para
-  encadenar sin dejar un hueco muerto.
+  Coreografia de la entrada, en ms desde el primer pintado. Todo es CSS
+  (globals.css, "Entrada del hero") y cada pieza lee su retardo de aqui:
+
+    0     las lineas de velocidad convergen hacia el retrato
+    100   CRISTIAN cae letra a letra
+    420   PEREZ cae, mas pesado
+    840   el retrato se pega encima: golpe, temblor y ドン
+    1150  el copy sube, una pieza cada 80ms
+    1250  el Stand se levanta detras del retrato, enorme
+    2700  y se condensa en la esquina, donde aparece el mini Stand
 */
+const ENTRY = {
+  firstName: 100,
+  firstNameStep: 55,
+  lastName: 420,
+  lastNameStep: 70,
+  portrait: 840,
+  impact: 1080,
+  stand: 1250,
+  /** Fin de la manifestacion: el mini Stand toma el relevo. */
+  standHandoff: 3150,
+  menacing: 1300,
+  copy: 1150,
+} as const;
+
+/* El copy entra justo despues del golpe, cada pieza 80ms tras la anterior. */
 function riseDelay(index: number): React.CSSProperties {
-  return { animationDelay: `${1000 + index * 80}ms` };
+  return { animationDelay: `${ENTRY.copy + index * 80}ms` };
+}
+
+function delay(ms: number): React.CSSProperties {
+  return { animationDelay: `${ms}ms` };
+}
+
+/**
+ * Profundidad con el puntero: cada capa se desplaza segun su distancia,
+ * las del fondo al reves que las de delante. Devuelve px.
+ */
+function useDepth(source: MotionValue<number>, depth: number) {
+  return useTransform(source, (value) => value * depth);
 }
 
 const linkPillClass =
@@ -113,6 +160,86 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const layerOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.45]);
 
   /*
+    Al irse, la viñeta se abre: CRISTIAN sale hacia un lado y PEREZ hacia
+    el otro, y las lineas de velocidad giran.
+    Valores cortos: el hero ya retrocede en escala, esto solo le da
+    direccion.
+  */
+  const firstNameX = useTransform(scrollYProgress, [0, 1], ["0vw", "-7vw"]);
+  const lastNameX = useTransform(scrollYProgress, [0, 1], ["0vw", "7vw"]);
+  const linesTurn = useTransform(scrollYProgress, [0, 1], [0, 14]);
+
+  /*
+    Profundidad con el puntero, solo con raton (hover y puntero fino): en
+    tactil no hay puntero que seguir y el hero se queda como esta. Un solo
+    par de valores con muelle; cada capa lo multiplica por su distancia y
+    escribe solo su propio transform (nada de variables CSS heredadas por
+    cuadro). Con el tiempo detenido nadie se mueve.
+  */
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const smoothX = useSpring(pointerX, { stiffness: 90, damping: 18, mass: 0.7 });
+  const smoothY = useSpring(pointerY, { stiffness: 90, damping: 18, mass: 0.7 });
+  const linesX = useDepth(smoothX, -14);
+  const linesY = useDepth(smoothY, -10);
+  const nameX = useDepth(smoothX, 8);
+  const nameY = useDepth(smoothY, 5);
+  const portraitX = useDepth(smoothX, 16);
+  const portraitY = useDepth(smoothY, 12);
+  const portraitTiltX = useDepth(smoothY, -7);
+  const portraitTiltY = useDepth(smoothX, 9);
+  const menacingX = useDepth(smoothX, 34);
+  const menacingY = useDepth(smoothY, 24);
+
+  const [canTrack, setCanTrack] = useState(false);
+  useEffect(() => {
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setCanTrack(fine.matches);
+    update();
+    fine.addEventListener("change", update);
+    return () => fine.removeEventListener("change", update);
+  }, []);
+  const tracking = canTrack && !shouldReduceMotion;
+
+  /*
+    Relevo con el mini Stand: mientras el grande se manifiesta, el chico
+    (mini-stand.tsx) no se ve, y aparece en la esquina del retrato justo
+    cuando el grande se condensa ahi. Solo si la pagina hidrato a tiempo
+    para verlo: si el JS llega tarde la entrada ya paso y no se esconde
+    nada. Con reduced motion el grande no sale, asi que tampoco.
+  */
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const left = ENTRY.standHandoff - performance.now();
+    if (left < 1200) return;
+    const root = document.documentElement;
+    root.classList.add("stand-manifest");
+    const timer = window.setTimeout(() => root.classList.remove("stand-manifest"), left);
+    return () => {
+      window.clearTimeout(timer);
+      root.classList.remove("stand-manifest");
+    };
+  }, []);
+
+  function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!tracking || event.pointerType !== "mouse") return;
+    if (document.documentElement.classList.contains("time-stopped")) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    pointerX.set(((event.clientX - box.left) / box.width - 0.5) * 2);
+    pointerY.set(((event.clientY - box.top) / box.height - 0.5) * 2);
+  }
+
+  function onPointerLeave() {
+    pointerX.set(0);
+    pointerY.set(0);
+  }
+
+  /** Estilo de una capa: nada con reduced motion o sin puntero fino. */
+  function layer(style: MotionStyle): MotionStyle | undefined {
+    return shouldReduceMotion ? undefined : style;
+  }
+
+  /*
     Escala del nombre. Medido sobre la Geist Black con `tracking-tighter`,
     "CRISTIAN" ocupa 4.57 veces el tamano de fuente, asi que el ancho que
     llena es font-size x 4.57 y sale igual en cualquier pantalla.
@@ -138,16 +265,23 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     poco mayor) y los dos colores de la portada del README: nombre en
     crema/tinta, apellido en oro.
   */
+  /*
+    Estilo JoJo: Anton (mas estrecha que la Geist Black, de ahi el vw un
+    poco mayor) y los dos colores de la portada del README: nombre en
+    crema/tinta, apellido en oro.
+  */
   const nameBaseClassName =
     "w-full flex-nowrap justify-center whitespace-nowrap font-display transition-colors duration-500 text-[22vw] uppercase leading-[0.84] tracking-[0.01em] select-none sm:text-[18.5vw] md:text-[17vw] lg:text-[15.5vw]";
-  const firstNameClassName = `${nameBaseClassName} text-ink`;
-  const nameClassName = `${nameBaseClassName} text-name`;
+  const firstNameClassName = `${nameBaseClassName} hero-name-first text-ink`;
+  const nameClassName = `${nameBaseClassName} hero-name-last text-name`;
 
   return (
     <div ref={heroRef} data-stand-hero className="relative z-0 h-svh min-h-[600px]">
       <div
         ref={stickyRef}
         data-time-stopped={timeStop ? "true" : undefined}
+        onPointerMove={tracking ? onPointerMove : undefined}
+        onPointerLeave={tracking ? onPointerLeave : undefined}
         className="sticky top-0 h-svh min-h-[600px] overflow-x-clip bg-canvas transition-colors duration-500"
       >
       <motion.div
@@ -166,26 +300,39 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       {/* Nombre monumental con el retrato en vineta centrado entre lineas */}
       <div className="relative my-auto w-full text-center">
         {/*
-          Fondo de vineta de impacto: lineas de velocidad y trama de puntos
-          detras del retrato, y el ゴゴゴ a los lados. Todo decorativo y
-          detras del nombre (-z-10), sin eventos.
+          Fondo de vineta de impacto, en capas de profundidad: lineas de
+          velocidad y trama de puntos detras de todo y el ゴゴゴ delante. Todo decorativo, sin eventos. Cada
+          capa tiene dos envoltorios: el de fuera se mueve con el puntero
+          o el scroll (transform de Framer Motion) y el de dentro hace la
+          entrada CSS, para que los dos transform no se pisen.
         */}
+        <motion.div
+          aria-hidden="true"
+          style={layer({ x: linesX, y: linesY, rotate: linesTurn })}
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[150vw] -translate-x-1/2 -translate-y-1/2 sm:size-[110vw] lg:size-[80vw]"
+        >
+          <div className="speed-lines hero-lines-in size-full" />
+        </motion.div>
         <div
           aria-hidden="true"
-          className="speed-lines pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[150vw] -translate-x-1/2 -translate-y-1/2 sm:size-[110vw] lg:size-[80vw]"
+          className="halftone halftone-fade hero-tone-in pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[90vw] -translate-x-1/2 -translate-y-1/2 lg:size-[52vw]"
         />
-        <div
-          aria-hidden="true"
-          className="halftone halftone-fade pointer-events-none absolute left-1/2 top-1/2 -z-10 size-[90vw] -translate-x-1/2 -translate-y-1/2 lg:size-[52vw]"
-        />
-        <Menacing
-          size="clamp(1.6rem, 4vw, 3.6rem)"
-          className="absolute -top-[9%] left-[3%] z-20 hidden sm:block"
-        />
-        <Menacing
-          size="clamp(1.4rem, 3.4vw, 3rem)"
-          className="absolute -top-[62%] right-[4%] z-20 sm:-bottom-[12%] sm:top-auto sm:right-[3%]"
-        />
+
+        <motion.div
+          style={layer({ x: menacingX, y: menacingY })}
+          className="pointer-events-none absolute inset-0 z-20"
+        >
+          <div className="hero-pop absolute -top-[9%] left-[3%] hidden sm:block" style={delay(ENTRY.menacing)}>
+            <Menacing size="clamp(1.6rem, 4vw, 3.6rem)" />
+          </div>
+          <div
+            className="hero-pop absolute -top-[62%] right-[4%] sm:-bottom-[12%] sm:top-auto sm:right-[3%]"
+            style={delay(ENTRY.menacing + 120)}
+          >
+            <Menacing size="clamp(1.4rem, 3.4vw, 3rem)" />
+          </div>
+        </motion.div>
+
         {/*
           El nombre es la marca, no el <h1>: el h1 es la frase de abajo,
           que dice que se vende (Google y las IAs le dan mas peso a esa
@@ -193,22 +340,33 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           sueltos y algun lector de pantalla las deletrearia, de ahi el
           aria-hidden y el nombre entero en sr-only. El espacio entre las
           dos lineas es para quien lee el texto plano.
+
+          El temblor de impacto (.hero-impact) va en el <p> y el puntero en
+          su envoltorio: dos transform distintos en dos elementos.
         */}
-        <p>
-          <span className="sr-only">{site.name}</span>
-          <span aria-hidden="true">
-            <BlurText
-              text={hero.firstName}
-              delay={90}
-              className={firstNameClassName}
-            />{" "}
-            <BlurText
-              text={hero.lastName}
-              delay={90}
-              className={nameClassName}
-            />
-          </span>
-        </p>
+        <motion.div style={layer({ x: nameX, y: nameY })}>
+          <p className="hero-impact" style={delay(ENTRY.impact)}>
+            <span className="sr-only">{site.name}</span>
+            <span aria-hidden="true">
+              <motion.span style={layer({ x: firstNameX })} className="block">
+                <SlamText
+                  text={hero.firstName}
+                  start={ENTRY.firstName}
+                  step={ENTRY.firstNameStep}
+                  className={firstNameClassName}
+                />
+              </motion.span>{" "}
+              <motion.span style={layer({ x: lastNameX })} className="block">
+                <SlamText
+                  text={hero.lastName}
+                  start={ENTRY.lastName}
+                  step={ENTRY.lastNameStep}
+                  className={nameClassName}
+                />
+              </motion.span>
+            </span>
+          </p>
+        </motion.div>
 
         {/*
           z-10 a proposito: el retrato es un medallon incrustado sobre el
@@ -224,9 +382,31 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         {/*
           El retrato es tambien el boton de ZA WARUDO: al tocarlo el tiempo
           se detiene (ver stopTime). aria-label porque la imagen sola no
-          dice que hace el boton.
+          dice que hace el boton. Se pega encima del nombre con un golpe
+          (.hero-paste) y con raton se inclina hacia el puntero.
         */}
-        <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+        <motion.div
+          style={layer({
+            x: portraitX,
+            y: portraitY,
+            rotateX: portraitTiltX,
+            rotateY: portraitTiltY,
+            transformPerspective: 800,
+          })}
+          className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
+        >
+          {/*
+            El Stand se manifiesta detras de su usuario: sale del retrato,
+            enorme y en trama, se sostiene con el ゴゴゴ y se condensa en la
+            esquina del retrato, justo donde se posa el mini Stand, que
+            aparece en ese momento (ver el efecto de stand-manifest). Va
+            dentro del envoltorio del retrato: delante del nombre, detras
+            de la foto. Una sola vez; con reduced motion no sale.
+          */}
+          <div aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
+            <HeroStand />
+          </div>
+          <div className="hero-paste" style={delay(ENTRY.portrait)}>
           <button
             ref={portraitRef}
             data-stand-home
@@ -257,7 +437,15 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
               <span className="time-stamp-hint">{t.jojo.timeStopHint}</span>
             </span>
           </button>
-        </div>
+          </div>
+          {/*
+            ドン: el golpe del retrato al pegarse. Sale una vez, se sostiene
+            y se va; no es otro adorno fijo. Con reduced motion no existe.
+          */}
+          <span aria-hidden="true" className="hero-don" style={delay(ENTRY.impact - 40)}>
+            ドン
+          </span>
+        </motion.div>
       </div>
 
       {/* Narrativa: entra escalonada al terminar el nombre */}

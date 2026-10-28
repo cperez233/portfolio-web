@@ -16,8 +16,8 @@ const options: Language[] = ["en", "es"];
  *
  * Cada opcion es un enlace real a su version ("/" o "/es"): asi los
  * buscadores las descubren y funcionan sin JS o con clic central. Con JS
- * el clic se intercepta y el cambio se hace en el sitio, con fundido y
- * sin perder el scroll (ver lib/language.tsx).
+ * el clic se intercepta y el cambio se hace en el sitio, bajo una viñeta
+ * que nace del boton y sin perder el scroll (ver lib/language.tsx).
  */
 export function LanguageToggle() {
   const { language, setLanguage, t } = useLanguage();
@@ -42,7 +42,7 @@ export function LanguageToggle() {
               // Con modificadores, el navegador hace lo suyo (otra pestana).
               if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
               event.preventDefault();
-              if (!isActive) setLanguage(option);
+              if (!isActive) setLanguage(option, event.currentTarget);
             }}
             aria-current={isActive ? "page" : undefined}
             className={cn(

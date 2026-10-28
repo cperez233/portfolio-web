@@ -156,6 +156,9 @@ html.dark {
   --orb-opacity: 0.14;
   --halftone-dot: rgba(236, 230, 216, 0.16);
   --panel-shadow: #e3b341;
+
+  --name-shadow-first: #a87a1f;
+  --name-shadow-last: #5c420f;
 }
 
 /*
@@ -176,6 +179,10 @@ html.dark {
   --orb-opacity: 0.35;
   --halftone-dot: rgba(22, 20, 24, 0.13);
   --panel-shadow: #161418;
+
+  /* Hero: sombra dura del nombre (rotulo impreso con relieve). */
+  --name-shadow-first: #e3b341;
+  --name-shadow-last: #161418;
 }
 
 @layer base {
@@ -700,11 +707,143 @@ html.lenis body {
   desde el primer pintado. El retardo de cada pieza va en linea
   (animation-delay), el resto es comun.
 */
-@keyframes hero-letter-in {
+/*
+  Coreografia de la entrada (los retardos viven en portfolio-hero.tsx,
+  ENTRY): lineas que convergen, letras que caen y se aplastan, el
+  retrato que se pega con un golpe, temblor, ドン y el Stand que se
+  levanta detras. Solo transform y opacity, salvo la sombra del nombre,
+  que sale una vez.
+*/
+@keyframes hero-lines-in {
   from {
     opacity: 0;
-    filter: blur(10px);
-    transform: translateY(-20px);
+    transform: scale(1.6) rotate(-12deg);
+  }
+}
+
+@keyframes hero-tone-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/*
+  La letra cae grande, acelerando, se aplasta al tocar el papel y le
+  sale la sombra dura. La curva cambia por tramo: caida con ease-in,
+  rebote con ease-out.
+*/
+@keyframes hero-slam {
+  0% {
+    opacity: 0;
+    transform: translateY(-0.18em) scale(2.1);
+    text-shadow: 0 0 0 transparent;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0.02em) scale(0.92, 0.9);
+    text-shadow: 0 0 0 transparent;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  78% {
+    transform: translateY(-0.01em) scale(1.03);
+  }
+}
+
+/* Temblor de impacto: corto, seco y que se apaga. */
+@keyframes hero-impact {
+  0%,
+  100% {
+    transform: none;
+  }
+  15% {
+    transform: translate(-6px, 4px) rotate(-0.4deg);
+  }
+  35% {
+    transform: translate(5px, -3px) rotate(0.3deg);
+  }
+  55% {
+    transform: translate(-3px, 2px);
+  }
+  75% {
+    transform: translate(2px, -1px);
+  }
+}
+
+/* El retrato se pega encima: llega girado y grande, golpea y asienta. */
+@keyframes hero-paste {
+  0% {
+    opacity: 0;
+    transform: scale(1.9) rotate(16deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(0.93) rotate(-2deg);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  75% {
+    transform: scale(1.03) rotate(0.6deg);
+  }
+}
+
+@keyframes hero-don {
+  0% {
+    opacity: 0;
+    transform: scale(2.4) rotate(-22deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(0.94) rotate(-12deg);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  20%,
+  72% {
+    opacity: 1;
+    transform: scale(1) rotate(-12deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08) rotate(-12deg) translateY(-0.2em);
+  }
+}
+
+/*
+  El Stand se manifiesta: sube desde detras del retrato, se sostiene
+  respirando y se condensa hacia la esquina del retrato (el origen del
+  transform), donde lo releva el mini Stand. Dura 2s.
+*/
+@keyframes hero-stand {
+  0% {
+    opacity: 0;
+    transform: translateY(16%) scale(0.78);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  30% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: ease-in-out;
+  }
+  52% {
+    transform: translateY(-1.5%);
+    animation-timing-function: ease-in-out;
+  }
+  72% {
+    opacity: 1;
+    transform: none;
+    animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.12);
+  }
+}
+
+@keyframes hero-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-8deg);
   }
 }
 
@@ -717,9 +856,112 @@ html.lenis body {
 }
 
 @layer components {
-  .hero-letter {
+  .hero-lines-in {
+    animation: hero-lines-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hero-tone-in {
+    animation: hero-tone-in 0.8s ease-out 0.2s both;
+  }
+
+  .hero-slam {
     display: inline-block;
-    animation: hero-letter-in 0.5s ease-out both;
+    transform-origin: 50% 85%;
+    animation: hero-slam 0.52s both;
+  }
+
+  /*
+    Sombra dura del nombre, la misma de los titulares de seccion pero mas
+    presente: el nombre queda como rotulo impreso, con relieve.
+  */
+  .hero-name-first {
+    text-shadow: 0.045em 0.045em 0 var(--name-shadow-first);
+  }
+
+  .hero-name-last {
+    text-shadow: 0.045em 0.045em 0 var(--name-shadow-last);
+  }
+
+  .hero-impact {
+    animation: hero-impact 0.34s linear both;
+  }
+
+  .hero-paste {
+    animation: hero-paste 0.62s both;
+  }
+
+  /*
+    ドン en katakana de manga, arriba a la izquierda del retrato. Contorno
+    del color del fondo, igual que el ゴゴゴ.
+  */
+  .hero-don {
+    position: absolute;
+    right: 82%;
+    bottom: 78%;
+    z-index: 20;
+    font-family: var(--font-jp);
+    font-size: clamp(1.7rem, 1rem + 3vw, 4.2rem);
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--color-accent);
+    -webkit-text-stroke: 5px var(--color-canvas);
+    paint-order: stroke fill;
+    pointer-events: none;
+    opacity: 0;
+    animation: hero-don 1.5s both;
+  }
+
+  /*
+    El Stand gigante, dentro del envoltorio del retrato: de pie a su lado
+    y un paso por detras, mirandolo (espejado), con la cola bajo la foto
+    y la cabeza por encima. El origen del transform cae en la esquina
+    superior derecha del retrato: ahi se condensa y ahi se posa el mini
+    Stand.
+
+    Cuentas, con P = alto del retrato y el SVG de 20x23 celdas (ancho =
+    0.87 x alto). Escritorio y tableta: alto 1.8P, base 0.3P bajo la foto,
+    borde izquierdo en el centro del retrato; la cabeza queda por debajo
+    de la barra de navegacion. Celular: el retrato es chico y hay aire
+    encima del nombre, asi que 2.6P, corrido un cuarto a la izquierda para
+    no salirse de la pantalla.
+  */
+  .hero-stand {
+    position: absolute;
+    left: 50%;
+    bottom: -30%;
+    height: 260%;
+    translate: -25% 0;
+    transform-origin: 40% 50%;
+    opacity: 0;
+    animation: hero-stand 2s both;
+  }
+
+  .hero-stand > svg {
+    scale: -1 1;
+  }
+
+  @media (width >= 40rem) {
+    .hero-stand {
+      height: 180%;
+      translate: 0 0;
+      transform-origin: 22% 28%;
+    }
+  }
+
+  /*
+    Mientras se manifiesta el grande, el chico espera fuera de vista: la
+    capa entera, con sus estelas y su globo, no solo el canvas.
+  */
+  .stand-layer {
+    transition: opacity 0.25s ease-out;
+  }
+
+  html.stand-manifest .stand-layer {
+    opacity: 0;
+  }
+
+  .hero-pop {
+    animation: hero-pop 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.3) both;
   }
 
   .hero-rise {
@@ -729,12 +971,22 @@ html.lenis body {
   /*
     `none` y no solo duracion minima: la regla global de reduced motion
     deja el animation-delay intacto, y con `both` el texto seguiria
-    oculto hasta 1.5s.
+    oculto hasta 1.5s. Todo queda en su sitio final y el ドン no sale.
   */
   @media (prefers-reduced-motion: reduce) {
-    .hero-letter,
+    .hero-lines-in,
+    .hero-tone-in,
+    .hero-slam,
+    .hero-impact,
+    .hero-paste,
+    .hero-pop,
     .hero-rise {
       animation: none;
+    }
+
+    .hero-don,
+    .hero-stand {
+      display: none;
     }
   }
 }
@@ -2168,6 +2420,40 @@ html.dark .chapter-plate {
 }
 
 /* ------------------------------------------------------------------
+   Cambio de idioma (ui/language-curtain.tsx): un disco de oro con filo
+   que nace del boton EN/ES. El oro es fijo, como el telon de seccion; el
+   filo es la tinta del tema, para que se despegue del fondo en los dos.
+------------------------------------------------------------------ */
+.lang-disc-edge {
+  background-color: var(--color-ink);
+}
+.lang-disc-gold {
+  background-color: #e3b341;
+  background-image: radial-gradient(circle, rgba(22, 20, 24, 0.16) 1.6px, transparent 1.7px);
+  background-size: 9px 9px;
+}
+.lang-disc-gold .speed-lines {
+  --halftone-dot: rgba(22, 20, 24, 0.22);
+}
+.lang-curtain-word {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 1.5rem + 11vw, 11rem);
+  /* Aire arriba para la tilde de la Ñ, que en Anton sube mucho. */
+  line-height: 1.12;
+  text-transform: uppercase;
+  color: #161418;
+  text-shadow: 0.05em 0.05em 0 #f7f2e8;
+}
+.lang-curtain-jp {
+  font-family: var(--font-jp);
+  font-size: clamp(1.3rem, 0.9rem + 2vw, 2.4rem);
+  line-height: 1;
+  color: #f7f2e8;
+  -webkit-text-stroke: 5px #161418;
+  paint-order: stroke fill;
+}
+
+/* ------------------------------------------------------------------
    Mini Stand (components/mini-stand): sprite en canvas, globo y juego.
 ------------------------------------------------------------------ */
 .stand-layer canvas {
@@ -2460,6 +2746,71 @@ html.dark .chapter-plate {
   }
   to {
     clip-path: polygon(0 0, 130% 0, 100% 100%, -30% 100%);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Cambio de tema (lib/theme.ts): el tema nuevo entra desde el boton como
+   una trama de manga. Tres capas de mascara sobre la foto nueva: un
+   circulo solido que crece desde el boton, y por delante una banda de
+   puntos (trama de 12px intersecada con un circulo mas grande) cuyos
+   puntos engordan hasta fundirse. Las variables de posicion las pone el
+   script; las de tamano se animan registradas con @property.
+------------------------------------------------------------------ */
+@property --tone-wave {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --tone-dot {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+html.theme-tone *,
+html.theme-tone *::before,
+html.theme-tone *::after {
+  transition: none !important;
+}
+
+html.theme-tone::view-transition-old(root) {
+  animation: none;
+}
+
+html.theme-tone::view-transition-new(root) {
+  --tone-band: 28vmax;
+  animation:
+    tone-wave 0.9s cubic-bezier(0.5, 0, 0.25, 1) both,
+    tone-dot 0.9s cubic-bezier(0.3, 0, 0.6, 1) both;
+  -webkit-mask-image:
+    radial-gradient(circle at var(--tone-x) var(--tone-y), #000 var(--tone-wave), transparent calc(var(--tone-wave) + 1px)),
+    radial-gradient(circle, #000 var(--tone-dot), transparent calc(var(--tone-dot) + 0.75px)),
+    radial-gradient(circle at var(--tone-x) var(--tone-y), #000 calc(var(--tone-wave) + var(--tone-band)), transparent calc(var(--tone-wave) + var(--tone-band) + 1px));
+  mask-image:
+    radial-gradient(circle at var(--tone-x) var(--tone-y), #000 var(--tone-wave), transparent calc(var(--tone-wave) + 1px)),
+    radial-gradient(circle, #000 var(--tone-dot), transparent calc(var(--tone-dot) + 0.75px)),
+    radial-gradient(circle at var(--tone-x) var(--tone-y), #000 calc(var(--tone-wave) + var(--tone-band)), transparent calc(var(--tone-wave) + var(--tone-band) + 1px));
+  -webkit-mask-size: 100% 100%, 12px 12px, 100% 100%;
+  mask-size: 100% 100%, 12px 12px, 100% 100%;
+  -webkit-mask-repeat: no-repeat, repeat, no-repeat;
+  mask-repeat: no-repeat, repeat, no-repeat;
+  -webkit-mask-composite: source-over, source-in, source-over;
+  mask-composite: add, intersect, add;
+}
+
+@keyframes tone-wave {
+  to {
+    --tone-wave: var(--tone-reach);
+  }
+}
+
+@keyframes tone-dot {
+  from {
+    --tone-dot: 0.5px;
+  }
+  to {
+    --tone-dot: 9px;
   }
 }
 
