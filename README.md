@@ -275,7 +275,12 @@ should not be added to it.
 
 ## Deploy
 
-Vercel, from this repository. No environment variables need to be set:
+Vercel, from this repository. On the Hobby plan Vercel only deploys
+commits whose author is the account owner: a commit authored by anyone
+else (a bot, a collaborator) is blocked and the site silently stays on the
+last good deploy. Commit with the owner's git identity.
+
+No environment variables need to be set:
 `metadataBase` reads `VERCEL_PROJECT_PRODUCTION_URL`, which Vercel injects
 at build time, so the share card resolves to the production domain.
 
