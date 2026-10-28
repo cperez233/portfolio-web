@@ -728,21 +728,21 @@ export function MiniStand() {
     const cached = (el: Element | null, selector: string) => (el?.isConnected ? el : document.querySelector(selector));
     let scanned: Spot | null = null;
     let nextScan = 0;
-    // Saludo segun la hora (la madrugada es secreto) o por las visitas.
+    // Saludo segun la hora del visitante (madrugada, amanecer, mañana,
+    // mediodia, tarde, noche y noche cerrada) o por las visitas.
     function greet() {
       if (greeted) return;
       greeted = true;
       const hour = new Date().getHours();
       const greetings = linesRef.current.greetings;
-      if (hour < 5) {
-        say.current(linesRef.current.night, 3200);
-        unlockSecret("night");
-      } else if (visits > 1 && Math.random() < 0.5) {
+      if (visits > 1 && hour >= 5 && Math.random() < 0.5) {
         say.current(pickLine(short(greetings.visit)).replace("{n}", String(visits)), 2800);
-      } else {
-        const list = hour < 12 ? greetings.morning : hour < 19 ? greetings.afternoon : greetings.evening;
-        say.current(pickLine(short(list)), 2800);
+        return;
       }
+      const slot =
+        hour < 5 ? "owl" : hour < 8 ? "early" : hour < 12 ? "morning" : hour < 14 ? "midday" : hour < 19 ? "afternoon" : hour < 22 ? "evening" : "late";
+      if (slot === "owl") unlockSecret("night");
+      say.current(pickLine(short(greetings[slot])), slot === "owl" ? 3200 : 2800);
     }
 
     function tick(now: number) {

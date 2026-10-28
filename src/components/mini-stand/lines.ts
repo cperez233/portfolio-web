@@ -49,10 +49,25 @@ export interface StandLines {
   sleep: string;
   wake: string[];
   home: string[];
-  night: string;
   console: string;
-  /** Saludo al salir del retrato, segun la hora (la madrugada es secreto). */
-  greetings: { morning: string[]; afternoon: string[]; evening: string[]; visit: string[] };
+  /** Saludo al hacerse pequeno en el hero, segun la hora del visitante. */
+  greetings: {
+    /** Madrugada, de 0:00 a 4:59 (desbloquea el secreto "night"). */
+    owl: string[];
+    /** 5:00 a 7:59. */
+    early: string[];
+    /** 8:00 a 11:59. */
+    morning: string[];
+    /** 12:00 a 13:59. */
+    midday: string[];
+    /** 14:00 a 18:59. */
+    afternoon: string[];
+    /** 19:00 a 21:59. */
+    evening: string[];
+    /** 22:00 a 23:59. */
+    late: string[];
+    visit: string[];
+  };
   /** Lo que dice solo, posado, si lleva rato callado. */
   musings: string[];
   /** Golpe de efecto al posarse (se pinta como onomatopeya). */
@@ -313,22 +328,41 @@ export const standLines: Record<Language, StandLines> = {
       "¿Dormido? Era una pose.",
     ],
     home: ["En casa.", "Al retrato.", "Aquí se está bien.", "De vuelta al origen.", "Mi rincón favorito.", "Cuido el retrato."],
-    night: "Turno de noche. Como DIO.",
     console: "¿Me llamaste? Nadie hace eso.",
     greetings: {
+      owl: [
+        "Búho nocturno detectado.",
+        "¿No duermes? Yo tampoco.",
+        "Turno de noche. Como DIO.",
+        "Madrugada. Hora de DIO.",
+        "Solo búhos y Stands a esta hora.",
+      ],
+      early: [
+        "Madrugador. Respeto.",
+        "Temprano. Como Jonathan.",
+        "El sol apenas sale. Ugh.",
+        "Buen día. Respira. Hamon.",
+        "¿Ya desayunaste? Yo no como.",
+      ],
       morning: [
         "Buenos días. ¿Café o Hamon?",
-        "Temprano. Como Jonathan.",
+        "Buen día. Stand listo.",
         "Mañana. El sol ya salió. Ugh.",
-        "Madrugaste. Respeto.",
-        "Buen día. Respira. Hamon.",
+        "Buenos días. ¿Un capítulo?",
+        "Mañana productiva. ゴゴゴ.",
+      ],
+      midday: [
+        "Mediodía. ¿Ya almorzaste?",
+        "Hora de almuerzo. Yo no como.",
+        "Sol a plomo. Hamon al máximo.",
+        "Mediodía. Hora de un capítulo.",
       ],
       afternoon: [
         "Buenas tardes. Hora de leer.",
         "Tarde de Stands. Buena elección.",
         "Siesta cancelada. Vamos.",
         "Tarde perfecta para un capítulo.",
-        "Buenas. ¿Almorzaste? Yo no como.",
+        "Buenas tardes. ¡ORA ORA!",
       ],
       evening: [
         "Buenas noches. Hora de Stands.",
@@ -336,6 +370,12 @@ export const standLines: Record<Language, StandLines> = {
         "La noche cae. Yo despierto.",
         "Hora de DIO. Digo, de leer.",
         "Noche. Ambiente perfecto. ゴゴゴ.",
+      ],
+      late: [
+        "Ya es tarde. ¿Un capítulo más?",
+        "Casi medianoche. Hora de DIO.",
+        "La noche es joven. Quédate.",
+        "Noche cerrada. Me gusta.",
       ],
       visit: [
         "Volviste. Visita {n}.",
@@ -926,16 +966,41 @@ export const standLines: Record<Language, StandLines> = {
       "Asleep? That was a pose.",
     ],
     home: ["Home.", "Back to the portrait.", "Nice spot.", "Back to the origin.", "My favourite corner.", "Guarding the portrait."],
-    night: "Night shift. Like DIO.",
     console: "You called me? Nobody does that.",
     greetings: {
-      morning: ["Morning. Coffee or Hamon?", "Early. Like Jonathan.", "The sun is up. Ugh.", "Early bird. Respect.", "Good morning. Breathe. Hamon."],
+      owl: [
+        "Night owl detected.",
+        "Can't sleep? Me neither.",
+        "Night shift. Like DIO.",
+        "Late night. DIO's hour.",
+        "Only owls and Stands now.",
+      ],
+      early: [
+        "Early bird. Respect.",
+        "Early. Like Jonathan.",
+        "The sun is barely up. Ugh.",
+        "Good morning. Breathe. Hamon.",
+        "Had breakfast? I don't eat.",
+      ],
+      morning: [
+        "Morning. Coffee or Hamon?",
+        "Good morning. Stand ready.",
+        "The sun is up. Ugh.",
+        "Morning. One chapter first?",
+        "A productive morning. ゴゴゴ.",
+      ],
+      midday: [
+        "Midday. Had lunch yet?",
+        "Lunch break. I don't eat.",
+        "Sun's overhead. Max Hamon.",
+        "Noon. Time for a chapter.",
+      ],
       afternoon: [
         "Good afternoon. Reading time.",
         "An afternoon of Stands. Good pick.",
         "Nap cancelled. Let's go.",
         "Perfect afternoon for a chapter.",
-        "Had lunch? I don't eat.",
+        "Good afternoon. ORA ORA!",
       ],
       evening: [
         "Good evening. Stand hours.",
@@ -943,6 +1008,12 @@ export const standLines: Record<Language, StandLines> = {
         "Night falls. I wake up.",
         "DIO's hour. I mean, reading hour.",
         "Night. Perfect mood. ゴゴゴ.",
+      ],
+      late: [
+        "It's late. One more chapter?",
+        "Almost midnight. DIO's hour.",
+        "The night is young. Stay.",
+        "Dead of night. I like it.",
       ],
       visit: ["You're back. Visit {n}.", "Visit {n}. Family now.", "{n} visits. Suspicious. I like it.", "Visit {n}. One more Joestar.", "You again. Visit {n}."],
     },
