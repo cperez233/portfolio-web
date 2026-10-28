@@ -25,6 +25,7 @@ import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 import { SPRITE_W } from "@/components/mini-stand/sprite";
 import { HeroStand } from "./hero-stand";
+import { playHeroCrack, type HeroCrack } from "./hero-crack";
 
 interface SlamTextProps {
   text: string;
@@ -69,9 +70,12 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     420   PEREZ cae, mas pesado
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
-    1250  el Stand se levanta junto al retrato, enorme (0.4s)
-    2000  y se hace el mini Stand: viaja hasta donde el chico espera y se
-          cambian sin que se note; ahi mismo saluda
+    1150  el Stand se levanta junto al retrato, enorme (0.4s)
+    1230  y su presencia agrieta la pantalla (la sacude y las grietas se
+          propagan desde su pecho, con ドラ en rosa)
+    1750  se hace el mini Stand: viaja hasta donde el chico espera, las
+          grietas se reparan hacia el (Crazy Diamond) y se cambian sin que
+          se note; ahi mismo saluda
 */
 const ENTRY = {
   firstName: 100,
@@ -80,13 +84,15 @@ const ENTRY = {
   lastNameStep: 70,
   portrait: 840,
   impact: 1080,
-  stand: 1250,
+  stand: 1150,
+  /** Cuando se agrieta la pantalla, en el reloj de la animacion del Stand. */
+  crack: 1230,
   /**
    * Momento (en el reloj de la animacion del Stand, que ya cuenta su
    * retardo) en que el grande deja de sostenerse y viaja a convertirse en
    * el mini Stand. Ver el efecto del relevo.
    */
-  standCondense: 2000,
+  standCondense: 1750,
   menacing: 1300,
   copy: 1150,
 } as const;
@@ -212,32 +218,70 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   /*
     Relevo con el mini Stand: el grande se convierte en el chico. Mientras
     el grande se manifiesta, el chico (mini-stand.tsx) espera quieto y sin
-    verse en su sitio, junto al retrato (clase stand-manifest). Cuando el
-    grande termina de sostenerse viaja hasta ese mismo lugar, se encoge al
-    tamano exacto del chico, y en ese momento uno se desvanece y el otro
-    aparece: es el mismo dibujo, el mismo sitio y el mismo tamano, asi que
-    se lee como un solo personaje que se hace pequeno.
+    verse en su sitio, junto al retrato: la clase stand-manifest la pone
+    StandManifestGate desde el primer pintado (ver ese componente: si la
+    pusiera este efecto, el chico ya se habria dibujado y se veria como un
+    fantasma que se apaga). Cuando el grande termina de sostenerse viaja
+    hasta ese mismo lugar, se encoge al tamano exacto del chico, y en ese
+    momento uno desaparece y el otro aparece: es el mismo dibujo, el mismo
+    sitio y el mismo tamano, asi que se lee como un solo personaje que se
+    hace pequeno.
+
+    Mientras esta grande, su presencia agrieta la pantalla (hero-crack.ts)
+    y la sacude; al hacerse chico, Crazy Diamond repara las grietas hacia
+    el punto donde aterriza.
 
     El reloj es el de la propia animacion CSS del grande (no el de la
-    pagina): si hidrata tarde, espera lo que falte; si ya paso, lo quita y
-    el chico simplemente esta (su desvanecido CSS lo despide). Con reduced motion el grande no sale.
+    pagina): si hidrata tarde, espera lo que falte; si ya paso, suelta al
+    chico y el desvanecido CSS del grande lo despide. Con reduced motion el
+    grande no sale.
   */
   useEffect(() => {
     const giant = standRef.current;
     const core = standCoreRef.current;
-    if (!giant || !core) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
     const root = document.documentElement;
+    // Sin relevo: el chico no se queda escondido ni un fotograma de mas.
+    const skip = () => {
+      root.classList.remove("stand-manifest");
+      if (giant) giant.style.visibility = "hidden";
+    };
+    if (!giant || !core) return skip();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return skip();
+
     const run = giant.getAnimations().find((a) => (a as CSSAnimation).animationName === "hero-stand");
     const elapsed = Number(run?.currentTime ?? Infinity);
-    // Si ya paso el momento (hidrato muy tarde), el desvanecido CSS del
-    // grande hace de despedida y el chico simplemente esta en su sitio.
-    if (!run || run.playState === "finished" || elapsed > ENTRY.standCondense + 600) return;
+    const heroBox = heroRef.current?.getBoundingClientRect();
+    // Ya paso el momento (hidrato muy tarde), o el hero no esta a la vista
+    // (la pagina se abrio ya bajada): no hay relevo que ver.
+    if (!run || run.playState === "finished" || elapsed > ENTRY.standCondense + 600) return skip();
+    if (heroBox && heroBox.bottom < window.innerHeight * 0.45) return skip();
 
     const timers: number[] = [];
     const animations: Animation[] = [];
+    let crack: HeroCrack | null = null;
     root.classList.add("stand-manifest");
+
+    // Presencia del Stand: sacude el hero y agrieta la pantalla desde su pecho.
+    const manifest = () => {
+      const from = core.querySelector("svg")?.getBoundingClientRect();
+      if (!from?.width) return;
+      crack = playHeroCrack(from.left + from.width * 0.5, from.top + from.height * 0.55);
+      const stage = stickyRef.current?.firstElementChild;
+      if (stage) {
+        animations.push(
+          stage.animate(
+            [
+              { translate: "0 0" },
+              { translate: "-6px 5px" },
+              { translate: "5px -4px" },
+              { translate: "-3px 2px" },
+              { translate: "0 0" },
+            ],
+            { duration: 320, easing: "ease-out" },
+          ),
+        );
+      }
+    };
 
     /*
       Corte limpio, sin fundido: los dos son el mismo dibujo en el mismo
@@ -258,34 +302,36 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const svg = core.querySelector("svg");
       const from = svg?.getBoundingClientRect();
       const to = mini?.getBoundingClientRect();
-      if (!from?.width || !to?.width) return finish();
+      if (!from?.width || !to?.width) {
+        crack?.cancel();
+        return finish();
+      }
       // La rejilla del chico (SPRITE_W celdas) y la del grande (una celda
       // de margen en total): misma celda, otro tamano.
       const miniCell = to.width / SPRITE_W;
       const bigCell = from.width / (SPRITE_W + 1);
       const dx = to.left - miniCell / 2 - from.left;
       const dy = to.top - miniCell / 2 - from.top;
+      // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
+      const duration = elapsed > ENTRY.standCondense + 150 ? 280 : 380;
       const move = core.animate(
         [
           { transform: "translate(0, 0) scale(1)" },
           { transform: `translate(${dx}px, ${dy}px) scale(${miniCell / bigCell})` },
         ],
-        {
-          // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
-          duration: elapsed > ENTRY.standCondense + 150 ? 300 : 460,
-          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
-          fill: "forwards",
-        },
+        { duration, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
       );
       animations.push(move);
       move.onfinish = finish;
+      // Crazy Diamond repara las grietas hacia donde aterriza.
+      crack?.heal(to.left + to.width / 2, to.top + to.height / 2, duration);
       // El contorno de tinta crece hasta el grosor del chico (ver hero-stand.tsx).
       const rim = core.querySelector(".hero-stand-rim");
       const rimPx = Math.max(1, Math.round(miniCell / 2));
       if (rim) {
         animations.push(
           rim.animate([{ strokeWidth: "0.6" }, { strokeWidth: String((rimPx * 2) / miniCell) }], {
-            duration: move.effect?.getTiming().duration as number,
+            duration,
             easing: "cubic-bezier(0.65, 0, 0.35, 1)",
             fill: "forwards",
           }),
@@ -293,10 +339,13 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       }
     };
 
+    // Las grietas solo si el golpe no quedo atras (hidratacion tardia).
+    if (elapsed < ENTRY.crack + 250) timers.push(window.setTimeout(manifest, Math.max(0, ENTRY.crack - elapsed)));
     timers.push(window.setTimeout(condense, Math.max(0, ENTRY.standCondense - elapsed)));
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
       animations.forEach((a) => a.cancel());
+      crack?.cancel();
       root.classList.remove("stand-manifest");
     };
   }, []);

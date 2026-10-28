@@ -813,8 +813,9 @@ html.lenis body {
   El Stand se manifiesta: sube desde detras del retrato y se sostiene
   respirando. De ahi en adelante lo lleva el JS (portfolio-hero.tsx): viaja
   hasta el mini Stand y se hace el. El desvanecido del final solo cuenta si
-  el JS no llega: sin el, el grande se va y listo. Dura 1.5s: sube en
-  0.4s, se sostiene un instante y el JS lo lleva (portfolio-hero.tsx).
+  el JS no llega: sin el, el grande se va y listo. Dura 1.3s: sube en
+  0.4s, se sostiene (agrietando la pantalla) y el JS lo lleva
+  (portfolio-hero.tsx).
 */
 @keyframes hero-stand {
   0% {
@@ -822,16 +823,8 @@ html.lenis body {
     transform: translateY(16%) scale(0.78);
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  27% {
+  31% {
     opacity: 1;
-    transform: none;
-    animation-timing-function: ease-in-out;
-  }
-  40% {
-    transform: translateY(-1.5%);
-    animation-timing-function: ease-in-out;
-  }
-  52% {
     transform: none;
   }
   92% {
@@ -938,7 +931,7 @@ html.lenis body {
     height: 210%;
     transform-origin: 40% 50%;
     opacity: 0;
-    animation: hero-stand 1.5s both;
+    animation: hero-stand 1.3s both;
   }
 
   /* Origen arriba a la izquierda: el viaje al mini Stand escala desde ahi. */
@@ -4657,4 +4650,43 @@ html.time-stopped .stand-hit {
 }
 .power-zw-blend .power-zw-sphere {
   mix-blend-mode: normal;
+}
+
+/*
+  Grietas del Stand al manifestarse (hero-crack.ts). Una capa fija con el
+  SVG ya dibujado; solo se anima su clip-path. Debajo del mini Stand (z 40)
+  y de los avisos, encima del contenido. Dos trazos: halo del color del
+  fondo y tinta del color del texto, para leerse en claro y en oscuro. En
+  la reparacion pasan al rosa de Crazy Diamond.
+*/
+.hero-crack {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+}
+.hero-crack svg {
+  display: block;
+}
+.hero-crack path {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.hero-crack-halo {
+  stroke: var(--color-canvas);
+  stroke-width: 4.5;
+  opacity: 0.7;
+}
+.hero-crack-line {
+  stroke: var(--color-ink);
+  stroke-width: 2.4;
+}
+.hero-crack.is-healing .hero-crack-line {
+  stroke: #e891c4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-crack {
+    display: none;
+  }
 }

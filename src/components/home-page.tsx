@@ -10,6 +10,7 @@ import { ProjectsSection } from "@/components/projects";
 import Footer from "@/components/ui/footer-section";
 import InteractiveVideoScroller from "@/components/ui/interactive-video-portfolio-scroller";
 import PortfolioHero from "@/components/ui/portfolio-hero";
+import { StandManifestGate } from "@/components/ui/stand-manifest-gate";
 import { site } from "@/data/site";
 import { getContributionYear } from "@/lib/github-contributions";
 
@@ -37,6 +38,8 @@ export async function HomePage() {
   return (
     <main id="content" className="flex-1 overflow-x-clip">
       <PortfolioHero cvHref={resolveCvHref()} />
+      {/* Justo despues del hero: el mini Stand nace escondido (ver el componente). */}
+      <StandManifestGate />
       <MiniProjectsSection />
       {/* La revision gratis va arriba: es el mejor gancho para quien aun no escribe. */}
       <AuditSection />
