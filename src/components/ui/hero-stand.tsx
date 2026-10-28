@@ -15,14 +15,13 @@ import { cn } from "@/lib/utils";
   anima nada por dentro: lo que se mueve es su envoltorio.
 */
 /*
-  La pose JoJo con la mirada fija hacia delante: la pose trae los ojos
-  felices (^ ^), y un Stand que se manifiesta mira, no sonrie. Las filas
-  8 a 10 son el visor; las cuatro primeras columnas son el puno en alto
-  y se quedan. Espejado en CSS, mira hacia el retrato.
+  La pose JoJo con la mirada fija hacia delante (cuadro "stand" del
+  sprite): la pose trae los ojos felices (^ ^), y un Stand que se
+  manifiesta mira, no sonrie. Es el mismo cuadro con el que el mini Stand
+  recibe el relevo, asi que el cambio es pixel por pixel. Espejado en CSS,
+  mira hacia el retrato.
 */
-const POSE = standMap("pose");
-const STARE = standMap("idle", 0, 1);
-const MAP = POSE.map((row, r) => (r >= 8 && r <= 10 ? row.slice(0, 4) + STARE[r].slice(4) : row));
+const MAP = standMap("stand", 0, 1);
 const COLS = MAP[0].length;
 const ROWS = MAP.length;
 
@@ -37,8 +36,14 @@ function cells(test: (ch: string) => boolean, grow = 0) {
   return d;
 }
 
-/* Contorno extra de tinta, como el medio pixel que dibuja drawStand. */
-const RIM = cells((ch) => ch !== ".", 0.3);
+/*
+  Contorno de tinta: el borde extra que dibuja drawStand alrededor de la
+  silueta. Es un trazo y no celdas ensanchadas para poder animar su grosor:
+  grande se ve fino, y al hacerse chico crece hasta los px de contorno del
+  mini Stand (portfolio-hero.tsx), que si no el chico apareceria mas
+  oscuro de borde que el grande (.hero-stand-rim).
+*/
+const RIM = cells((ch) => ch !== ".");
 const LAYERS = Object.entries(PALETTE)
   .map(([ch, color]) => ({ ch, color, d: cells((cell) => cell === ch) }))
   .filter((layer) => layer.d);
@@ -52,7 +57,14 @@ export function HeroStand({ className }: { className?: string }) {
       className={cn("block h-full w-auto", className)}
       style={{ aspectRatio: `${COLS + 1} / ${ROWS + 1}` }}
     >
-      <path d={RIM} fill={PALETTE.k} />
+      <path
+        d={RIM}
+        className="hero-stand-rim"
+        fill={PALETTE.k}
+        stroke={PALETTE.k}
+        strokeWidth={0.6}
+        strokeLinejoin="miter"
+      />
       {LAYERS.map((layer) => (
         <path key={layer.ch} d={layer.d} fill={layer.color} />
       ))}

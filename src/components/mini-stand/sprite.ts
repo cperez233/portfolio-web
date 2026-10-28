@@ -60,6 +60,8 @@ export type Frame =
   | "happy"
   | "shock"
   | "pose"
+  /** La pose JoJo con la mirada fija: el Stand que se manifiesta en el hero. */
+  | "stand"
   | "dizzy"
   | "smug"
   | "angry"
@@ -145,7 +147,7 @@ function rows(frame: Frame, tail: number, look: number) {
 
 function mapRows(frame: Frame, tail: number, look: number) {
   const body = frame === "punch" ? BODY_PUNCH : BODY_IDLE;
-  const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
+  const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame === "stand" ? "idle" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
   if (frame === "sweat") {
     // Gota de sudor al costado de la cabeza.
     map[3] = put(map[3], [15], "b");
@@ -157,7 +159,7 @@ function mapRows(frame: Frame, tail: number, look: number) {
     map[11] = put(map[11], [5], "b");
     map[12] = put(map[12], [5], "b");
   }
-  if (frame !== "pose") return map;
+  if (frame !== "pose" && frame !== "stand") return map;
   /*
     Pose JoJo: el puno izquierdo sube junto al visor (filas 8-11) y el
     hueco que deja en el torso se vacia.

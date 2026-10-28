@@ -239,10 +239,18 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const animations: Animation[] = [];
     root.classList.add("stand-manifest");
 
+    /*
+      Corte limpio, sin fundido: los dos son el mismo dibujo en el mismo
+      sitio y tamano, y un fundido dejaria a los dos a media opacidad uno
+      sobre otro (el nombre se transparentaria detras). Se quita la
+      transicion de la capa del chico solo este fotograma.
+    */
     const finish = () => {
+      const layer = document.querySelector<HTMLElement>(".stand-layer");
+      if (layer) layer.style.transition = "none";
       root.classList.remove("stand-manifest");
-      animations.push(giant.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" }));
-      timers.push(window.setTimeout(() => (giant.style.visibility = "hidden"), 240));
+      giant.style.visibility = "hidden";
+      requestAnimationFrame(() => requestAnimationFrame(() => layer && (layer.style.transition = "")));
     };
 
     const condense = () => {
@@ -271,6 +279,18 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       );
       animations.push(move);
       move.onfinish = finish;
+      // El contorno de tinta crece hasta el grosor del chico (ver hero-stand.tsx).
+      const rim = core.querySelector(".hero-stand-rim");
+      const rimPx = Math.max(1, Math.round(miniCell / 2));
+      if (rim) {
+        animations.push(
+          rim.animate([{ strokeWidth: "0.6" }, { strokeWidth: String((rimPx * 2) / miniCell) }], {
+            duration: move.effect?.getTiming().duration as number,
+            easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+            fill: "forwards",
+          }),
+        );
+      }
     };
 
     timers.push(window.setTimeout(condense, Math.max(0, ENTRY.standCondense - elapsed)));

@@ -66,7 +66,8 @@ type Action =
   | "angry"
   | "sweat"
   | "starry"
-  | "sad";
+  | "sad"
+  | "emerge";
 
 /** Acciones que son solo una cara. */
 const FACES: Action[] = ["smug", "angry", "sweat", "starry", "sad"];
@@ -847,7 +848,8 @@ export function MiniStand() {
         placed = true;
       } else if (mode === "out") placed = true;
       if (wasManifesting && !manifesting && !reducedMotion) {
-        act.current("pose", 900);
+        // Sigue con el cuadro del grande un momento: no se nota el cambio.
+        act.current("emerge", 800);
         sfx("ドン!", "sfx");
       }
       wasManifesting = manifesting;
@@ -973,7 +975,11 @@ export function MiniStand() {
       // Cuadro del sprite.
       let frame: Frame = "idle";
       const progress = action ? Math.min(1, (now - action.from) / Math.max(1, action.until - action.from)) : 0;
-      if (sleeping) frame = "sleep";
+      // Mientras espera oculto y justo despues del relevo dibuja el mismo
+      // cuadro que el Stand grande: el cambio es pixel por pixel.
+      const emerging = manifesting || action?.kind === "emerge";
+      if (emerging) frame = "stand";
+      else if (sleeping) frame = "sleep";
       else if (action?.kind === "dizzy") frame = "dizzy";
       else if (action?.kind === "yawn") frame = "blink";
       else if (action?.kind === "shock" || frozen) frame = "shock";
@@ -983,7 +989,9 @@ export function MiniStand() {
       else if (action?.kind === "punch") frame = Math.floor(now / 70) % 2 ? "punch" : "idle";
       else if (now < blinkUntil) frame = "blink";
       const look =
-        action?.kind === "lookaround"
+        emerging
+          ? 1
+          : action?.kind === "lookaround"
           ? Math.round(Math.sin(progress * Math.PI * 3))
           : fine
             ? Math.sign(pointerX - body.x) * body.face
@@ -998,10 +1006,10 @@ export function MiniStand() {
               : held
                 ? Math.sin(now / 70) * 0.18
                 : Math.max(-0.35, Math.min(0.35, body.vx / 900));
-      const idleBob = !flying && !sleeping && !frozen && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
+      const idleBob = !flying && !sleeping && !frozen && !emerging && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
 
       // Solo se redibuja si algo cambio: quieto, el dibujo es el mismo.
-      const tail = frozen || sleeping ? 0 : Math.floor(now / 260) % 2;
+      const tail = frozen || sleeping || emerging ? 0 : Math.floor(now / 260) % 2;
       const key = `${idleBob}|${body.face}|${frame}|${tail}|${look}|${tilt.toFixed(3)}|${spin.toFixed(3)}`;
       if (key !== drawn) {
         drawn = key;
