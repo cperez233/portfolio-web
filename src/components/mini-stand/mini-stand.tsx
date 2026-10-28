@@ -215,6 +215,9 @@ export function MiniStand() {
     let raf = 0;
     let stopped = false;
     let greeted = false;
+    // Ya esta en su sitio de partida (ver el relevo con el Stand grande del hero).
+    let placed = false;
+    let wasManifesting = false;
     let saidBottom = false;
     let freeUntil = 0;
     let nextGhost = 0;
@@ -826,6 +829,28 @@ export function MiniStand() {
           ty = height * 0.38;
         }
       }
+
+      /*
+        Aparece donde va a estar, sin volar desde un lado: el chico nace en
+        el retrato (o en la esquina, con reduced motion). Mientras el Stand
+        grande se manifiesta (html.stand-manifest) queda quieto ahi, oculto,
+        y al terminar hace su pose: es el grande hecho pequeno. Si la pagina
+        se abre ya bajada, si vuela hasta su sitio como siempre.
+      */
+      const manifesting = document.documentElement.classList.contains("stand-manifest");
+      const atStart = reducedMotion || (mode === "home" && perched && !dialog && !(hold && now < holdUntil));
+      if ((!placed || manifesting) && atStart) {
+        body.x = tx;
+        body.y = ty;
+        body.vx = 0;
+        body.vy = 0;
+        placed = true;
+      } else if (mode === "out") placed = true;
+      if (wasManifesting && !manifesting && !reducedMotion) {
+        act.current("pose", 900);
+        sfx("ドン!", "sfx");
+      }
+      wasManifesting = manifesting;
 
       // Muelle hacia el destino. Dormido o congelado, no se mueve.
       const distance = Math.hypot(tx - body.x, ty - body.y);

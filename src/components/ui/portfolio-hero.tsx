@@ -23,6 +23,7 @@ import { Menacing } from "@/components/ui/menacing";
 import { stopTime as freezeTime } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
+import { SPRITE_W } from "@/components/mini-stand/sprite";
 import { HeroStand } from "./hero-stand";
 
 interface SlamTextProps {
@@ -69,7 +70,8 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
     1250  el Stand se levanta detras del retrato, enorme
-    2700  y se condensa en la esquina, donde aparece el mini Stand
+    2700  y se hace el mini Stand: viaja hasta donde el chico espera y se
+          cambian sin que se note
 */
 const ENTRY = {
   firstName: 100,
@@ -79,8 +81,12 @@ const ENTRY = {
   portrait: 840,
   impact: 1080,
   stand: 1250,
-  /** Fin de la manifestacion: el mini Stand toma el relevo. */
-  standHandoff: 3150,
+  /**
+   * Momento (en el reloj de la animacion del Stand, que ya cuenta su
+   * retardo) en que el grande deja de sostenerse y viaja a convertirse en
+   * el mini Stand. Ver el efecto del relevo.
+   */
+  standCondense: 2700,
   menacing: 1300,
   copy: 1150,
 } as const;
@@ -115,6 +121,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const heroRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
   const portraitRef = useRef<HTMLButtonElement>(null);
+  const standRef = useRef<HTMLDivElement>(null);
+  const standCoreRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
   /*
@@ -202,21 +210,73 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const tracking = canTrack && !shouldReduceMotion;
 
   /*
-    Relevo con el mini Stand: mientras el grande se manifiesta, el chico
-    (mini-stand.tsx) no se ve, y aparece en la esquina del retrato justo
-    cuando el grande se condensa ahi. Solo si la pagina hidrato a tiempo
-    para verlo: si el JS llega tarde la entrada ya paso y no se esconde
-    nada. Con reduced motion el grande no sale, asi que tampoco.
+    Relevo con el mini Stand: el grande se convierte en el chico. Mientras
+    el grande se manifiesta, el chico (mini-stand.tsx) espera quieto y sin
+    verse en su sitio, junto al retrato (clase stand-manifest). Cuando el
+    grande termina de sostenerse viaja hasta ese mismo lugar, se encoge al
+    tamano exacto del chico, y en ese momento uno se desvanece y el otro
+    aparece: es el mismo dibujo, el mismo sitio y el mismo tamano, asi que
+    se lee como un solo personaje que se hace pequeno.
+
+    El reloj es el de la propia animacion CSS del grande (no el de la
+    pagina): si hidrata tarde, espera lo que falte; si ya paso, lo quita y
+    el chico simplemente esta (su desvanecido CSS lo despide). Con reduced motion el grande no sale.
   */
   useEffect(() => {
+    const giant = standRef.current;
+    const core = standCoreRef.current;
+    if (!giant || !core) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const left = ENTRY.standHandoff - performance.now();
-    if (left < 1200) return;
+
     const root = document.documentElement;
+    const run = giant.getAnimations().find((a) => (a as CSSAnimation).animationName === "hero-stand");
+    const elapsed = Number(run?.currentTime ?? Infinity);
+    // Si ya paso el momento (hidrato muy tarde), el desvanecido CSS del
+    // grande hace de despedida y el chico simplemente esta en su sitio.
+    if (!run || run.playState === "finished" || elapsed > ENTRY.standCondense + 600) return;
+
+    const timers: number[] = [];
+    const animations: Animation[] = [];
     root.classList.add("stand-manifest");
-    const timer = window.setTimeout(() => root.classList.remove("stand-manifest"), left);
+
+    const finish = () => {
+      root.classList.remove("stand-manifest");
+      animations.push(giant.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "forwards" }));
+      timers.push(window.setTimeout(() => (giant.style.visibility = "hidden"), 240));
+    };
+
+    const condense = () => {
+      const mini = document.querySelector<HTMLElement>(".stand-hit");
+      const svg = core.querySelector("svg");
+      const from = svg?.getBoundingClientRect();
+      const to = mini?.getBoundingClientRect();
+      if (!from?.width || !to?.width) return finish();
+      // La rejilla del chico (SPRITE_W celdas) y la del grande (una celda
+      // de margen en total): misma celda, otro tamano.
+      const miniCell = to.width / SPRITE_W;
+      const bigCell = from.width / (SPRITE_W + 1);
+      const dx = to.left - miniCell / 2 - from.left;
+      const dy = to.top - miniCell / 2 - from.top;
+      const move = core.animate(
+        [
+          { transform: "translate(0, 0) scale(1)" },
+          { transform: `translate(${dx}px, ${dy}px) scale(${miniCell / bigCell})` },
+        ],
+        {
+          // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
+          duration: elapsed > ENTRY.standCondense + 150 ? 340 : 520,
+          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+          fill: "forwards",
+        },
+      );
+      animations.push(move);
+      move.onfinish = finish;
+    };
+
+    timers.push(window.setTimeout(condense, Math.max(0, ENTRY.standCondense - elapsed)));
     return () => {
-      window.clearTimeout(timer);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      animations.forEach((a) => a.cancel());
       root.classList.remove("stand-manifest");
     };
   }, []);
@@ -399,12 +459,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             El Stand se manifiesta detras de su usuario: sale del retrato,
             enorme y en trama, se sostiene con el ゴゴゴ y se condensa en la
             esquina del retrato, justo donde se posa el mini Stand, que
-            aparece en ese momento (ver el efecto de stand-manifest). Va
+            se hace el mini Stand (ver el efecto del relevo). Va
             dentro del envoltorio del retrato: delante del nombre, detras
             de la foto. Una sola vez; con reduced motion no sale.
           */}
-          <div aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
-            <HeroStand />
+          <div ref={standRef} aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
+            <div ref={standCoreRef} className="hero-stand-core">
+              <HeroStand />
+            </div>
           </div>
           <div className="hero-paste" style={delay(ENTRY.portrait)}>
           <button
