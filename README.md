@@ -140,8 +140,12 @@ The render loop stops off-screen.
   poses, and its speech bubbles type themselves out. Each spot has several
   lines in `lines.ts`, shuffled and not repeated. It greets by time of
   day and counts visits; while perched it does little bits on its own
-  (pose, twirl, shadow-boxing, yawning, looking around) and thinks out
-  loud when it has been quiet for a while. Shouts get a gold bubble,
+  (pose, twirl, shadow-boxing, yawning, looking around). When you have
+  been reading a section for a while it points and gives a concrete tip
+  for it (what to tap, drag or open next, `tips` in `lines.ts`), and the
+  first time it says you can tap it to be guided, unless you already
+  opened its chat. Otherwise it thinks out loud. On a title with its
+  "Part N" label above, it stands on the label instead of covering it. Shouts get a gold bubble,
   sleep a thought bubble. It can be grabbed and thrown: it flies, bounces
   off the edges and ends up dizzy, leaving afterimages when it moves
   fast; it stretches a little in flight and squashes when it lands. Its
@@ -238,7 +242,10 @@ The render loop stops off-screen.
     is no room), facing it in a JoJo pose (a random one of five, tilted
     like a manga panel), with its grey silhouette fading where it was.
     Then it tells a two-part joke about stopping time just to pose and
-    laughs at it (フハハハ, WRYYY).
+    laughs at it (フハハハ, WRYYY). The jump, the joke and the handover
+    hang off the resume event of `lib/time-stop.ts`, not a fixed clock:
+    on a slow phone the stop can start late, and a timer used to move it
+    while time was still frozen.
   - Either way, after the handover the mini Stand closes with a line
     about what just happened and, a few seconds later, greets you
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines

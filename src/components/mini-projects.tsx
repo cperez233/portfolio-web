@@ -107,7 +107,7 @@ export function MiniProjectsSection() {
 }
 
 /** Px por segundo de la deriva sola. En celular, mas lenta: se alcanza a leer. */
-const DRIFT = { fine: 46, touch: 30 };
+const DRIFT = { fine: 88, touch: 62 };
 
 /**
  * La tira de sitios: deriva sola y se arrastra.

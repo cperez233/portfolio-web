@@ -146,9 +146,12 @@ export function MiniStand() {
   const saidLog = useRef<string[]>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const panelOpen = useRef(false);
+  // Ya abrio el chat alguna vez: no hace falta avisarle que se le puede tocar.
+  const chatted = useRef(false);
   useEffect(() => {
     linesRef.current = standLines[language];
     panelOpen.current = panel !== null;
+    if (panel) chatted.current = true;
   }, [language, panel]);
 
   // Puentes hacia el bucle de animacion.
@@ -239,6 +242,7 @@ export function MiniStand() {
     let introWorld = false;
     let wasManifesting = false;
     let saidBottom = false;
+    let nudged = false;
     let freeUntil = 0;
     let nextGhost = 0;
     let nextStar = 0;
@@ -403,8 +407,24 @@ export function MiniStand() {
 
     // Un titulo ocupa todo el ancho: se mide su texto para posarse al final.
     const range = document.createRange();
+    /*
+      Si el titulo tiene encima su rotulo ("Parte 5 · Lo que hago"), se
+      para sobre el rotulo: parado sobre un titulo corto lo tapaba.
+    */
+    function eyebrowOf(el: Element) {
+      const prev = el.previousElementSibling;
+      return prev?.classList.contains("jojo-eyebrow") ? prev : null;
+    }
     function spotRect(spot: Spot) {
       if (spot.el.tagName !== "H2") return spot.el.getBoundingClientRect();
+      const eyebrow = eyebrowOf(spot.el);
+      if (eyebrow) {
+        // Es flex y ocupa todo el ancho: de la placa hasta donde acaba su texto.
+        const box = eyebrow.getBoundingClientRect();
+        range.selectNodeContents(eyebrow);
+        const text = range.getBoundingClientRect();
+        return new DOMRect(box.left, box.top, Math.max(text.right, box.left + 40) - box.left, box.height);
+      }
       range.selectNodeContents(spot.el);
       return range.getBoundingClientRect();
     }
@@ -1033,7 +1053,7 @@ export function MiniStand() {
         }
         if (candidate !== current && now - candidateSince > 450) {
           current = candidate;
-          if (current) pickPerch(current.el.tagName === "H2");
+          if (current) pickPerch(current.el.tagName === "H2" && !eyebrowOf(current.el));
           // Sin repisa a la vista: flota a un lado, no siempre el derecho.
           else roam = { x: Math.random() < 0.5 ? 0.14 : 0.86, y: 0.3 + Math.random() * 0.18 };
           restFace = Math.random() < 0.2 ? -1 : 1;
@@ -1202,16 +1222,31 @@ export function MiniStand() {
           nextFidget = now + 6000 + Math.random() * 10000;
           const roll = Math.random();
           if (roll < 0.45) {
-            pickPerch(current.el.tagName === "H2");
+            pickPerch(current.el.tagName === "H2" && !eyebrowOf(current.el));
             hopNext = 26 + Math.random() * 24;
           } else if (roll < 0.75) {
             body.vy -= 260 + Math.random() * 120;
             hopLandAt = now + 360;
           } else restFace = restFace === 1 ? -1 : 1;
         }
-        // Lleva rato callado y hay alguien leyendo: piensa en voz alta.
-        if (mode === "out" && now - lastSpokeAt > 22000 && now - lastActivity < 5000 && now - settledSince > 2500) {
-          say.current(pickLine(short(linesRef.current.musings)), 2600);
+        /*
+          Lleva rato callado y hay alguien leyendo. Primero, una vez, avisa
+          que se le puede tocar (si nunca abriste su chat). Despues, casi
+          siempre una ayuda de la seccion, señalando: que tocar, que
+          arrastrar, a donde ir. Si no, piensa en voz alta.
+        */
+        if (mode === "out" && now - lastSpokeAt > 18000 && now - lastActivity < 5000 && now - settledSince > 2500) {
+          const lines = linesRef.current;
+          const tips = short(lines.tips[current?.id ?? ""] ?? lines.tips.default ?? []);
+          if (!chatted.current && !nudged) {
+            nudged = true;
+            act.current("pose", 1800, { body: "point", face: "wink" });
+            sfx("!", "mark");
+            say.current(pickLine(short(lines.nudge)), 3200);
+          } else if (tips.length && Math.random() < 0.65) {
+            act.current("pose", 1600, { body: "point", face: "happy" });
+            say.current(pickLine(tips), 3000);
+          } else say.current(pickLine(short(lines.musings)), 2600);
         }
       }
       // Mareado: estrellitas.

@@ -71,6 +71,14 @@ export interface StandLines {
   };
   /** Lo que dice solo, posado, si lleva rato callado. */
   musings: string[];
+  /**
+   * Ayuda concreta segun la seccion en que esta posado (ids de data-spot):
+   * que tocar, que arrastrar, a donde ir despues. La dice señalando,
+   * cuando llevas rato leyendo ahi sin que el hable.
+   */
+  tips: Record<string, string[]>;
+  /** Una vez por visita, si nunca abriste su chat: que se le puede tocar. */
+  nudge: string[];
   /** Golpe de efecto al posarse (se pinta como onomatopeya). */
   landing: string[];
   events: Record<StandEvent, string[]>;
@@ -415,6 +423,27 @@ export const standLines: Record<Language, StandLines> = {
         "Otra vez tú. Visita {n}.",
       ],
     },
+    tips: {
+      sites: ["Arrastra la tira. ¡Speed King!", "Toca una y ábrela en vivo.", "Lánzala fuerte, a ver qué pasa.", "Ninguna es plantilla. Ábrelas."],
+      audit: ["Pega tu link y dale revisar.", "Gratis y en segundos. ORA.", "Luego te dice qué arreglar.", "Hermit Purple revisa por ti."],
+      about: ["¿Prisa? Tócame y voy a precios.", "Abajo están sus números.", "Sus casos están más abajo. ドン."],
+      standcard: ["Arrastra la flecha. Con cuidado.", "Mis stats, como en el manga.", "La flecha gira si la tocas."],
+      github: ["Golpea las columnas. ORA ORA.", "Toca una: te dice el día.", "Arrástralo y gíralo."],
+      services: ["Toca uno y ábrelo.", "Abajo dice lo que recibes.", "Cotízalo directo, botón amarillo.", "Elige tu Stand. Digo, servicio."],
+      projects: ["Cambia de capítulo arriba.", "Desliza las capturas. Hay más.", "Abajo está el siguiente caso.", "Mira el resultado: es real."],
+      pricing: ["¿Dudas? Abajo hay preguntas.", "¿No sabes cuál? Revisión gratis.", "Escríbele y lo ajustan.", "Lo que va aparte está escrito."],
+      faq: ["Toca una pregunta y se abre.", "¿No está la tuya? Escríbele.", "Abajo está el contacto. ドン."],
+      contact: ["WhatsApp es lo más rápido.", "Cuéntale qué necesitas y ya.", "Un mensaje cambia el destino."],
+      default: ["Tócame y te guío. Speedwagon style.", "¿Perdido? Tócame, te llevo.", "Arriba, el menú. Abajo, más."],
+    },
+    nudge: [
+      "Psst. Tócame: te guío por aquí.",
+      "Tócame. Tengo poderes y mapa.",
+      "¿Sabías que puedes hablarme? Tócame.",
+      "Soy tu guía, como Speedwagon. Tócame.",
+      "Tócame, soy tu guía.",
+      "Psst. Tócame. Hablo.",
+    ],
     musings: [
       "¿Sabías que no tengo piernas?",
       "¿Qué haría Jotaro aquí?",
@@ -1129,6 +1158,27 @@ export const standLines: Record<Language, StandLines> = {
       ],
       visit: ["You're back. Visit {n}.", "Visit {n}. Family now.", "{n} visits. Suspicious. I like it.", "Visit {n}. One more Joestar.", "You again. Visit {n}."],
     },
+    tips: {
+      sites: ["Drag the strip. Speed King!", "Tap one to open it live.", "Fling it hard, see what happens.", "No templates here. Open them."],
+      audit: ["Paste your link and run it.", "Free and fast. ORA.", "Then it tells you what to fix.", "Hermit Purple checks it for you."],
+      about: ["In a hurry? Tap me for prices.", "His numbers are below.", "His cases are further down. ドン."],
+      standcard: ["Drag the arrow. Carefully.", "My stats, manga style.", "The arrow spins if you touch it."],
+      github: ["Punch the columns. ORA ORA.", "Tap one: it tells the day.", "Drag it to spin it."],
+      services: ["Tap one to open it.", "Below: what you get.", "Quote it right away, gold button.", "Pick your Stand. I mean, service."],
+      projects: ["Switch chapters up top.", "Swipe the screenshots. More inside.", "Next case is at the bottom.", "Check the result: it's real."],
+      pricing: ["Questions? FAQ is below.", "Not sure? Try the free check.", "Write him and you'll adjust it.", "Extras are written down."],
+      faq: ["Tap a question to open it.", "Yours isn't here? Write him.", "Contact is right below. ドン."],
+      contact: ["WhatsApp is the fastest.", "Tell him what you need.", "One message changes destiny."],
+      default: ["Tap me, I'll guide you. Speedwagon style.", "Lost? Tap me, I'll take you.", "Menu up top. More below."],
+    },
+    nudge: [
+      "Psst. Tap me, I'll show you around.",
+      "Tap me. I have powers and a map.",
+      "You can talk to me, you know. Tap.",
+      "I'm your guide, like Speedwagon. Tap me.",
+      "Tap me, I'm your guide.",
+      "Psst. Tap me. I talk.",
+    ],
     musings: [
       "Did you know I have no legs?",
       "What would Jotaro do here?",

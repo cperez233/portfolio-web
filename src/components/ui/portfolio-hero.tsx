@@ -20,7 +20,7 @@ import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
-import { stopTime as freezeTime } from "@/lib/time-stop";
+import { stopTime as freezeTime, isTimeStopped, type TimeStopDetail } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 import { POSES, SPRITE_W, type Body, type Face, type Frame } from "@/components/mini-stand/sprite";
@@ -124,11 +124,14 @@ const DIAMOND = {
 
 /*
   ZA WARUDO, en el mismo reloj: el grito y el tiempo detenido (stop + ms),
-  en el que no pasa nada que se vea. Al volver el tiempo el Stand ya esta
-  en otro sitio, posando (appear); despues la broma en dos tiempos (joke y
-  punchline, ya con risa) y el relevo.
+  en el que no pasa nada que se vea. Lo demas no va por reloj sino desde
+  el instante en que el tiempo vuelve (el evento de lib/time-stop.ts): en
+  un equipo lento el time stop arranca tarde, y con horas fijas el Stand
+  se movia con el tiempo aun detenido. Desde ese instante: ya esta en otro
+  sitio posando, la broma en dos tiempos (joke y punchline, ya con risa)
+  y el relevo (condense). condense en el reloj es solo el respaldo.
 */
-const WORLD = { shout: 1560, stop: 1860, ms: 2800, appear: 4690, joke: 5150, punchline: 6500, condense: 8000 } as const;
+const WORLD = { shout: 1560, stop: 1860, ms: 2800, joke: 460, punchline: 1810, condense: 8000, after: 3310 } as const;
 
 /* Inclinacion de cada pose JoJo, en grados: torcidas, como en el manga. */
 const POSE_TILT: Partial<Record<Body, number>> = { pose: -13, arms: 6, point: 11, wide: -9, high: 14 };
@@ -737,9 +740,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       parar el tiempo para posar, y se rie.
     */
     let moved = false;
+    let resumed = false;
+    let onResume: (event: Event) => void = () => {};
     const manifestWorld = () => {
       const from = heart();
-      if (!from) return;
+      if (!from) return relay();
       const tall = svg?.getBoundingClientRect().height ?? 200;
       frame("stand", { face: "smug" });
       // Sobre el nombre y no sobre el Stand.
@@ -763,8 +768,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         );
       });
 
-      // そして時は動き出す: ya no esta donde estaba.
-      at(WORLD.appear, () => {
+      // そして時は動き出す: ya no esta donde estaba. Justo al volver el tiempo, ni antes ni despues.
+      const appear = () => {
         const before = svg?.getBoundingClientRect();
         const photo = portraitRef.current?.getBoundingClientRect();
         if (!svg || !before?.width || !photo) return;
@@ -803,14 +808,33 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             pop("ゴ", gx, Math.max(90, at1.y - tall * rand(0.1, 0.45)), "power-pop-word is-purple", 1300);
           });
         }
-      });
-      at(WORLD.joke, () => talk(setup, 1100));
-      at(WORLD.punchline, () => {
-        const at0 = heart();
-        frame("stand", { body: pose, face: "laugh" });
-        talk(punch, 1000);
-        if (at0) pop(pickLine(lines.laughs), Math.min(vw - 60, at0.x + tall * 0.35), Math.max(90, at0.y - tall * 0.62), "power-pop-word is-gold", 1100);
-      });
+      };
+      const resume = () => {
+        if (resumed) return;
+        resumed = true;
+        window.removeEventListener("jojo:timestop", onResume);
+        appear();
+        later(WORLD.joke, () => talk(setup, 1100));
+        later(WORLD.punchline, () => {
+          const at0 = heart();
+          frame("stand", { body: pose, face: "laugh" });
+          talk(punch, 1000);
+          if (at0) pop(pickLine(lines.laughs), Math.min(vw - 60, at0.x + tall * 0.35), Math.max(90, at0.y - tall * 0.62), "power-pop-word is-gold", 1100);
+        });
+        later(WORLD.after, relay);
+      };
+      onResume = (event: Event) => {
+        if (!(event as CustomEvent<TimeStopDetail>).detail.active) resume();
+      };
+      window.addEventListener("jojo:timestop", onResume);
+      // Respaldo: si el tiempo no llego a detenerse (ya estaba detenido por
+      // otro), aparece cuando ya no lo este.
+      const check = () => {
+        if (resumed) return;
+        if (isTimeStopped()) later(150, check);
+        else resume();
+      };
+      at(WORLD.stop + WORLD.ms + 900, check);
     };
 
     /** Devuelve al Stand grande a su sitio (y a su espejo) si ZA WARUDO lo movio. */
@@ -894,12 +918,18 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       });
     };
 
-    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.windup, intro === "world" ? manifestWorld : manifestDiamond);
-    at(condenseAt, () => {
+    let relayed = false;
+    const relay = () => {
+      if (relayed) return;
+      relayed = true;
       // Lo que quedo del poder (el puno de impulso, la inclinacion) no viaja con el.
       animations.forEach((a) => a.effect && (a.effect as KeyframeEffect).target === body && a.cancel());
       condense();
-    });
+    };
+    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.windup, intro === "world" ? manifestWorld : manifestDiamond);
+    // Con ZA WARUDO el relevo lo marca la vuelta del tiempo (ver WORLD).
+    // Ultimo respaldo, antes de que la compuerta (stand-manifest-gate) lo suelte sola.
+    at(show && intro === "world" ? WORLD.condense + 3000 : condenseAt, relay);
     return () => {
       timers.forEach((timer) => {
         window.clearTimeout(timer);
@@ -916,6 +946,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       rushArms(false);
       if (svg) showHeroFrame(svg, "stand");
       root.classList.remove("intro-banner-low");
+      window.removeEventListener("jojo:timestop", onResume);
       if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "cancel" } }));
       root.classList.remove("stand-manifest");
     };
