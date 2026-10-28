@@ -813,7 +813,8 @@ html.lenis body {
   El Stand se manifiesta: sube desde detras del retrato y se sostiene
   respirando. De ahi en adelante lo lleva el JS (portfolio-hero.tsx): viaja
   hasta el mini Stand y se hace el. El desvanecido del final solo cuenta si
-  el JS no llega: sin el, el grande se va y listo. Dura 2.4s.
+  el JS no llega: sin el, el grande se va y listo. Dura 1.5s: sube en
+  0.4s, se sostiene un instante y el JS lo lleva (portfolio-hero.tsx).
 */
 @keyframes hero-stand {
   0% {
@@ -821,16 +822,16 @@ html.lenis body {
     transform: translateY(16%) scale(0.78);
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  26% {
+  27% {
     opacity: 1;
     transform: none;
     animation-timing-function: ease-in-out;
   }
-  42% {
+  40% {
     transform: translateY(-1.5%);
     animation-timing-function: ease-in-out;
   }
-  58% {
+  52% {
     transform: none;
   }
   92% {
@@ -937,7 +938,7 @@ html.lenis body {
     height: 210%;
     transform-origin: 40% 50%;
     opacity: 0;
-    animation: hero-stand 2.4s both;
+    animation: hero-stand 1.5s both;
   }
 
   /* Origen arriba a la izquierda: el viaje al mini Stand escala desde ahi. */

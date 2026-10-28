@@ -728,6 +728,23 @@ export function MiniStand() {
     const cached = (el: Element | null, selector: string) => (el?.isConnected ? el : document.querySelector(selector));
     let scanned: Spot | null = null;
     let nextScan = 0;
+    // Saludo segun la hora (la madrugada es secreto) o por las visitas.
+    function greet() {
+      if (greeted) return;
+      greeted = true;
+      const hour = new Date().getHours();
+      const greetings = linesRef.current.greetings;
+      if (hour < 5) {
+        say.current(linesRef.current.night, 3200);
+        unlockSecret("night");
+      } else if (visits > 1 && Math.random() < 0.5) {
+        say.current(pickLine(short(greetings.visit)).replace("{n}", String(visits)), 2800);
+      } else {
+        const list = hour < 12 ? greetings.morning : hour < 19 ? greetings.afternoon : greetings.evening;
+        say.current(pickLine(short(list)), 2800);
+      }
+    }
+
     function tick(now: number) {
       if (stopped) return;
       // Tiempo detenido: el tambien queda congelado (ni se dibuja).
@@ -851,6 +868,8 @@ export function MiniStand() {
         // Sigue con el cuadro del grande un momento: no se nota el cambio.
         act.current("emerge", 800);
         sfx("ドン!", "sfx");
+        // Apenas cae a su tamano: la bienvenida.
+        greet();
       }
       wasManifesting = manifesting;
 
@@ -957,20 +976,8 @@ export function MiniStand() {
         }
       } else stareSince = 0;
 
-      if (mode === "out" && !greeted && !held) {
-        greeted = true;
-        const hour = new Date().getHours();
-        const greetings = linesRef.current.greetings;
-        if (hour < 5) {
-          say.current(linesRef.current.night, 3200);
-          unlockSecret("night");
-        } else if (visits > 1 && Math.random() < 0.5) {
-          say.current(pickLine(short(greetings.visit)).replace("{n}", String(visits)), 2800);
-        } else {
-          const list = hour < 12 ? greetings.morning : hour < 19 ? greetings.afternoon : greetings.evening;
-          say.current(pickLine(short(list)), 2800);
-        }
-      }
+      // Saluda al salir del retrato si no lo hizo ya al hacerse pequeno.
+      if (mode === "out" && !greeted && !held) greet();
 
       // Cuadro del sprite.
       let frame: Frame = "idle";

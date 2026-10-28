@@ -69,9 +69,9 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     420   PEREZ cae, mas pesado
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
-    1250  el Stand se levanta detras del retrato, enorme
-    2700  y se hace el mini Stand: viaja hasta donde el chico espera y se
-          cambian sin que se note
+    1250  el Stand se levanta junto al retrato, enorme (0.4s)
+    2000  y se hace el mini Stand: viaja hasta donde el chico espera y se
+          cambian sin que se note; ahi mismo saluda
 */
 const ENTRY = {
   firstName: 100,
@@ -86,7 +86,7 @@ const ENTRY = {
    * retardo) en que el grande deja de sostenerse y viaja a convertirse en
    * el mini Stand. Ver el efecto del relevo.
    */
-  standCondense: 2700,
+  standCondense: 2000,
   menacing: 1300,
   copy: 1150,
 } as const;
@@ -272,7 +272,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         ],
         {
           // Si llega tarde, el viaje es mas corto: el grande ya se esta yendo.
-          duration: elapsed > ENTRY.standCondense + 150 ? 340 : 520,
+          duration: elapsed > ENTRY.standCondense + 150 ? 300 : 460,
           easing: "cubic-bezier(0.65, 0, 0.35, 1)",
           fill: "forwards",
         },
