@@ -812,10 +812,11 @@ html.lenis body {
 /*
   El Stand se manifiesta: sube desde detras del retrato en 0.4s y se queda,
   enorme, mientras hace su poder (Crazy Diamond o ZA WARUDO). De ahi en
-  adelante lo lleva el JS (portfolio-hero.tsx): ataca, se sostiene y al
-  final viaja hasta el mini Stand y se hace el. Dura 6s solo para que el
-  desvanecido del final cuente si el JS no llega: sin el, el grande se va
-  solo. 0.4s de 6s = 6.67%.
+  adelante lo lleva el JS (portfolio-hero.tsx): ataca o posa, se sostiene
+  y al final viaja hasta el mini Stand y se hace el. Dura 11s solo para
+  que el desvanecido del final cuente si el JS no llega (las entradas
+  terminan hacia los 7s, mas lo que dure el tiempo detenido): sin el, el
+  grande se va solo. 0.4s de 11s = 3.64%.
 */
 @keyframes hero-stand {
   0% {
@@ -823,11 +824,11 @@ html.lenis body {
     transform: translateY(16%) scale(0.78);
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
-  6.67% {
+  3.64% {
     opacity: 1;
     transform: none;
   }
-  96% {
+  97.5% {
     opacity: 1;
     transform: none;
   }
@@ -938,13 +939,26 @@ html.lenis body {
     height: 210%;
     transform-origin: 40% 50%;
     opacity: 0;
-    animation: hero-stand 6s both;
+    animation: hero-stand 11s both;
   }
 
   /* Origen arriba a la izquierda: el viaje al mini Stand escala desde ahi. */
   .hero-stand-core {
     height: 100%;
     transform-origin: 0 0;
+  }
+
+  /*
+    El dibujo, dentro de su envoltorio: el envoltorio embiste, se encoge
+    para tomar impulso y se inclina en las poses (portfolio-hero.tsx), sin
+    pisar el transform del nucleo (el viaje al mini Stand) ni el espejo
+    del SVG. El origen va en el pecho.
+  */
+  .hero-stand-body {
+    position: relative;
+    height: 100%;
+    width: max-content;
+    transform-origin: 50% 62%;
   }
 
   .hero-stand svg {
@@ -2899,14 +2913,15 @@ html.time-stopped .stand-hit {
   pointer-events: none;
 }
 /*
-  Entrada con ZA WARUDO (hero): mientras el tiempo esta detenido el Stand
-  grande y el chico siguen moviendose (el globo, las onomatopeyas, su
-  silueta al teletransportarse, la subida del grande).
+  Entrada con ZA WARUDO (hero): el Stand grande se congela con todo lo
+  demas, en su pose (ni respira: su animacion queda en pausa como las
+  otras). Lo que si corre es la capa del chico, que espera escondido, para
+  que el relevo no se trabe si el tiempo vuelve justo encima.
 */
-html.time-stopped.intro-world :is(.stand-layer, .hero-stand),
-html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *,
-html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::before,
-html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
+html.time-stopped.intro-world .stand-layer,
+html.time-stopped.intro-world .stand-layer *,
+html.time-stopped.intro-world .stand-layer *::before,
+html.time-stopped.intro-world .stand-layer *::after {
   animation-play-state: running !important;
 }
 /* Parada de impacto (grietas): todo se queda quieto un instante, menos el grande. */
@@ -3124,7 +3139,7 @@ html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
   animation-delay: 0s;
 }
 
-/* Lo que deja el Stand con el tiempo detenido: su copia quieta y cuchillos. */
+/* Lo que deja el Stand con el tiempo detenido: su copia quieta. */
 .stand-frozen {
   position: absolute;
   left: 0;
@@ -3144,65 +3159,12 @@ html.time-stopped.intro-world :is(.stand-layer, .hero-stand) *::after {
   }
 }
 /*
-  Cuchillos de ZA WARUDO: aparecen de golpe al volver el tiempo, ya
-  apuntando, y se clavan en un instante (left/top es donde se clavan).
-*/
-.stand-knife {
-  position: fixed;
-  z-index: 72;
-  width: 50px;
-  height: 11px;
-  margin: -5.5px 0 0 -46px;
-  transform-origin: 92% 50%;
-  rotate: var(--ka);
-  background:
-    linear-gradient(90deg, #6b4a2f 0 28%, #161418 28% 34%, transparent 34%),
-    linear-gradient(180deg, #ffffff 0 30%, #c7ccd6 55%, #8b919c);
-  clip-path: polygon(0 22%, 34% 22%, 34% 0, 39% 0, 100% 50%, 39% 100%, 34% 100%, 34% 78%, 0 78%);
-  filter: drop-shadow(0 0 1px #161418) drop-shadow(0 0 1px #161418) drop-shadow(2px 2px 0 rgba(22, 20, 24, 0.5));
-  pointer-events: none;
-  animation:
-    stand-knife-hit 0.24s cubic-bezier(0.6, 0, 0.9, 0.4) both,
-    stand-knife-stuck 0.3s ease-out 0.24s;
-  transition: opacity 0.4s;
-}
-.stand-knife.is-leaving {
-  opacity: 0;
-}
-/* Los cuchillos del Stand grande en la entrada: a su escala. */
-.stand-knife.is-big {
-  width: 86px;
-  height: 19px;
-  margin: -9.5px 0 0 -79px;
-}
-/*
-  En la entrada con ZA WARUDO el rotulo va abajo: arriba taparia el nombre,
-  que es donde cuelgan los cuchillos.
+  En la entrada con ZA WARUDO el rotulo va abajo: arriba taparia la pose
+  del Stand grande y su globo.
 */
 html.intro-banner-low .power-zw-text {
   top: auto;
   bottom: 12%;
-}
-@keyframes stand-knife-hit {
-  0% {
-    opacity: 0;
-    translate: var(--kx) var(--ky);
-  }
-  15% {
-    opacity: 1;
-    translate: var(--kx) var(--ky);
-  }
-  100% {
-    translate: 0 0;
-  }
-}
-@keyframes stand-knife-stuck {
-  30% {
-    rotate: calc(var(--ka) + 6deg);
-  }
-  60% {
-    rotate: calc(var(--ka) - 3deg);
-  }
 }
 
 /* Marcas de manga sobre la cabeza del Stand (!?, ＃, ♪, …). */
@@ -4745,6 +4707,155 @@ html.intro-banner-low .power-zw-text {
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-crack {
+    display: none;
+  }
+}
+
+/*
+  Crazy Diamond rompe la cuarta pared (portfolio-hero.tsx). El puno que
+  viene hacia quien mira: pixel art de frente, centrado en el punto donde
+  choca con el vidrio. El JS lo hace crecer desde el pecho del Stand. El
+  halo rosa es el de Crazy Diamond.
+*/
+.hero-fist {
+  position: fixed;
+  z-index: 71;
+  aspect-ratio: 17 / 13;
+  translate: -50% -50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 10px rgba(232, 145, 196, 0.75)) drop-shadow(4px 5px 0 rgba(22, 20, 24, 0.35));
+}
+.hero-fist svg,
+.hero-rush svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Brazos de mas en la rafaga: punos que parpadean alrededor del pecho. */
+.hero-rush {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+.hero-rush.is-on {
+  display: block;
+}
+.hero-rush span {
+  position: absolute;
+  width: 34%;
+  aspect-ratio: 17 / 13;
+  opacity: 0;
+  scale: var(--s, 1);
+  animation: hero-rush 0.16s steps(1) infinite;
+}
+@keyframes hero-rush {
+  0% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* El globo del Stand grande: el mismo del chico, en su capa fija. */
+.hero-say {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Las estrellas de grietas de cada golpe, la telarana del final y el vidrio que cae. */
+.hero-crack-star,
+.hero-crack-web,
+.hero-shard {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.hero-crack-star svg,
+.hero-shard svg {
+  display: block;
+  overflow: visible;
+}
+.hero-crack-dot {
+  fill: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+}
+.hero-crack.is-healing .hero-crack-dot {
+  stroke: #e891c4;
+}
+.hero-shard {
+  will-change: transform;
+}
+.hero-shard-glass {
+  fill: color-mix(in srgb, var(--color-surface) 35%, transparent);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.hero-shard-shine {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.hero-crack.is-healing .hero-shard-glass {
+  stroke: #e891c4;
+}
+
+/* Destello del vidrio al partirse. */
+.hero-flash {
+  background-color: #ffffff;
+  opacity: 0;
+  animation: hero-flash 0.32s ease-out;
+}
+@keyframes hero-flash {
+  0% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Corazones del mini Stand cuando lo sobas. */
+.stand-heart {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: #e891c4;
+  -webkit-text-stroke: 3px #161418;
+  paint-order: stroke fill;
+  will-change: transform;
+  animation: stand-heart 1.1s ease-out forwards;
+}
+@keyframes stand-heart {
+  from {
+    opacity: 1;
+    translate: -50% 0;
+    scale: 0.6;
+  }
+  30% {
+    scale: 1.15;
+  }
+  to {
+    opacity: 0;
+    translate: -50% -34px;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fist,
+  .hero-rush,
+  .hero-flash {
     display: none;
   }
 }

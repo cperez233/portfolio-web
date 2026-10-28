@@ -140,11 +140,16 @@ The render loop stops off-screen.
   loud when it has been quiet for a while. Shouts get a gold bubble,
   sleep a thought bubble. It can be grabbed and thrown: it flies, bounces
   off the edges and ends up dizzy, leaving afterimages when it moves
-  fast. It reacts to the page (theme and language switches, WhatsApp
-  clicks or hovering on it, copying, coming back to the tab, scrolling
-  too fast, being stared at, changing project chapter, opening a FAQ,
-  typing in a form, sending it, reaching the end, the easter eggs)
-  through listeners and the `jojo:event` bus, and sleeps after 12 s
+  fast; it stretches a little in flight and squashes when it lands. Its
+  eyes follow the mouse sideways and up or down. It reacts to the page
+  (theme and language switches, WhatsApp clicks or hovering on it,
+  copying, coming back to the tab, scrolling too fast, being stared at,
+  changing project chapter, opening a FAQ, typing in a form, sending it,
+  reaching the end, the easter eggs) and to you: rub it with the mouse
+  and it blushes and lets out hearts, a right click embarrasses it, and
+  it notices the mouse leaving the window, the connection dropping or
+  coming back, a long text selection and printing. All of it goes
+  through listeners and the `jojo:event` bus, and it sleeps after 12 s
   idle. Tapping it opens a manga chat (`stand-chat.tsx`): who it is,
   facts about Cristian taken from the page, JoJo trivia, a guided jump
   to a section (through the section curtain), jan-ken (`janken.tsx`) or
@@ -172,13 +177,18 @@ The render loop stops off-screen.
   stop. The Stand freezes too (as seen from outside in the series). When
   the portrait stopped time it comes back sweating ("I couldn't
   move…!"). When it cast ZA WARUDO itself, on resume it is already
-  somewhere else on screen, its silhouette fades where it was, knives
-  appear around something on the page and land at once, and it gloats
-  about the section (or about you trying to move).
-- **Expressions**: the sprite has smug, angry, sweating, starry-eyed and
-  sad faces plus manga marks over its head (!?, ＃, ♪, …), picked per
-  reaction, per jan-ken round and after each power (King Crimson even
-  skips its flight: it is just there).
+  somewhere else on screen in a JoJo pose, laughing, its silhouette
+  fades where it was, and it gloats about the section (or about you
+  trying to move).
+- **Expressions** (`mini-stand/sprite.ts`): a frame is a body and a face
+  that combine freely. Bodies: idle, punch, five JoJo poses (fist by the
+  visor, both fists up, pointing, arms wide, fist overhead) and two
+  punches toward the viewer for the rush. Faces: open (looking sideways
+  and up or down), blink, happy, smug, angry, sweating, starry-eyed, sad,
+  dizzy, shock, laughing (> <), heart eyes, wink and blush. Plus manga
+  marks over its head (!?, ＃, ♪, …), picked per reaction, per jan-ken
+  round and after each power (King Crimson even skips its flight: it is
+  just there).
 - **Secrets** (`lib/secrets.ts`, `components/secrets.tsx`): eleven, stored
   per visitor in localStorage, counted in the footer ("Secrets 3/11") and
   announced when found. Names show only once found.
@@ -190,7 +200,9 @@ The render loop stops off-screen.
   from first paint. Speed lines converge, the name slams in letter by
   letter and gets its hard shadow, the portrait is pasted on with a
   shake and a ドン, then a giant Paranoid Android (`ui/hero-stand.tsx`,
-  the mini Stand's own pixel map drawn as SVG) rises beside it, stays
+  the mini Stand's own pixel map drawn as SVG; the server sends only the
+  entrance frame and the rest are built in the browser the first time
+  they are needed) rises beside it, stays
   big for its whole power, and only then shrinks into the exact spot and size of the mini Stand (same frame, a
   one-frame cut, no fade). The mini Stand is hidden from the first paint
   by `ui/stand-manifest-gate.tsx` (a server-rendered script that sets
@@ -198,25 +210,34 @@ The render loop stops off-screen.
   fading ghost. While the Stand is big, one of two things happens, and
   they alternate on every load (remembered in `localStorage`, force one
   with `?intro=diamond` or `?intro=world`):
-  - **Crazy Diamond** (`ui/hero-crack.ts`): a ドラララ barrage of pink
-    fists from the Stand into the letters of the name (it lunges toward
-    each hit), then a ドラァ! finisher on the nearest letter: a 140 ms
-    hit-stop, the screen cracks from the impact (cracks also cut through
-    each letter) and the letters fly away from it like broken glass.
-    After a beat Crazy Diamond repairs cracks and letters back toward its
-    fist. The cracks are one SVG drawn once; only its `clip-path` animates.
+  - **Crazy Diamond** (`ui/hero-crack.ts`): the Stand breaks the fourth
+    wall. A ドラララ rush at the screen itself: every fist (pixel art,
+    seen from the front) leaves its chest and grows toward the viewer
+    until it hits the glass, squashes against it and pulls back. Each
+    hit leaves a star of cracks where it landed and dents the page
+    behind. While it punches the Stand alternates fists, grows extra
+    flickering arms from the speed and lunges with every hit. The
+    ドラァ! finisher goes to the middle of the screen: a white flash, a
+    150 ms hit-stop, a web of cracks across the whole screen (also
+    through each letter), the letters thrown back and shards of glass
+    falling. The Stand notices ("Oops… your screen") and Crazy Diamond
+    fixes it: the shards fly back up, every crack closes toward its fist
+    and the letters return. Only `clip-path` and transforms animate.
   - **ZA WARUDO**: the Stand shouts ザ・ワールド and stops time for real
-    (`lib/time-stop.ts`, the mini Stand's own power with its sphere). In
-    the frozen world only it moves: it throws knives that freeze in a
-    ring around the name, each aimed at a letter; when time resumes they
-    all land (ズドドドッ) and the mini Stand closes with a line
-    (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines in
-    `lines.ts` under `intro`).
+    (`lib/time-stop.ts`, the mini Stand's own power with its sphere).
+    Right before the stop it strikes a JoJo pose (a random one of five,
+    tilted like a manga panel) and then it freezes with everything else:
+    it doesn't breathe or move. Only its face and its speech bubble
+    change: it tells a two-part joke about stopping time just to pose
+    and laughs at it (フハハハ, WRYYY). When time resumes it drops the pose.
+  - Either way, after the handover the mini Stand closes with a line
+    about what just happened and, a few seconds later, greets you
+    (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines
+    in `lines.ts` under `intro`).
 
   With a mouse the layers move with the pointer; on scroll the two name
   lines split apart. The mini Stand greets by the visitor's hour in seven
-  bands (night owl, early, morning, midday, afternoon, evening, late)
-  the moment it lands.
+  bands (night owl, early, morning, midday, afternoon, evening, late).
 - **Sound** (`lib/sfx.ts`): off by default, synthesized with Web Audio
   (no files). Turn it on from the Stand's chat ("Turn sound on"); it is
   remembered. Browsers only let audio start after a first tap, so a first

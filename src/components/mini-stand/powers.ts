@@ -67,7 +67,7 @@ let uid = 0;
 /**
  * ZA WARUDO: esfera que invierte la pagina y detiene el tiempo de verdad
  * (lib/time-stop): nadie se mueve, tampoco quien visita. El Stand si: lo
- * que hace mientras tanto (burlarse, lanzar cuchillos, cambiar de sitio)
+ * que hace mientras tanto (posar, burlarse, cambiar de sitio)
  * vive en mini-stand, porque tambien pasa con el toque del retrato.
  */
 async function zaWarudo(ctx: PowerContext) {

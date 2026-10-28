@@ -26,7 +26,17 @@ export type StandEvent =
   | "typing"
   | "resize"
   | "thrown"
-  | "dropped";
+  | "dropped"
+  /** Lo sobas con el raton (ir y venir encima de el). */
+  | "pet"
+  | "rightclick"
+  /** El raton se sale de la ventana. */
+  | "leave"
+  | "offline"
+  | "online"
+  /** Seleccionas un buen trozo de texto. */
+  | "select"
+  | "print";
 
 export function emitStandEvent(kind: StandEvent) {
   if (typeof window === "undefined") return;

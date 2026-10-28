@@ -4,17 +4,19 @@ import { pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
 
 /*
-  Grietas en la pantalla cuando el Stand grande remata su rafaga contra el
-  nombre (ドラァ!), y Crazy Diamond que las repara hacia su puno (ver el
-  efecto del relevo en portfolio-hero.tsx). Es la version barata del poder de Crazy Diamond del
-  mini Stand (powers.ts): solo la telarana de grietas, sin romper ni mover
-  ninguna pieza de la pagina, sin filtros y sin tocar el DOM del resto.
+  El vidrio de la pantalla en la entrada de Crazy Diamond (ver el efecto
+  del relevo en portfolio-hero.tsx): cada puno de la rafaga que choca
+  contra la pantalla deja una estrella de grietas donde pega, el golpe
+  final la parte entera en una telarana (que tambien cruza cada letra del
+  nombre) y suelta trozos de vidrio que caen. Despues Crazy Diamond lo
+  arregla: los trozos vuelven a su sitio y todo se repara hacia su puno.
 
-  Una sola capa fija con el SVG ya dibujado: no se anima nada dentro. Lo
-  unico que se mueve es el `clip-path` de la capa, un circulo que crece
-  desde el golpe (las grietas se propagan) y que luego se encoge hacia
-  donde aterriza el Stand (se reparan, con el rosa de Crazy Diamond). El
-  SVG se rasteriza una vez; el recorte lo resuelve el compositor.
+  Es la version barata del poder de Crazy Diamond del mini Stand
+  (powers.ts): no rompe ni mueve ninguna pieza de la pagina, sin filtros y
+  sin tocar el DOM del resto. Una capa fija con SVG ya dibujado; lo unico
+  que se anima son recortes (clip-path) y transform. La telarana crece
+  con un circulo que nace en el golpe, y la reparacion es otro circulo que
+  se encoge hacia donde esta el Stand, con el rosa de Crazy Diamond.
 
   Hay dos trazos por grieta, uno de halo (el color del fondo) y otro de
   tinta (el color del texto), para que se lean sobre el tema claro y el
@@ -22,6 +24,8 @@ import { playSfx } from "@/lib/sfx";
 */
 
 const GROW_MS = 380;
+
+const pts = (list: [number, number][]) => list.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" L");
 
 function web(x: number, y: number, w: number, h: number, letters: DOMRect[]) {
   const reach = Math.hypot(w, h);
@@ -38,14 +42,14 @@ function web(x: number, y: number, w: number, h: number, letters: DOMRect[]) {
       points.push([x + Math.cos(angle + jitter) * r, y + Math.sin(angle + jitter) * r]);
     }
     rays.push(points);
-    lines.push(`M${points.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" L")}`);
+    lines.push(`M${pts(points)}`);
   }
   // Anillos entre ramas vecinas: lo que hace que parezca vidrio roto.
   for (const ring of [1, 2, 4]) {
     for (let i = 0; i < branches; i++) {
       const a = rays[i][ring];
       const b = rays[(i + 1) % branches][ring];
-      if (a && b && Math.random() < 0.8) lines.push(`M${a[0].toFixed(1)},${a[1].toFixed(1)} L${b[0].toFixed(1)},${b[1].toFixed(1)}`);
+      if (a && b && Math.random() < 0.8) lines.push(`M${pts([a, b])}`);
     }
   }
   // Una grieta cruza cada letra del nombre, de arriba abajo, en zigzag: la
@@ -53,53 +57,76 @@ function web(x: number, y: number, w: number, h: number, letters: DOMRect[]) {
   for (const box of letters) {
     const top = box.top - 4;
     const bottom = box.bottom + 4;
-    const pts: [number, number][] = [[box.left + box.width * rand(0.15, 0.4), top]];
-    for (const t of [0.33, 0.66]) pts.push([box.left + box.width * rand(0.2, 0.8), top + (bottom - top) * t]);
-    pts.push([box.left + box.width * rand(0.6, 0.85), bottom]);
-    lines.push(`M${pts.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" L")}`);
+    const zig: [number, number][] = [[box.left + box.width * rand(0.15, 0.4), top]];
+    for (const t of [0.33, 0.66]) zig.push([box.left + box.width * rand(0.2, 0.8), top + (bottom - top) * t]);
+    zig.push([box.left + box.width * rand(0.6, 0.85), bottom]);
+    lines.push(`M${pts(zig)}`);
   }
   const d = lines.join(" ");
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path class="hero-crack-halo" d="${d}"/><path class="hero-crack-line" d="${d}"/></svg>`;
 }
 
-export interface HeroCrack {
-  /** Repara las grietas hacia (x, y) en `ms` y se retira. Solo la primera vez. */
+/* Estrella de grietas de un golpe: rayos cortos, un anillo y el punto blanco del impacto. */
+function star(r: number) {
+  const rays = Math.round(rand(6, 9));
+  const lines: string[] = [];
+  const ends: [number, number][] = [];
+  for (let i = 0; i < rays; i++) {
+    const angle = (i / rays) * Math.PI * 2 + rand(-0.3, 0.3);
+    const len = r * rand(0.55, 1);
+    const bend = rand(-0.25, 0.25);
+    const mid: [number, number] = [r + Math.cos(angle) * len * 0.5, r + Math.sin(angle) * len * 0.5];
+    const end: [number, number] = [r + Math.cos(angle + bend) * len, r + Math.sin(angle + bend) * len];
+    ends.push([r + Math.cos(angle) * len * 0.38, r + Math.sin(angle) * len * 0.38]);
+    lines.push(`M${pts([[r, r], mid, end])}`);
+  }
+  lines.push(`M${pts(ends)} Z`);
+  const d = lines.join(" ");
+  const size = r * 2;
+  return (
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+    `<circle class="hero-crack-dot" cx="${r}" cy="${r}" r="${(r * 0.16).toFixed(1)}"/>` +
+    `<path class="hero-crack-halo" d="${d}"/><path class="hero-crack-line" d="${d}"/></svg>`
+  );
+}
+
+/* Un trozo de vidrio: triangulo irregular, casi transparente, con borde de tinta y un brillo. */
+function shard(size: number) {
+  const a = [rand(0, 0.3) * size, rand(0, 0.35) * size];
+  const b = [rand(0.7, 1) * size, rand(0, 0.5) * size];
+  const c = [rand(0.2, 0.8) * size, rand(0.75, 1) * size];
+  const poly = [a, b, c].map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" ");
+  return (
+    `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><polygon class="hero-shard-glass" points="${poly}"/>` +
+    `<path class="hero-shard-shine" d="M${(a[0] + 4).toFixed(1)},${(a[1] + 4).toFixed(1)} L${((a[0] + b[0]) / 2).toFixed(1)},${((a[1] + b[1]) / 2 + 3).toFixed(1)}"/></svg>`
+  );
+}
+
+export interface HeroGlass {
+  /** Un puno choca contra la pantalla en (x, y): estrella de grietas de radio r. */
+  hit: (x: number, y: number, r: number) => void;
+  /** El golpe final: telarana por toda la pantalla y trozos de vidrio que caen. */
+  shatter: (x: number, y: number, letters: DOMRect[]) => void;
+  /** Lo repara todo hacia (x, y) en `ms` y se retira. Solo la primera vez. */
   heal: (x: number, y: number, ms: number) => void;
   /** Quita todo ya, sin animar. */
   cancel: () => void;
 }
 
-/** Agrieta la pantalla desde (x, y); `letters` son las cajas de las letras que tambien se parten. */
-export function playHeroCrack(x: number, y: number, letters: DOMRect[] = []): HeroCrack {
+/** El vidrio de la pantalla: nace vacio y se va rompiendo golpe a golpe. */
+export function createGlass(): HeroGlass {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const reach = Math.ceil(Math.hypot(Math.max(x, w - x), Math.max(y, h - y)));
   const node = document.createElement("div");
   node.className = "hero-crack";
   node.setAttribute("aria-hidden", "true");
-  node.innerHTML = web(x, y, w, h, letters);
-  node.style.clipPath = `circle(0px at ${x}px ${y}px)`;
   document.body.appendChild(node);
 
   const animations: Animation[] = [];
   const timers: number[] = [];
-  playSfx("crack");
-  const grow = node.animate(
-    [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${reach}px at ${x}px ${y}px)` }],
-    { duration: GROW_MS, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "forwards" },
-  );
-  animations.push(grow);
-
-  // ドラ ドラ ドラ: el grito de Crazy Diamond, en rosa, alrededor del golpe.
-  for (let i = 0; i < 3; i++) {
-    timers.push(
-      window.setTimeout(() => {
-        const angle = rand(0, Math.PI * 2);
-        const dist = rand(60, 130);
-        pop("ドラ", x + Math.cos(angle) * dist, y + Math.sin(angle) * dist * 0.7, "power-pop-word is-pink", 650);
-      }, i * 90),
-    );
-  }
+  const shards: Animation[] = [];
+  // Donde nacio la rotura mas grande: el circulo de la reparacion sale de ahi.
+  let center = { x: w / 2, y: h / 2 };
 
   const cancel = () => {
     timers.forEach((timer) => window.clearTimeout(timer));
@@ -107,21 +134,102 @@ export function playHeroCrack(x: number, y: number, letters: DOMRect[] = []): He
     node.remove();
   };
 
-  // Se repara una sola vez: el relevo vuelve a pedirlo por si el poder no llego a hacerlo.
   let healed = false;
   return {
+    hit(x, y, r) {
+      if (healed) return;
+      const crack = document.createElement("div");
+      crack.className = "hero-crack-star";
+      crack.style.left = `${(x - r).toFixed(0)}px`;
+      crack.style.top = `${(y - r).toFixed(0)}px`;
+      crack.innerHTML = star(r);
+      node.appendChild(crack);
+      animations.push(
+        crack.animate([{ scale: "0.4", opacity: 0.4 }, { scale: "1", opacity: 1 }], {
+          duration: 90,
+          easing: "cubic-bezier(0.2, 0.9, 0.3, 1)",
+          fill: "both",
+        }),
+      );
+      playSfx("crack");
+    },
+    shatter(x, y, letters) {
+      if (healed) return;
+      center = { x, y };
+      const reach = Math.ceil(Math.hypot(Math.max(x, w - x), Math.max(y, h - y)));
+      const big = document.createElement("div");
+      big.className = "hero-crack-web";
+      big.innerHTML = web(x, y, w, h, letters);
+      node.appendChild(big);
+      animations.push(
+        big.animate(
+          [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${reach}px at ${x}px ${y}px)` }],
+          { duration: GROW_MS, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "forwards" },
+        ),
+      );
+      playSfx("crack");
+
+      // El vidrio se suelta: trozos que saltan del golpe y caen girando.
+      const count = w < 640 ? 9 : 15;
+      for (let i = 0; i < count; i++) {
+        const size = rand(w < 640 ? 26 : 36, w < 640 ? 58 : 92);
+        const piece = document.createElement("div");
+        piece.className = "hero-shard";
+        const angle = rand(0, Math.PI * 2);
+        const near = rand(10, w < 640 ? 70 : 130);
+        const sx = x + Math.cos(angle) * near - size / 2;
+        const sy = y + Math.sin(angle) * near - size / 2;
+        piece.style.left = `${sx.toFixed(0)}px`;
+        piece.style.top = `${sy.toFixed(0)}px`;
+        piece.innerHTML = shard(size);
+        node.appendChild(piece);
+        const out = Math.cos(angle) * rand(60, 220);
+        const pop = Math.sin(angle) * rand(30, 90) - rand(20, 70);
+        const fall = h - sy + size + rand(0, 120);
+        const spin = rand(-260, 260);
+        const fly = piece.animate(
+          [
+            { translate: "0px 0px", rotate: "0deg", offset: 0 },
+            { translate: `${(out * 0.4).toFixed(0)}px ${pop.toFixed(0)}px`, rotate: `${(spin * 0.2).toFixed(0)}deg`, offset: 0.22, easing: "cubic-bezier(0.4, 0, 1, 1)" },
+            { translate: `${out.toFixed(0)}px ${fall.toFixed(0)}px`, rotate: `${spin.toFixed(0)}deg`, offset: 1 },
+          ],
+          { duration: rand(900, 1400), delay: rand(0, 90), easing: "cubic-bezier(0.2, 0.7, 0.4, 1)", fill: "both" },
+        );
+        animations.push(fly);
+        shards.push(fly);
+      }
+      // ドラ ドラ ドラ: el grito de Crazy Diamond, en rosa, alrededor del golpe.
+      for (let i = 0; i < 3; i++) {
+        timers.push(
+          window.setTimeout(() => {
+            const angle = rand(0, Math.PI * 2);
+            const dist = rand(70, 150);
+            pop("ドラ", x + Math.cos(angle) * dist, y + Math.sin(angle) * dist * 0.7, "power-pop-word is-pink", 650);
+          }, i * 90),
+        );
+      }
+    },
     heal(tx, ty, ms) {
       if (healed) return;
       healed = true;
       node.classList.add("is-healing");
       playSfx("heal");
-      grow.commitStyles();
-      const heal = node.animate(
-        [{ clipPath: `circle(${reach}px at ${x}px ${y}px)` }, { clipPath: `circle(0px at ${tx}px ${ty}px)` }],
+      // Los trozos vuelven volando a donde se soltaron, mas rapido que al caer.
+      shards.forEach((fly) => {
+        fly.updatePlaybackRate(-Math.max(1, (Number(fly.effect?.getComputedTiming().duration) || 1000) / (ms * 0.55)));
+        fly.play();
+      });
+      const reach = Math.ceil(Math.hypot(Math.max(center.x, w - center.x), Math.max(center.y, h - center.y))) + 200;
+      const close = node.animate(
+        [
+          { clipPath: `circle(${reach}px at ${center.x}px ${center.y}px)` },
+          { clipPath: `circle(${reach}px at ${center.x}px ${center.y}px)`, offset: 0.35 },
+          { clipPath: `circle(0px at ${tx}px ${ty}px)` },
+        ],
         { duration: ms, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
       );
-      animations.push(heal);
-      heal.onfinish = () => {
+      animations.push(close);
+      close.onfinish = () => {
         // Un destello donde cae: reparado.
         playSfx("thud");
         pop("ドラ", tx, ty - 28, "power-pop-word is-pink", 700);

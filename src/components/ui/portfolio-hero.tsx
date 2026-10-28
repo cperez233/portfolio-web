@@ -23,11 +23,13 @@ import { Menacing } from "@/components/ui/menacing";
 import { stopTime as freezeTime } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
-import { SPRITE_W } from "@/components/mini-stand/sprite";
-import { HeroStand } from "./hero-stand";
-import { playHeroCrack, shatterLetters, type HeroCrack, type Shattered } from "./hero-crack";
-import { fist, impact, runPower, speedLines } from "@/components/mini-stand/powers";
-import { layer as effectLayer, pop } from "@/components/mini-stand/power-kit";
+import { POSES, SPRITE_W, type Body, type Face, type Frame } from "@/components/mini-stand/sprite";
+import { standLines } from "@/components/mini-stand/lines";
+import { pickLine } from "@/components/mini-stand/pick";
+import { FRONT_FIST_SVG, HeroStand, showHeroFrame } from "./hero-stand";
+import { createGlass, shatterLetters, type HeroGlass, type Shattered } from "./hero-crack";
+import { impact, runPower, speedLines } from "@/components/mini-stand/powers";
+import { layer as effectLayer, pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
 
 interface SlamTextProps {
@@ -76,13 +78,15 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     1150  el Stand se levanta junto al retrato, enorme (0.4s), y SE QUEDA
           grande mientras hace una de dos cosas (ver pickIntro y DIAMOND /
           WORLD):
-          · Crazy Diamond: ráfaga de punos ドラララ contra el nombre, un
-            golpe final ドラァ! que agrieta la pantalla desde el impacto y
-            despide las letras, un respiro con todo roto, y lo repara todo
-            de vuelta hacia su puno
-          · ZA WARUDO: grita ザ・ワールド, detiene el tiempo, y con todo
-            quieto lanza cuchillos que se quedan colgados en el aire; al
-            volver el tiempo se clavan en el nombre
+          · Crazy Diamond: rompe la cuarta pared. Le pega a la pantalla
+            misma con una rafaga ドラララ: cada puno sale de el, crece hacia
+            quien mira y choca contra el vidrio, que se agrieta donde pega.
+            El golpe final ドラァ! parte la pantalla entera, despide las
+            letras y suelta trozos de vidrio. El Stand se da cuenta de lo
+            que hizo, se disculpa y lo repara todo hacia su puno.
+          · ZA WARUDO: grita ザ・ワールド y detiene el tiempo. Con todo
+            quieto, el tambien: se queda congelado en una pose JoJo (cada
+            vez una distinta) y se burla de que usó el poder para posar.
           Al terminar se hace el mini Stand: viaja hasta donde el chico
           espera y se cambian sin que se note.
 */
@@ -100,16 +104,31 @@ const ENTRY = {
 
 /*
   Crazy Diamond, en el reloj de la animacion del Stand (que ya cuenta su
-  retardo): la rafaga, el golpe final, la reparacion y el relevo.
+  retardo): se prepara, la rafaga contra la pantalla (un puno cada step),
+  el golpe final, el "uy", la reparacion, el "listo" y el relevo.
 */
-const DIAMOND = { rush: 1600, hits: 11, step: 62, finisher: 2380, heal: 3250, healMs: 700, condense: 4200 } as const;
+const DIAMOND = {
+  windup: 1580,
+  rush: 1760,
+  hits: 14,
+  step: 92,
+  finisher: 3280,
+  oops: 4000,
+  heal: 4900,
+  healMs: 900,
+  fixed: 5900,
+  condense: 6900,
+} as const;
 
 /*
   ZA WARUDO, en el mismo reloj: el grito, el tiempo detenido (stop + ms),
-  los cuchillos (uno cada knifeStep) y el relevo, que llega cuando los
-  cuchillos ya se clavaron y se fue el 時は動き出す.
+  el ゴゴゴ, la broma en dos tiempos (joke y punchline, ya con risa) y el
+  relevo, cuando se fue el 時は動き出す.
 */
-const WORLD = { shout: 1580, stop: 1800, ms: 2300, knives: 2050, knifeStep: 110, condense: 5250 } as const;
+const WORLD = { shout: 1560, stop: 1860, ms: 4100, menace: 2150, joke: 2450, punchline: 3850, condense: 6850 } as const;
+
+/* Inclinacion de cada pose JoJo, en grados: torcidas, como en el manga. */
+const POSE_TILT: Partial<Record<Body, number>> = { pose: -13, arms: 6, point: 11, wide: -9, high: 14 };
 
 /* El copy entra justo despues del golpe, cada pieza 80ms tras la anterior. */
 function riseDelay(index: number): React.CSSProperties {
@@ -252,6 +271,9 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   }, []);
   const tracking = canTrack && !shouldReduceMotion;
 
+  // Las frases del Stand grande, en el idioma de la carga (el efecto corre una vez).
+  const languageRef = useRef(language);
+
   /*
     Relevo con el mini Stand: el grande se convierte en el chico. Mientras
     el grande se manifiesta, el chico (mini-stand.tsx) espera quieto y sin
@@ -266,14 +288,17 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
     Mientras esta grande hace una de dos (pickIntro), y no se encoge hasta
     terminarla:
-    - Crazy Diamond: una rafaga de punos contra las letras del nombre (el
-      Stand embiste hacia cada golpe), un golpe final que agrieta la
-      pantalla desde el impacto y despide las letras (hero-crack.ts), y la
-      reparacion: grietas y letras vuelven hacia su puno.
+    - Crazy Diamond: le pega a la pantalla. Cada puno sale de su pecho y
+      crece hacia quien mira hasta chocar con el vidrio (createGlass, en
+      hero-crack.ts), que se agrieta donde pega; el Stand alterna los
+      punos, se le ven brazos de mas por la velocidad y embiste en cada
+      golpe. El final parte la pantalla, despide las letras y suelta
+      vidrio. Se disculpa en un globo y repara todo hacia su puno.
     - ZA WARUDO: detiene el tiempo de verdad (el poder del mini Stand, con
-      su esfera). Solo el se mueve: lanza cuchillos que se quedan colgados
-      en el aire, y al volver el tiempo se clavan en el nombre. El chico
-      habla al final (mini-stand.tsx, "jojo:intro").
+      su esfera). En ese instante se pone en una pose JoJo y se congela
+      con todo lo demas: no respira ni se mueve. Solo cambian su cara (se
+      rie de su propio chiste) y su globo. El chico remata al final
+      (mini-stand.tsx, "jojo:intro").
 
     El reloj es el de la propia animacion CSS del grande (no el de la
     pagina): si hidrata tarde, espera lo que falte; si ya paso el momento
@@ -303,79 +328,64 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
     introRef.current ??= pickIntro();
     const intro = introRef.current;
+    const lines = standLines[languageRef.current].intro;
     // El poder solo si no quedo atras (hidratacion tardia); sin el, el
     // grande se hace chico en cuanto termina de subir.
-    const show = elapsed < (intro === "world" ? WORLD.shout : DIAMOND.rush) + 250;
+    const show = elapsed < (intro === "world" ? WORLD.shout : DIAMOND.windup) + 250;
     const condenseAt = show ? (intro === "world" ? WORLD.condense : DIAMOND.condense) : Math.max(elapsed, ENTRY.stand + 450);
 
     const timers: number[] = [];
     const animations: Animation[] = [];
     const layers: HTMLElement[] = [];
-    let crack: HeroCrack | null = null;
+    let glass: HeroGlass | null = null;
     let shattered: Shattered | null = null;
     let worldOn = false;
     root.classList.add("stand-manifest");
     const stage = stickyRef.current?.firstElementChild as HTMLElement | null | undefined;
     const svg = core.querySelector("svg");
+    // Envoltorio del dibujo: embiste, se estira y se inclina sin tocar el
+    // transform del nucleo (el del viaje al mini Stand) ni el del SVG (el espejo).
+    const body = core.querySelector<HTMLElement>(".hero-stand-body");
     const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const small = vw < 640;
 
     /** Programa `fn` en el reloj del Stand (sirve igual desde dentro de otro paso). */
     const born = performance.now() - elapsed;
     const at = (ms: number, fn: () => void) =>
       timers.push(window.setTimeout(fn, Math.max(0, born + ms - performance.now())));
+    const later = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
     const keep = (animation: Animation) => {
       animations.push(animation);
       return animation;
     };
 
+    /** Cambia el cuadro del Stand grande: pose (cuerpo) y gesto (cara). */
+    const frame = (name: Frame, extra?: { body?: Body; face?: Face }) => {
+      if (svg) showHeroFrame(svg, name, extra);
+    };
+
     /** El pecho del Stand grande, en px de la ventana: de ahi nace todo. */
     const heart = () => {
       const from = svg?.getBoundingClientRect();
-      return from?.width ? { x: from.left + from.width * 0.5, y: from.top + from.height * 0.55 } : null;
+      return from?.width ? { x: from.left + from.width * 0.5, y: from.top + from.height * 0.62 } : null;
     };
 
-    /*
-      Las letras del nombre que se pueden golpear: las que se ven, sin las
-      que tapan el retrato o el propio Stand (un golpe ahi no se veria). Si
-      no queda ninguna, todas.
-    */
-    const targets = () => {
-      const covers = [portraitRef.current?.getBoundingClientRect(), svg?.getBoundingClientRect()].filter(
-        (box): box is DOMRect => !!box?.width,
-      );
-      const all = [...(stage?.querySelectorAll<HTMLElement>(".hero-slam") ?? [])]
-        .map((el) => ({ el, r: el.getBoundingClientRect() }))
-        .filter(({ r }) => r.width && r.right > 0 && r.left < vw);
-      const clear = all.filter(({ r }) => {
-        const cx = r.left + r.width / 2;
-        const cy = r.top + r.height / 2;
-        return !covers.some((box) => cx > box.left && cx < box.right && cy > box.top && cy < box.bottom);
+    /** Las letras del nombre que se ven. */
+    const letterEls = () =>
+      [...(stage?.querySelectorAll<HTMLElement>(".hero-slam") ?? [])].filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width && r.right > 0 && r.left < vw;
       });
-      return clear.length ? clear : all;
-    };
-    const pointIn = (r: DOMRect) => ({
-      x: r.left + r.width * (0.25 + Math.random() * 0.5),
-      y: r.top + r.height * (0.3 + Math.random() * 0.45),
-    });
 
-    /** El Stand embiste hacia (x, y) y vuelve: el golpe se ve salir de el. */
-    const lunge = (x: number, y: number, reach: number, ms: number) => {
-      const from = heart();
-      if (!svg || !from) return;
-      const dx = x - from.x;
-      const dy = y - from.y;
-      const d = Math.hypot(dx, dy) || 1;
-      const px = Math.min(reach, d * 0.4);
+    /** El Stand se echa hacia quien mira (crece un poco) y vuelve: el golpe sale de el. */
+    const lunge = (amount: number, ms: number) => {
+      if (!body) return;
       keep(
-        svg.animate(
-          [
-            { translate: "0 0" },
-            { translate: `${((dx / d) * px).toFixed(1)}px ${((dy / d) * px).toFixed(1)}px`, offset: 0.35 },
-            { translate: "0 0" },
-          ],
-          { duration: ms, easing: "ease-out" },
-        ),
+        body.animate([{ scale: "1" }, { scale: String(1 + amount), offset: 0.3 }, { scale: "1" }], {
+          duration: ms,
+          easing: "ease-out",
+        }),
       );
     };
 
@@ -412,6 +422,22 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     };
 
     /*
+      La pantalla cede con el golpe: todo lo de detras se hunde un poco
+      desde el punto del impacto, como un vidrio que se flexiona.
+    */
+    const dent = (x: number, y: number, depth: number, ms: number) => {
+      if (!stage) return;
+      const box = stage.getBoundingClientRect();
+      stage.style.transformOrigin = `${(x - box.left).toFixed(0)}px ${(y - box.top).toFixed(0)}px`;
+      keep(
+        stage.animate([{ scale: "1" }, { scale: String(1 - depth), offset: 0.25 }, { scale: "1" }], {
+          duration: ms,
+          easing: "cubic-bezier(0.2, 0.9, 0.3, 1)",
+        }),
+      ).onfinish = () => (stage.style.transformOrigin = "");
+    };
+
+    /*
       Onomatopeya grande junto al Stand, sin salirse de la pantalla: se
       centra en x, asi que se aparta del borde la mitad de lo que mide.
     */
@@ -429,200 +455,337 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     };
 
     /*
-      Crazy Diamond: DORARARA. Cada golpe sale del Stand (embiste hacia el)
-      y cae en una letra, que tiembla; el ultimo es el fuerte.
+      El globo del Stand grande: el mismo del mini Stand, sobre su cabeza (o
+      a un lado si arriba esta la barra), escrito letra a letra. Con el
+      tiempo detenido tambien escribe: el globo es suyo y el se sigue
+      riendo por dentro.
+    */
+    let bubble: HTMLParagraphElement | null = null;
+    let typing = 0;
+    let hideAt = 0;
+    const talk = (text: string, ms: number) => {
+      const head = svg?.getBoundingClientRect();
+      if (!text || !head?.width) return;
+      if (!bubble) {
+        bubble = document.createElement("p");
+        bubble.className = "stand-speech hero-say";
+        fxLayer().appendChild(bubble);
+      }
+      const node = bubble;
+      window.clearInterval(typing);
+      window.clearTimeout(hideAt);
+      node.style.width = "";
+      node.textContent = text;
+      if (/[!！]$/.test(text) && text === text.toUpperCase()) node.setAttribute("data-tone", "shout");
+      else node.removeAttribute("data-tone");
+      node.setAttribute("data-on", "");
+      const bw = node.offsetWidth;
+      const bh = node.offsetHeight;
+      node.style.width = `${bw}px`;
+      const cx = head.left + head.width * 0.5;
+      let x = Math.min(Math.max(12, cx - bw / 2), vw - bw - 12);
+      let y = head.top - bh - 12;
+      node.removeAttribute("data-side");
+      if (y < 68) {
+        y = head.top + head.height * 0.06;
+        const right = head.right + 8;
+        const side = right + bw < vw - 12 ? "right" : "left";
+        node.setAttribute("data-side", side);
+        x = side === "right" ? right : Math.max(12, head.left - bw - 8);
+      }
+      node.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+      node.style.setProperty("--tail-x", `${Math.round(cx - x)}px`);
+      let shown = 1;
+      node.textContent = text.slice(0, 1);
+      typing = window.setInterval(() => {
+        shown += 1;
+        node.textContent = text.slice(0, shown);
+        if (shown >= text.length) window.clearInterval(typing);
+      }, 24);
+      timers.push(typing);
+      hideAt = window.setTimeout(() => node.removeAttribute("data-on"), ms + text.length * 24);
+      timers.push(hideAt);
+    };
+    const hush = () => {
+      window.clearInterval(typing);
+      bubble?.removeAttribute("data-on");
+    };
+
+    /*
+      Un puno de la rafaga rompe la cuarta pared: sale del pecho del Stand
+      del tamano de su puno y crece, acelerando, hasta el tamano que tendria
+      pegado al vidrio en (x, y). Ahi se aplasta un instante contra la
+      pantalla, que se agrieta y se hunde, y se recoge hacia el Stand.
+    */
+    const throwFist = (fx: HTMLElement, x: number, y: number, size: number, travel: number, onHit: () => void) => {
+      const from = heart();
+      if (!from) return;
+      const el = document.createElement("span");
+      el.className = "hero-fist";
+      el.style.left = `${x.toFixed(0)}px`;
+      el.style.top = `${y.toFixed(0)}px`;
+      el.style.width = `${size.toFixed(0)}px`;
+      el.innerHTML = FRONT_FIST_SVG;
+      fx.appendChild(el);
+      const start = Math.max(0.06, ((svg?.getBoundingClientRect().width ?? 200) * 0.28) / size);
+      const dx = from.x - x;
+      const dy = from.y - y;
+      const tilt = rand(-18, 18);
+      const go = keep(
+        el.animate(
+          [
+            { transform: `translate(${dx.toFixed(0)}px, ${dy.toFixed(0)}px) scale(${start.toFixed(3)}) rotate(${(tilt * 2).toFixed(0)}deg)`, opacity: 0.85 },
+            { transform: `translate(0px, 0px) scale(1) rotate(${tilt.toFixed(0)}deg)`, opacity: 1 },
+          ],
+          { duration: travel, easing: "cubic-bezier(0.55, 0, 0.95, 0.45)", fill: "forwards" },
+        ),
+      );
+      go.onfinish = () => {
+        onHit();
+        // Pegado al vidrio: se aplasta, y se va de vuelta al Stand.
+        const back = keep(
+          el.animate(
+            [
+              { transform: `translate(0px, 0px) scale(1.06, 0.94) rotate(${tilt.toFixed(0)}deg)`, opacity: 1 },
+              { transform: `translate(0px, 0px) scale(1) rotate(${tilt.toFixed(0)}deg)`, opacity: 1, offset: 0.35 },
+              { transform: `translate(${(dx * 0.6).toFixed(0)}px, ${(dy * 0.6).toFixed(0)}px) scale(${(start * 1.6).toFixed(3)}) rotate(${(tilt * 2).toFixed(0)}deg)`, opacity: 0 },
+            ],
+            { duration: 230, easing: "cubic-bezier(0.3, 0, 0.7, 1)", fill: "forwards" },
+          ),
+        );
+        back.onfinish = () => el.remove();
+      };
+    };
+
+    /*
+      Donde pegan los punos: toda la pantalla es el blanco. Una rejilla
+      barajada (sin dos golpes seguidos en la misma zona), con un punto al
+      azar dentro de cada celda y la parte de arriba libre de la barra.
+    */
+    const hitPoints = (count: number) => {
+      const cols = small ? 2 : 4;
+      const rowsN = small ? 4 : 3;
+      const top = 90;
+      const cellW = vw / cols;
+      const cellH = (vh - top - 40) / rowsN;
+      const cells: { x: number; y: number }[] = [];
+      for (let r = 0; r < rowsN; r++) for (let c = 0; c < cols; c++) cells.push({ x: c, y: r });
+      const out: { x: number; y: number }[] = [];
+      while (out.length < count) {
+        const deck = [...cells].sort(() => Math.random() - 0.5);
+        for (const cell of deck) {
+          if (out.length >= count) break;
+          out.push({
+            x: (cell.x + rand(0.2, 0.8)) * cellW,
+            y: top + (cell.y + rand(0.2, 0.8)) * cellH,
+          });
+        }
+      }
+      return out;
+    };
+
+    /*
+      Brazos de mas: en la rafaga el Stand golpea tan rapido que se le ven
+      varios punos a la vez alrededor del pecho, parpadeando.
+    */
+    const rushArms = (on: boolean) => {
+      if (!body) return;
+      let arms = body.querySelector<HTMLElement>(".hero-rush");
+      if (on && !arms) {
+        arms = document.createElement("div");
+        arms.className = "hero-rush";
+        arms.setAttribute("aria-hidden", "true");
+        const spots = [
+          [8, 44, 0.9],
+          [58, 40, 1.05],
+          [22, 60, 1.2],
+          [66, 58, 0.85],
+          [2, 54, 0.75],
+          [44, 70, 1],
+          [34, 46, 1.3],
+        ];
+        arms.innerHTML = spots
+          .map(
+            ([x, y, s], i) =>
+              `<span style="left:${x}%;top:${y}%;--s:${s};animation-delay:${i * 23}ms">${FRONT_FIST_SVG}</span>`,
+          )
+          .join("");
+        body.appendChild(arms);
+      }
+      arms?.classList.toggle("is-on", on);
+    };
+
+    /*
+      Crazy Diamond: DORARARA contra la pantalla. El Stand se prepara con
+      la cara de enojo, y cada golpe alterna puno (jab / jabL), embiste y
+      manda un puno hacia el vidrio. El ultimo, enorme, al centro.
     */
     const manifestDiamond = () => {
-      const list = targets();
       const from = heart();
-      if (!list.length || !from || !stage) return;
+      if (!from || !stage) return;
+      const tall = svg?.getBoundingClientRect().height ?? 200;
+      window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "diamond" } }));
+      frame("stand", { face: "angry" });
+      lunge(0.05, 260);
+      // A un lado del Stand y no encima: que se le vea la cara de enojo.
+      shout("ドラララ", from.x - tall * 0.75, from.y - tall * 0.3, "power-pop-word is-pink is-big", 1100);
+      glass = createGlass();
       const fx = fxLayer();
-      const center = list.reduce(
-        (acc, { r }) => ({ x: acc.x + (r.left + r.width / 2) / list.length, y: acc.y + (r.top + r.height / 2) / list.length }),
-        { x: 0, y: 0 },
-      );
-      const lines = speedLines(center.x, center.y);
-      layers.push(lines);
-      shout("ドラララ", from.x, from.y - (svg?.getBoundingClientRect().height ?? 200) * 0.3, "power-pop-word is-pink is-big", 1000);
+      const points = hitPoints(small ? 10 : DIAMOND.hits);
+      const hits = points.length;
+      const fistSize = small ? Math.min(vw * 0.36, 170) : Math.min(Math.min(vw, vh) * 0.3, 300);
 
-      for (let i = 0; i < DIAMOND.hits; i++) {
+      at(DIAMOND.rush - 60, () => {
+        rushArms(true);
+        layers.push(speedLines(vw / 2, vh / 2));
+      });
+      for (let i = 0; i < hits; i++) {
         at(DIAMOND.rush + i * DIAMOND.step, () => {
-          const origin = heart();
-          const { el, r } = list[Math.floor(Math.random() * list.length)];
-          const hit = pointIn(r);
-          if (!origin) return;
-          lunge(hit.x, hit.y, small ? 14 : 26, DIAMOND.step + 30);
-          fist(fx, origin.x, origin.y, hit.x, hit.y, 0, 200).classList.add("is-diamond", ...(small ? [] : ["is-big"]));
-          timers.push(
-            window.setTimeout(() => {
-              impact(hit.x, hit.y);
-              jolt(el, small ? 3 : 5, 160);
-              if (i % 3 === 1) pop("ドラ", hit.x, hit.y - r.height * 0.4, "power-pop-word is-pink", 650);
-            }, 150),
-          );
+          frame(i % 2 ? "jabL" : "jab");
+          lunge(small ? 0.035 : 0.05, DIAMOND.step + 20);
+          const point = points[i];
+          const size = fistSize * rand(0.8, 1.15);
+          throwFist(fx, point.x, point.y, size, 150, () => {
+            glass?.hit(point.x, point.y, size * rand(0.42, 0.6));
+            impact(point.x, point.y);
+            dent(point.x, point.y, 0.006, 160);
+            // La letra que quede bajo el golpe tiembla.
+            const near = letterEls().find((el) => {
+              const r = el.getBoundingClientRect();
+              return Math.abs(r.left + r.width / 2 - point.x) < r.width && Math.abs(r.top + r.height / 2 - point.y) < r.height;
+            });
+            if (near) jolt(near, small ? 3 : 5, 180);
+            if (i % 4 === 1) pop("ドラ", point.x + rand(-40, 40), point.y - size * 0.45, "power-pop-word is-pink", 650);
+          });
         });
       }
 
-      // ドラァ!: el golpe final, en la letra mas cercana al Stand.
+      // ドラァ!: se echa atras para tomar impulso y pega en el centro de la pantalla.
+      at(DIAMOND.finisher - 160, () => {
+        rushArms(false);
+        frame("stand", { body: "pose", face: "angry" });
+        if (body) keep(body.animate([{ scale: "1" }, { scale: "0.94" }], { duration: 150, easing: "ease-out", fill: "forwards" }));
+      });
       at(DIAMOND.finisher, () => {
-        const origin = heart();
-        if (!origin) return;
-        const near = [...list].sort(
-          (p, q) =>
-            Math.hypot(p.r.left + p.r.width / 2 - origin.x, p.r.top + p.r.height / 2 - origin.y) -
-            Math.hypot(q.r.left + q.r.width / 2 - origin.x, q.r.top + q.r.height / 2 - origin.y),
-        )[0];
-        const hit = { x: near.r.left + near.r.width / 2, y: near.r.top + near.r.height / 2 };
-        lunge(hit.x, hit.y, small ? 30 : 60, 260);
-        const big = fist(fx, origin.x, origin.y, hit.x, hit.y, 0, 170);
-        big.classList.add("is-diamond", small ? "is-big" : "is-huge");
-        timers.push(
-          window.setTimeout(() => {
-            lines.classList.add("is-leaving");
-            timers.push(window.setTimeout(() => lines.remove(), 450));
-            impact(hit.x, hit.y, true);
-            shout("ドラァ!", hit.x, hit.y - near.r.height * 0.7, "power-pop-word is-pink is-big", 1300);
-            const letters = [...stage.querySelectorAll<HTMLElement>(".hero-slam")];
-            crack = playHeroCrack(hit.x, hit.y, letters.map((el) => el.getBoundingClientRect()));
-            shattered = shatterLetters(letters, hit);
-            // Parada de impacto: un instante en que todo se queda quieto (menos el Stand).
-            stage.classList.add("hero-hitstop");
-            timers.push(window.setTimeout(() => stage.classList.remove("hero-hitstop"), 140));
-            shake(small ? 6 : 10, 420);
-          }, 130),
-        );
+        frame("jab");
+        lunge(small ? 0.08 : 0.12, 420);
+        const x = vw / 2 + rand(-vw * 0.06, vw * 0.06);
+        const y = vh * 0.5 + rand(-vh * 0.04, vh * 0.04);
+        const size = small ? vw * 0.82 : Math.min(vw * 0.6, vh * 0.78);
+        throwFist(fx, x, y, size, 210, () => {
+          const letters = letterEls();
+          glass?.shatter(x, y, letters.map((el) => el.getBoundingClientRect()));
+          shattered = shatterLetters(letters, { x, y });
+          impact(x, y, true);
+          shout("ドラァ!", x, y - size * 0.42, "power-pop-word is-pink is-big", 1400);
+          layers.forEach((node) => node.classList.contains("power-speedlines") && node.classList.add("is-leaving"));
+          // Destello blanco del vidrio al romperse.
+          const flash = fxLayer();
+          flash.classList.add("hero-flash");
+          // Parada de impacto: un instante en que todo se queda quieto (menos el Stand).
+          stage.classList.add("hero-hitstop");
+          later(150, () => stage.classList.remove("hero-hitstop"));
+          dent(x, y, 0.03, 520);
+          shake(small ? 7 : 12, 480);
+        });
       });
 
-      // Crazy Diamond lo arregla: grietas y letras vuelven hacia su puno.
+      // Se da cuenta de lo que hizo.
+      at(DIAMOND.oops, () => {
+        frame("stand", { face: "shock" });
+        talk(pickLine(lines.oops), 900);
+      });
+      at(DIAMOND.oops + 650, () => frame("sweat"));
+
+      // Crazy Diamond lo arregla: vidrio, grietas y letras vuelven hacia su puno.
       at(DIAMOND.heal, () => {
         const origin = heart();
         if (!origin) return;
-        pop("ドララ", origin.x, origin.y - (svg?.getBoundingClientRect().height ?? 200) * 0.45, "power-pop-word is-pink", 900);
+        hush();
+        frame("stand", { body: "high", face: "happy" });
+        pop("ドララ", origin.x, origin.y - tall * 0.62, "power-pop-word is-pink", 900);
         if (svg) {
           keep(
             svg.animate(
-              [{ filter: "none" }, { filter: "drop-shadow(0 0 14px #e891c4)" }, { filter: "none" }],
+              [{ filter: "none" }, { filter: "drop-shadow(0 0 16px #e891c4)" }, { filter: "none" }],
               { duration: DIAMOND.healMs + 200, easing: "ease-in-out" },
             ),
           );
         }
-        crack?.heal(origin.x, origin.y, DIAMOND.healMs);
+        glass?.heal(origin.x, origin.y - tall * 0.35, DIAMOND.healMs);
         shattered?.mend(DIAMOND.healMs);
+      });
+      at(DIAMOND.fixed, () => {
+        frame("stand", { face: "wink" });
+        talk(pickLine(lines.fixed), 700);
       });
     };
 
     /*
-      ZA WARUDO: el grito, el tiempo detenido y los cuchillos. Con todo
-      quieto solo el Stand se mueve: lanza y los cuchillos se quedan
-      colgados donde el tiempo los paro; al volver, se clavan.
+      ZA WARUDO: el grito y el tiempo detenido. Justo antes de que el
+      tiempo se pare toma una pose JoJo (una al azar), y queda congelado
+      en ella con todo lo demas: ni respira. Lo unico que cambia es la
+      cara y el globo, con una broma en dos tiempos sobre parar el tiempo
+      para posar.
     */
     const manifestWorld = () => {
       const from = heart();
       if (!from) return;
       const tall = svg?.getBoundingClientRect().height ?? 200;
-      shout("ザ・ワールド!", from.x, from.y - tall * 0.35, "power-pop-word is-gold is-big", 1300);
-      keep(
-        core.animate([{ scale: "1" }, { scale: "1.06" }, { scale: "1" }], { duration: 260, easing: "ease-out" }),
-      );
+      frame("stand", { face: "smug" });
+      // Sobre el nombre y no sobre el Stand: la pose tiene que verse.
+      shout("ザ・ワールド!", vw / 2, from.y + tall * 0.2, "power-pop-word is-gold is-big", 1300);
+      lunge(0.06, 200);
 
-      const knives: { node: HTMLElement; el: HTMLElement; hang: { x: number; y: number }; hit: { x: number; y: number } }[] = [];
-      let fx: HTMLElement | null = null;
+      const pose = POSES[Math.floor(Math.random() * POSES.length)];
+      const jokes = lines.jokes;
+      const setup = pickLine(jokes.map(([first]) => first));
+      const punch = jokes.find(([first]) => first === setup)?.[1] ?? "";
+
+      at(WORLD.stop - 70, () => {
+        frame("stand", { body: pose, face: "smug" });
+        // Torcido y un poco mas grande, como en una viñeta: y asi se queda.
+        if (body) {
+          body.style.rotate = `${POSE_TILT[pose] ?? 0}deg`;
+          body.style.scale = "1.06";
+        }
+        pop("バァーン", Math.min(vw - 70, from.x + (small ? 0 : tall * 0.45)), from.y - tall * 0.2, "power-pop-word is-gold", 900);
+      });
 
       at(WORLD.stop, () => {
         const at0 = heart();
         if (!at0) return;
         worldOn = true;
-        window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start" } }));
-        // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia los cuchillos.
+        window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "world" } }));
+        // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia la pose.
         root.classList.add("intro-banner-low");
         void runPower("zawarudo", { x: at0.x, y: at0.y, reducedMotion: false, pastScroll: 0, ms: WORLD.ms }).finally(() =>
           root.classList.remove("intro-banner-low"),
         );
-        // El tiempo se detuvo para todos menos para el: sigue respirando.
-        giant.getAnimations({ subtree: true }).forEach((a) => a.play());
-        fx = fxLayer();
       });
 
-      /*
-        Cuchillos a letras distintas, repartidas por el nombre. Salen del
-        Stand, giran en el aire para apuntar y el tiempo los deja colgados
-        alrededor del nombre, cada uno hacia afuera de su letra: un anillo
-        de cuchillos esperando a que el tiempo vuelva.
-      */
-      const list = targets().sort(() => Math.random() - 0.5);
-      const count = Math.min(list.length, small ? 6 : 9);
-      const name = list.reduce(
-        (acc, { r }) => ({ x: acc.x + (r.left + r.width / 2) / list.length, y: acc.y + (r.top + r.height / 2) / list.length }),
-        { x: 0, y: 0 },
-      );
-      for (let i = 0; i < count; i++) {
-        at(WORLD.knives + i * WORLD.knifeStep, () => {
-          const origin = heart();
-          if (!origin || !fx) return;
-          const { el, r } = list[i];
-          const hit = pointIn(r);
-          // Hacia afuera del nombre, torcido al azar, sin salirse de la pantalla.
-          const out = Math.atan2(hit.y - name.y || -1, hit.x - name.x) + (Math.random() - 0.5) * 0.9;
-          const gap = (small ? 50 : 85) + Math.random() * (small ? 25 : 45);
-          const hx = Math.min(vw - 20, Math.max(20, hit.x + Math.cos(out) * gap));
-          const hy = Math.max(70, hit.y + Math.sin(out) * gap);
-          const hang = { x: hx - hit.x, y: hy - hit.y };
-          const aim = Math.atan2(-hang.y, -hang.x);
-          const flight = Math.atan2(hy - origin.y, hx - origin.x);
-          lunge(hx, hy, small ? 12 : 22, 160);
-          const knife = document.createElement("span");
-          knife.className = small ? "stand-knife" : "stand-knife is-big";
-          knife.style.animation = "none";
-          knife.style.left = `${hit.x.toFixed(0)}px`;
-          knife.style.top = `${hit.y.toFixed(0)}px`;
-          knife.style.setProperty("--ka", `${aim.toFixed(3)}rad`);
-          fx.appendChild(knife);
-          keep(
-            knife.animate(
-              [
-                { translate: `${(origin.x - hit.x).toFixed(1)}px ${(origin.y - hit.y).toFixed(1)}px`, rotate: `${flight.toFixed(3)}rad`, opacity: 0 },
-                { opacity: 1, offset: 0.2 },
-                { translate: `${hang.x.toFixed(1)}px ${hang.y.toFixed(1)}px`, rotate: `${aim.toFixed(3)}rad`, opacity: 1 },
-              ],
-              { duration: 260, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "forwards" },
-            ),
-          );
-          knives.push({ node: knife, el, hang, hit });
-          if (i % 3 === 0) pop("無駄", origin.x + (Math.random() - 0.5) * 80, origin.y - tall * 0.35, "power-pop-word is-gold", 700);
+      // ゴゴゴ alrededor de la pose: lo unico que "suena" en el mundo detenido.
+      for (let i = 0; i < 3; i++) {
+        at(WORLD.menace + i * 260, () => {
+          const at0 = heart();
+          if (!at0) return;
+          const side = i % 2 ? -1 : 1;
+          const gx = Math.min(vw - 30, Math.max(30, at0.x + side * tall * rand(0.32, 0.5)));
+          pop("ゴ", gx, Math.max(90, at0.y - tall * rand(0.1, 0.5)), "power-pop-word is-purple", 1500);
         });
       }
-
-      // そして時は動き出す: los cuchillos terminan su viaje de golpe.
-      at(WORLD.stop + WORLD.ms + 40, () => {
-        knives.forEach(({ node, el, hang, hit }, i) => {
-          const fly = keep(
-            node.animate(
-              [{ translate: `${hang.x.toFixed(1)}px ${hang.y.toFixed(1)}px` }, { translate: "0px 0px" }],
-              { duration: 110, delay: i * 30, easing: "cubic-bezier(0.6, 0, 0.9, 0.4)", fill: "forwards" },
-            ),
-          );
-          fly.onfinish = () => {
-            impact(hit.x, hit.y);
-            jolt(el, small ? 3 : 5, 200);
-          };
-        });
-        const list2 = knives.map(({ hit }) => hit);
-        if (list2.length) {
-          const top = Math.min(...list2.map((p) => p.y));
-          const mid = list2.reduce((sum, p) => sum + p.x, 0) / list2.length;
-          timers.push(
-            window.setTimeout(() => {
-              shout("ズドドドッ", mid, top - 30, "power-pop-word is-gold is-big", 1100);
-              shake(small ? 5 : 8, 380);
-            }, 120),
-          );
-        }
-        // Se quedan clavados un momento y se desvanecen.
-        timers.push(
-          window.setTimeout(() => {
-            knives.forEach(({ node }) => keep(node.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 350, fill: "forwards" })));
-          }, 1500),
-        );
+      at(WORLD.joke, () => talk(setup, 1100));
+      at(WORLD.punchline, () => {
+        const at0 = heart();
+        frame("stand", { body: pose, face: "laugh" });
+        talk(punch, 1000);
+        if (at0) pop(pickLine(lines.laughs), Math.min(vw - 60, at0.x + tall * 0.35), Math.max(90, at0.y - tall * 0.62), "power-pop-word is-gold", 1100);
+      });
+      // El tiempo vuelve: deja la pose de golpe, como si nada.
+      at(WORLD.stop + WORLD.ms + 120, () => {
+        hush();
+        if (body) body.style.rotate = body.style.scale = "";
+        frame("stand", { face: "smug" });
       });
     };
 
@@ -639,20 +802,23 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       giant.style.visibility = "hidden";
       requestAnimationFrame(() => requestAnimationFrame(() => layerEl && (layerEl.style.transition = "")));
       // Las capas de efectos, cuando ya se desvanecio lo que llevan.
-      timers.push(window.setTimeout(() => layers.forEach((node) => node.remove()), 1500));
-      // ZA WARUDO: el chico remata (mini-stand.tsx).
-      if (worldOn) {
-        worldOn = false;
-        window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end" } }));
-      }
+      later(1500, () => layers.forEach((node) => node.remove()));
+      // El chico remata con su frase (mini-stand.tsx).
+      if (show) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end", kind: intro } }));
+      worldOn = false;
     };
 
     const condense = () => {
+      hush();
+      rushArms(false);
+      if (body) body.style.rotate = body.style.scale = "";
+      // El mismo cuadro que recibe el chico: el cambio es pixel por pixel.
+      frame("stand");
       const mini = document.querySelector<HTMLElement>(".stand-hit");
       const from = svg?.getBoundingClientRect();
       const to = mini?.getBoundingClientRect();
       if (!from?.width || !to?.width) {
-        crack?.cancel();
+        glass?.cancel();
         shattered?.cancel();
         return finish();
       }
@@ -676,15 +842,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       move.onfinish = () => {
         finish();
         // Las letras ya estan en su sitio: se suelta lo que las sujeta.
-        timers.push(window.setTimeout(() => shattered?.cancel(), 700));
+        later(700, () => shattered?.cancel());
       };
       // Si el poder no llego a repararlas (hidratacion tardia), se reparan aqui.
-      crack?.heal(to.left + to.width / 2, to.top + to.height / 2, duration);
+      glass?.heal(to.left + to.width / 2, to.top + to.height / 2, duration);
       shattered?.mend(duration + 120);
       // El contorno de tinta crece hasta el grosor del chico (ver hero-stand.tsx).
-      const rim = core.querySelector(".hero-stand-rim");
       const rimPx = Math.max(1, Math.round(miniCell / 2));
-      if (rim) {
+      core.querySelectorAll(".hero-stand-rim").forEach((rim) => {
         keep(
           rim.animate([{ strokeWidth: "0.6" }, { strokeWidth: String((rimPx * 2) / miniCell) }], {
             duration,
@@ -692,18 +857,29 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             fill: "forwards",
           }),
         );
-      }
+      });
     };
 
-    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.rush, intro === "world" ? manifestWorld : manifestDiamond);
-    at(condenseAt, condense);
+    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.windup, intro === "world" ? manifestWorld : manifestDiamond);
+    at(condenseAt, () => {
+      // Lo que quedo del poder (el puno de impulso, la inclinacion) no viaja con el.
+      animations.forEach((a) => a.effect && (a.effect as KeyframeEffect).target === body && a.cancel());
+      condense();
+    });
     return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
+      timers.forEach((timer) => {
+        window.clearTimeout(timer);
+        window.clearInterval(timer);
+      });
       animations.forEach((a) => a.cancel());
       layers.forEach((node) => node.remove());
-      crack?.cancel();
+      glass?.cancel();
       shattered?.cancel();
       stage?.classList.remove("hero-hitstop");
+      if (stage) stage.style.transformOrigin = "";
+      if (body) body.style.rotate = body.style.scale = "";
+      rushArms(false);
+      if (svg) showHeroFrame(svg, "stand");
       root.classList.remove("intro-banner-low");
       if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "cancel" } }));
       root.classList.remove("stand-manifest");
@@ -748,11 +924,6 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     de apilado que rompe background-clip:text; y los gradientes no
     interpolan, asi que el nombre saltaria de golpe al cambiar de tema
     mientras el resto funde en 500ms.
-  */
-  /*
-    Estilo JoJo: Anton (mas estrecha que la Geist Black, de ahi el vw un
-    poco mayor) y los dos colores de la portada del README: nombre en
-    crema/tinta, apellido en oro.
   */
   /*
     Estilo JoJo: Anton (mas estrecha que la Geist Black, de ahi el vw un
@@ -927,7 +1098,9 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           */}
           <div ref={standRef} aria-hidden="true" className="hero-stand pointer-events-none" style={delay(ENTRY.stand)}>
             <div ref={standCoreRef} className="hero-stand-core">
-              <HeroStand />
+              <div className="hero-stand-body">
+                <HeroStand />
+              </div>
             </div>
           </div>
 

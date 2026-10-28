@@ -7,7 +7,7 @@
  *
  * Paleta: . vacio · k tinta · c crema · s sombra crema · g oro ·
  * d oro oscuro · v visor · e ojo · p pupila · w brillo · r enojo ·
- * b sudor y lagrimas
+ * b sudor y lagrimas · h rosa (corazones y mejillas)
  *
  * El nucleo del pecho es un diamante: Diamond is Unbreakable.
  */
@@ -30,6 +30,7 @@ export const PALETTE: Record<string, string> = {
   w: "#ffffff",
   r: "#e2483b",
   b: "#8fd3f4",
+  h: "#e891c4",
 };
 
 const VISOR = "..kcvvvvvvvvvvvck.";
@@ -51,6 +52,55 @@ const HEAD = [
   "..kcvvvvvvvvvvvck.",
 ];
 
+/**
+ * La cara: lo que se ve en el visor. Va aparte del cuerpo para combinar
+ * cualquier pose con cualquier gesto (la pose JoJo con risa, el golpe
+ * con enojo...).
+ */
+export type Face =
+  | "open"
+  | "blink"
+  | "happy"
+  | "smug"
+  | "angry"
+  | "sad"
+  | "starry"
+  | "dizzy"
+  | "shock"
+  /** Ojos apretados de risa (> <). */
+  | "laugh"
+  /** Corazones rosas. */
+  | "love"
+  /** Un ojo abierto y el otro cerrado. */
+  | "wink"
+  /** Sonrisa con las mejillas rosas. */
+  | "blush";
+
+/**
+ * El cuerpo: donde van los punos. Las poses JoJo son varias para que no
+ * salga siempre la misma (ZA WARUDO elige una cada vez).
+ */
+export type Body =
+  | "idle"
+  | "punch"
+  /** Pose clasica: el puno izquierdo junto al visor. */
+  | "pose"
+  /** Los dos punos arriba, a los lados de la cabeza. */
+  | "arms"
+  /** Apunta con el brazo estirado y el otro puno arriba (la de Jotaro). */
+  | "point"
+  /** Los dos brazos abiertos, estirados a los lados (WRYYY). */
+  | "wide"
+  /** Un puno en alto, por encima de la cabeza. */
+  | "high"
+  /** Golpe hacia quien mira: el puno derecho, enorme, tapa medio pecho. */
+  | "jab"
+  /** El mismo golpe con el puno izquierdo. */
+  | "jabL";
+
+/** Las poses JoJo, para elegir una al azar. */
+export const POSES: Body[] = ["pose", "arms", "point", "wide", "high"];
+
 export type Frame =
   | "idle"
   | "blink"
@@ -67,51 +117,106 @@ export type Frame =
   | "angry"
   | "sweat"
   | "starry"
-  | "sad";
+  | "sad"
+  | "laugh"
+  | "love"
+  | "wink"
+  | "think"
+  | "blush"
+  /** Golpes hacia la pantalla, alternados en la rafaga. */
+  | "jab"
+  | "jabL";
 
-function eyes(frame: Frame, look: number) {
-  const L = [6, 7];
-  const R = [11, 12];
-  if (frame === "blink" || frame === "sleep") {
+/** Cuerpo y cara de cada cuadro con nombre. */
+function partsOf(frame: Frame): { body: Body; face: Face } {
+  switch (frame) {
+    case "blink":
+    case "sleep":
+      return { body: "idle", face: "blink" };
+    case "punch":
+      return { body: "punch", face: "open" };
+    case "pose":
+      return { body: "pose", face: "happy" };
+    case "stand":
+      return { body: "pose", face: "open" };
+    case "jab":
+    case "jabL":
+      return { body: frame, face: "angry" };
+    case "think":
+      return { body: "idle", face: "open" };
+    case "sweat":
+      return { body: "idle", face: "open" };
+    case "idle":
+    case "look":
+      return { body: "idle", face: "open" };
+    default:
+      return { body: "idle", face: frame };
+  }
+}
+
+/*
+  Ojos. Abiertos ocupan dos filas del visor y la pupila se corre hacia
+  donde mira: look en x (-1, 0, 1) y lookY en y (-1 arriba, 1 abajo).
+*/
+function eyes(face: Face, look: number, lookY: number) {
+  if (face === "blink") {
     return [VISOR, put(VISOR, [5, 6, 7, 10, 11, 12], "e"), VISOR];
   }
-  if (frame === "happy") {
+  if (face === "happy") {
     return [put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e"), VISOR];
   }
-  if (frame === "smug") {
+  if (face === "smug") {
     // Parpado a media asta: el que sabe algo que tu no.
     return [VISOR, put(VISOR, [5, 6, 7, 10, 11, 12], "e"), put(VISOR, [6, 7, 11, 12], "p")];
   }
-  if (frame === "angry") {
+  if (face === "angry") {
     // Cejas en V hacia adentro, en rojo.
     return [put(VISOR, [5, 12], "r"), put(VISOR, [6, 7, 10, 11], "r"), VISOR];
   }
-  if (frame === "sad") {
+  if (face === "sad") {
     return [VISOR, put(VISOR, [6, 7, 10, 11], "e"), put(VISOR, [5, 12], "e")];
   }
-  if (frame === "starry") {
+  if (face === "starry") {
     return [put(VISOR, [6, 11], "p"), put(put(VISOR, [5, 7, 10, 12], "p"), [6, 11], "w"), put(VISOR, [6, 11], "p")];
   }
-  if (frame === "dizzy") {
+  if (face === "dizzy") {
     // Ojos en X: lo lanzaron por la pagina.
     return [put(VISOR, [5, 7, 10, 12], "e"), put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e")];
   }
-  if (frame === "shock") {
+  if (face === "laugh") {
+    // > <: se rie tan fuerte que aprieta los ojos.
+    return [put(VISOR, [5, 12], "e"), put(VISOR, [6, 7, 10, 11], "e"), put(VISOR, [5, 12], "e")];
+  }
+  if (face === "love") {
+    return [put(VISOR, [5, 7, 10, 12], "h"), put(VISOR, [5, 6, 7, 10, 11, 12], "h"), put(VISOR, [6, 11], "h")];
+  }
+  if (face === "blush") {
+    return [put(VISOR, [6, 11], "e"), put(VISOR, [5, 7, 10, 12], "e"), put(VISOR, [4, 13], "h")];
+  }
+  if (face === "shock") {
     return [
       put(VISOR, [5, 6, 7, 10, 11, 12], "e"),
       put(put(VISOR, [5, 7, 10, 12], "e"), [6, 11], "k"),
       put(VISOR, [5, 6, 7, 10, 11, 12], "e"),
     ];
   }
-  // Abiertos: la pupila se corre hacia donde mira (-1, 0, 1).
-  const shift = Math.max(-1, Math.min(1, look));
-  const top = put(VISOR, [...L, ...R].map((c) => c + (shift > 0 ? 1 : shift < 0 ? -1 : 0)), "e");
-  const mid = put(
-    put(VISOR, [...L, ...R].map((c) => c + (shift > 0 ? 1 : shift < 0 ? -1 : 0)), "e"),
-    [L[1], R[1]].map((c) => c + (shift > 0 ? 1 : shift < 0 ? -2 : 0)),
-    "p",
-  );
-  return [top, mid, VISOR];
+  const shift = Math.max(-1, Math.min(1, Math.round(look)));
+  const dx = shift > 0 ? 1 : shift < 0 ? -1 : 0;
+  const pupil = shift > 0 ? 1 : shift < 0 ? -2 : 0;
+  const open = (row: string, withPupil: boolean, only?: "left") => {
+    const cols = only ? [6, 7] : [6, 7, 11, 12];
+    let next = put(row, cols.map((c) => c + dx), "e");
+    if (withPupil) next = put(next, (only ? [7] : [7, 12]).map((c) => c + pupil), "p");
+    return next;
+  };
+  if (face === "wink") {
+    // Ojo izquierdo abierto, el derecho una raya.
+    return [open(VISOR, false, "left"), put(open(VISOR, true, "left"), [10, 11, 12], "e"), VISOR];
+  }
+  const y = Math.max(-1, Math.min(1, Math.round(lookY)));
+  if (y < 0) return [open(VISOR, true), open(VISOR, false), VISOR];
+  if (y > 0) return [VISOR, open(VISOR, false), open(VISOR, true)];
+  return [open(VISOR, false), open(VISOR, true), VISOR];
 }
 
 const NECK = ["...kscccccccccsk..", "....kkkkkkkkkkk..."];
@@ -135,53 +240,136 @@ const BODY_PUNCH = [
   ".......kcccck.....",
 ];
 
+// Brazos abiertos: el golpe de BODY_PUNCH a los dos lados.
+const BODY_WIDE = [
+  "kkkkkkgggcgggkkkkk",
+  "kgggggggcwcggggggg",
+  "kggkkkgggcgggkkggg",
+  "kkk..kdgggggdk.kkk",
+  "......kgggggk.....",
+  ".......kcccck.....",
+];
+
 // Cola de espiritu: los Stands no tienen piernas.
 const TAILS = [
   ["........kcck......", ".........kck......", "..........k......."],
   [".......kcck.......", "......kck.........", "......k..........."],
 ];
 
-function rows(frame: Frame, tail: number, look: number) {
-  return mapRows(frame, tail, look).map((row) => row + (row[17] === "." || row[17] === "k" ? "." : "k"));
+const FIST = [".kk.", "kggk", "kggk", ".kk."];
+/*
+  El puno visto de frente, enorme por la perspectiva: va hacia quien mira.
+  Nudillos arriba, el pulgar cruzado abajo.
+*/
+const BIG_FIST = [
+  ".kkkkkkkk.",
+  "kwwgwwgwwk",
+  "kggdggdggk",
+  "kggdggdggk",
+  "kddddddggk",
+  "kgwwggkdgk",
+  ".kkkkkkkk.",
+];
+const BIG_FIST_L = BIG_FIST.map((row) => [...row].reverse().join(""));
+
+const BODY_START = HEAD.length + 3 + NECK.length;
+
+/** Pinta `block` desde (r, c); los puntos del bloque son transparentes. */
+function stamp(map: string[], r: number, c: number, block: string[]) {
+  block.forEach((line, i) => {
+    const row = map[r + i];
+    if (row === undefined) return;
+    const chars = row.split("");
+    for (let j = 0; j < line.length; j++) if (line[j] !== "." && c + j < chars.length) chars[c + j] = line[j];
+    map[r + i] = chars.join("");
+  });
 }
 
-function mapRows(frame: Frame, tail: number, look: number) {
-  const body = frame === "punch" ? BODY_PUNCH : BODY_IDLE;
-  const map = [...HEAD, ...eyes(frame === "pose" ? "happy" : frame === "stand" ? "idle" : frame, look), ...NECK, ...body, ...TAILS[tail % 2]];
+/** Vacia un rectangulo (donde estaba un puno que se fue a otro sitio). */
+function clear(map: string[], r: number, c: number, h: number, w: number) {
+  for (let i = r; i < r + h; i++) {
+    const chars = map[i].split("");
+    for (let j = c; j < c + w; j++) chars[j] = ".";
+    map[i] = chars.join("");
+  }
+}
+
+function shape(map: string[], body: Body) {
+  const leftUp = () => {
+    clear(map, BODY_START, 0, 4, 4);
+    stamp(map, 8, 0, FIST);
+  };
+  const rightAway = () => clear(map, BODY_START, 14, 4, 4);
+  switch (body) {
+    case "pose":
+      leftUp();
+      break;
+    case "arms":
+      leftUp();
+      rightAway();
+      stamp(map, 8, 14, FIST);
+      break;
+    case "point":
+      leftUp();
+      break;
+    case "high":
+      rightAway();
+      stamp(map, 1, 13, FIST);
+      break;
+    case "jab":
+      rightAway();
+      stamp(map, BODY_START - 1, 8, BIG_FIST);
+      break;
+    case "jabL":
+      clear(map, BODY_START, 0, 4, 4);
+      stamp(map, BODY_START - 1, 0, BIG_FIST_L);
+      break;
+  }
+}
+
+export interface Look {
+  /** Cuerpo distinto al del cuadro (una pose JoJo en particular). */
+  body?: Body;
+  /** Cara distinta a la del cuadro. */
+  face?: Face;
+  /** Mirada vertical: -1 arriba, 1 abajo. */
+  lookY?: number;
+}
+
+function rows(frame: Frame, tail: number, look: number, extra: Look = {}) {
+  return mapRows(frame, tail, look, extra).map((row) => row + (row[17] === "." || row[17] === "k" ? "." : "k"));
+}
+
+function mapRows(frame: Frame, tail: number, look: number, extra: Look) {
+  const parts = partsOf(frame);
+  const body = extra.body ?? parts.body;
+  const face = extra.face ?? parts.face;
+  const lookY = extra.lookY ?? (frame === "think" ? -1 : 0);
+  const torso = body === "punch" || body === "point" ? BODY_PUNCH : body === "wide" ? BODY_WIDE : BODY_IDLE;
+  const map = [...HEAD, ...eyes(face, frame === "think" ? 1 : look, lookY), ...NECK, ...torso, ...TAILS[tail % 2]];
   if (frame === "sweat") {
     // Gota de sudor al costado de la cabeza.
     map[3] = put(map[3], [15], "b");
     map[4] = put(map[4], [15, 16], "b");
     map[5] = put(map[5], [16], "b");
   }
-  if (frame === "sad") {
+  if (face === "sad") {
     // Una lagrima bajo el ojo.
     map[11] = put(map[11], [5], "b");
     map[12] = put(map[12], [5], "b");
   }
-  if (frame !== "pose" && frame !== "stand") return map;
-  /*
-    Pose JoJo: el puno izquierdo sube junto al visor (filas 8-11) y el
-    hueco que deja en el torso se vacia.
-  */
-  const fist = [".kk.", "kggk", "kggk", ".kk."];
-  const bodyStart = HEAD.length + 3 + NECK.length;
-  return map.map((row, r) => {
-    if (r >= bodyStart && r < bodyStart + 4) return "...." + row.slice(4);
-    const i = r - 8;
-    if (i >= 0 && i < 4) return fist[i] + row.slice(4);
-    return row;
-  });
+  shape(map, body);
+  return map;
 }
 
 export const SPRITE_H = rows("idle", 0, 0).length;
 
 /**
  * El mapa de caracteres de un cuadro, ya cerrado a 19 columnas. Lo usa el
- * Stand gigante del hero (hero-stand.tsx), que lo dibuja en SVG con trama.
+ * Stand gigante del hero (hero-stand.tsx), que lo dibuja en SVG.
  */
-export function standMap(frame: Frame, tail = 0, look = 0): string[] {
-  return rows(frame, tail, look);
+export function standMap(frame: Frame, tail = 0, look = 0, extra?: Look): string[] {
+  return rows(frame, tail, look, extra);
 }
 
 export interface DrawOptions {
@@ -197,11 +385,15 @@ export interface DrawOptions {
   tilt?: number;
   /** Giro completo alrededor del centro del cuerpo (piruetas). */
   spin?: number;
+  /** Aplastado (positivo, al aterrizar) o estirado (negativo, al volar), desde la base. */
+  squash?: number;
+  /** Pose o cara distintas a las del cuadro, y la mirada vertical. */
+  extra?: Look;
 }
 
 export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
-  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, spin = 0 } = options;
-  const map = rows(frame, tail, look);
+  const { x, y, scale, face, frame, tail, look = 0, tilt = 0, spin = 0, squash = 0, extra } = options;
+  const map = rows(frame, tail, look, extra);
   const w = SPRITE_W * scale;
   const h = map.length * scale;
   ctx.save();
@@ -212,6 +404,7 @@ export function drawStand(ctx: CanvasRenderingContext2D, options: DrawOptions) {
     ctx.rotate(spin);
     ctx.translate(0, h / 2);
   }
+  if (squash) ctx.scale(1 + squash * 0.6, 1 - squash);
   ctx.scale(face, 1);
   ctx.translate(-w / 2, -h);
   /*

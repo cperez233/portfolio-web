@@ -5,13 +5,13 @@ import { useLanguage } from "@/lib/language";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { readSecrets, SECRET_IDS, unlockSecret } from "@/lib/secrets";
 import type { StandEvent } from "@/lib/stand-events";
-import { drawStand, SPRITE_H, SPRITE_W, type Frame } from "./sprite";
+import { drawStand, POSES, SPRITE_H, SPRITE_W, type Body, type Frame, type Look } from "./sprite";
 import { standLines, type GuideId, type PowerId, type StandLines } from "./lines";
 import { Janken } from "./janken";
 import { Darby } from "./darby";
 import { StandChat } from "./stand-chat";
 import { POWER_VARIANTS, runPower } from "./powers";
-import { piecesOnScreen, pop } from "./power-kit";
+import { piecesOnScreen } from "./power-kit";
 import { pickFrom, pickLine } from "./pick";
 import type { TimeStopDetail } from "@/lib/time-stop";
 
@@ -34,7 +34,15 @@ import type { TimeStopDetail } from "@/lib/time-stop";
  *   leyendo, a ratos piensa en voz alta o hace un numero (pose, giro,
  *   golpes al aire, bostezo, mirar alrededor).
  * - Se puede agarrar y lanzar: vuela, rebota en los bordes y queda
- *   mareado. Al volar rapido deja estela, como Star Platinum.
+ *   mareado. Al volar rapido deja estela, como Star Platinum, y se estira;
+ *   al aterrizar se aplasta un instante.
+ * - Con raton te sigue con los ojos (de lado y arriba o abajo). Si lo
+ *   sobas (ir y venir encima de el) se pone feliz y suelta corazones; el
+ *   clic derecho le da verguenza, y nota cuando el raton sale de la
+ *   ventana, cuando se cae o vuelve el internet, cuando seleccionas un
+ *   buen trozo de texto y cuando imprimes.
+ * - Varias poses JoJo y caras (risa, guino, sonrojo, corazones, pensar):
+ *   no repite siempre el mismo gesto.
  * - 12 s sin que pase nada: se duerme.
  * - Al tocarlo abre una conversacion: quien es, que hace el, llevarte a
  *   una parte, datos de JoJo, un poder prestado o un jan-ken.
@@ -67,10 +75,17 @@ type Action =
   | "sweat"
   | "starry"
   | "sad"
+  | "laugh"
+  | "love"
+  | "wink"
+  | "think"
+  | "blush"
+  /** Rafaga de punos hacia la pantalla (alterna los dos). */
+  | "rush"
   | "emerge";
 
 /** Acciones que son solo una cara. */
-const FACES: Action[] = ["smug", "angry", "sweat", "starry", "sad"];
+const FACES: Action[] = ["smug", "angry", "sweat", "starry", "sad", "laugh", "love", "wink", "think", "blush"];
 
 interface Spot {
   el: Element;
@@ -138,7 +153,7 @@ export function MiniStand() {
 
   // Puentes hacia el bucle de animacion.
   const say = useRef<(text: string | null, ms?: number) => void>(() => {});
-  const act = useRef<(kind: Action, ms: number) => void>(() => {});
+  const act = useRef<(kind: Action, ms: number, look?: Look) => void>(() => {});
   // Cuenta como actividad (para que no se duerma justo al terminar un poder).
   const poke = useRef(() => {});
   // Aparecer en otro sitio sin volar (King Crimson se salta el viaje).
@@ -200,7 +215,9 @@ export function MiniStand() {
     let nextAura = performance.now() + 3000;
     let sleeping = false;
     let lastActivity = performance.now();
-    let action: { kind: Action; from: number; until: number } | null = null;
+    let action: { kind: Action; from: number; until: number; look?: Look } | null = null;
+    // Aplastado al aterrizar: se recupera solo (ver el bucle).
+    let squashUntil = 0;
     let lastSpokeAt = -Infinity;
     let pointerX = width / 2;
     let pointerY = height / 2;
@@ -264,13 +281,15 @@ export function MiniStand() {
       lastActivity = performance.now();
       sleeping = false;
     };
-    act.current = (kind, ms) => {
+    act.current = (kind, ms, look) => {
       const now = performance.now();
-      action = { kind, from: now, until: now + ms };
+      // Cada pose es una distinta, salvo que se pida una en particular.
+      const body: Body | undefined = kind === "pose" ? (look?.body ?? POSES[Math.floor(Math.random() * POSES.length)]) : look?.body;
+      action = { kind, from: now, until: now + ms, look: body || look?.face ? { ...look, body } : undefined };
     };
 
     // Onomatopeyas, aura, polvo y estrellas: elementos sueltos que se van solos.
-    const LIFE = { sfx: 900, aura: 2200, dust: 600, star: 900, mark: 1300 };
+    const LIFE = { sfx: 900, aura: 2200, dust: 600, star: 900, mark: 1300, heart: 1100 };
     function sfx(text: string, kind: keyof typeof LIFE, dx?: number, dy = -SPRITE_H * scale * 0.9) {
       const node = document.createElement("span");
       node.className = `stand-${kind}`;
@@ -280,6 +299,13 @@ export function MiniStand() {
       if (kind === "dust") node.style.setProperty("--dust-x", `${Math.sign(x) * 14}px`);
       fx!.appendChild(node);
       window.setTimeout(() => node.remove(), LIFE[kind]);
+    }
+
+    /** Corazones rosas que suben desde el (lo sobaste, o vas a escribirle). */
+    function hearts(n: number) {
+      for (let i = 0; i < n; i++) {
+        window.setTimeout(() => sfx("♥", "heart", (Math.random() - 0.5) * SPRITE_W * scale, -SPRITE_H * scale * (0.6 + Math.random() * 0.3)), i * 160);
+      }
     }
 
     // Copia del cuadro actual (estela al volar, o la copia quieta del tiempo detenido).
@@ -378,7 +404,22 @@ export function MiniStand() {
     react.current = (kind, ms = 2600) => {
       const now = performance.now();
       // Las reacciones de ambiente no se repiten seguido.
-      const ambient = ["copy", "fastScroll", "stare", "return", "language", "chapter", "faq", "hesitate", "typing", "resize"].includes(kind);
+      const ambient = [
+        "copy",
+        "fastScroll",
+        "stare",
+        "return",
+        "language",
+        "chapter",
+        "faq",
+        "hesitate",
+        "typing",
+        "resize",
+        "pet",
+        "rightclick",
+        "leave",
+        "select",
+      ].includes(kind);
       if (ambient && now - (lastReaction[kind] ?? -Infinity) < 25000) return;
       lastReaction[kind] = now;
       if (sleeping) {
@@ -399,26 +440,34 @@ export function MiniStand() {
         themeLight: ["angry", 1400, "!"],
         themeDark: ["smug", 1600],
         resize: ["sweat", 1400, "?"],
-        whatsapp: ["starry", 1800],
-        sent: ["starry", 1800],
+        whatsapp: ["love", 1800],
+        sent: ["love", 1800],
         bottom: ["starry", 1800],
         chapter: ["pose", 1500],
         faq: ["lookaround", 1600],
         typing: ["lookaround", 1600],
         audit: ["lookaround", 1600],
         dropped: ["twirl", 700],
-        stare: ["smug", 1600, "…"],
+        stare: [Math.random() < 0.5 ? "smug" : "blush", 1600, "…"],
         return: ["sad", 1600, "…"],
-        copy: ["smug", 1400],
+        copy: ["wink", 1400],
         language: ["happy", 1400, "♪"],
         hesitate: ["starry", 1400],
         tbc: ["pose", 1500],
+        pet: ["love", 2200],
+        rightclick: ["blush", 1800, "!?"],
+        leave: ["sad", 1800, "…"],
+        offline: ["sweat", 1800, "!?"],
+        online: ["happy", 1400, "♪"],
+        select: ["think", 1800, "…"],
+        print: ["starry", 1800],
       };
       const [face, faceMs, mark] = faces[kind] ?? ["happy", 1400];
       act.current(face, faceMs);
       if (mark) sfx(mark, "mark");
       if (kind === "whatsapp" || kind === "sent" || kind === "bottom") sfx("ドン!", "sfx");
       else if (kind === "chapter") sfx("バァーン", "sfx");
+      if (kind === "pet" || kind === "whatsapp" || kind === "sent") hearts(kind === "pet" ? 4 : 2);
       say.current(line, ms);
     };
 
@@ -427,9 +476,9 @@ export function MiniStand() {
       Con el tiempo detenido todo queda congelado, el tambien: no se
       dibuja, no habla, no vuela (asi se ve en la serie desde afuera).
       - Si lo detuvo el (ZA WARUDO), al reanudarse ya esta en otro sitio
-        de lo que se ve, queda su silueta un instante donde estaba, y unos
-        cuchillos aparecen de golpe alrededor de algo de la pagina y se
-        clavan. Se burla segun la seccion (o de que intentaste moverte).
+        de lo que se ve, en una pose JoJo y riendose: queda su silueta un
+        instante donde estaba. Se burla segun la seccion (o de que
+        intentaste moverte).
       - Si lo detuvo el retrato, a el tambien lo agarro: queda sudando.
     */
     type Point = { x: number; y: number };
@@ -478,50 +527,6 @@ export function MiniStand() {
       landedHere = true;
       return point;
     }
-    /** Cuchillos que "ya estaban ahi" al volver el tiempo, y se clavan. */
-    function knives() {
-      const rects = visibleRects();
-      const cx0 = width / 2;
-      const cy0 = height / 2;
-      const target = [...rects].sort(
-        (p, q) =>
-          Math.hypot(p.r.left + p.r.width / 2 - cx0, p.r.top + p.r.height / 2 - cy0) -
-          Math.hypot(q.r.left + q.r.width / 2 - cx0, q.r.top + q.r.height / 2 - cy0),
-      )[0];
-      if (!target) return null;
-      const r = target.r;
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      const count = width < 640 ? 5 : 8;
-      const rx = Math.min(r.width, width * 0.7) / 2;
-      const ry = r.height / 2;
-      for (let i = 0; i < count; i++) {
-        const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
-        // Donde se clava: en el borde del blanco.
-        const hx = cx + Math.cos(angle) * rx * 0.85;
-        const hy = cy + Math.sin(angle) * ry * 0.85;
-        // De donde viene: afuera, en la misma direccion.
-        const ox = Math.cos(angle) * 110;
-        const oy = Math.sin(angle) * 110;
-        const knife = document.createElement("span");
-        knife.className = "stand-knife";
-        knife.style.left = `${hx.toFixed(0)}px`;
-        knife.style.top = `${hy.toFixed(0)}px`;
-        knife.style.setProperty("--ka", `${(angle + Math.PI).toFixed(3)}rad`);
-        knife.style.setProperty("--kx", `${ox.toFixed(0)}px`);
-        knife.style.setProperty("--ky", `${oy.toFixed(0)}px`);
-        knife.style.animationDelay = `${i * 35}ms`;
-        fx!.appendChild(knife);
-        window.setTimeout(() => knife.classList.add("is-leaving"), 1500 + i * 35);
-        window.setTimeout(() => knife.remove(), 2000 + i * 35);
-      }
-      window.setTimeout(() => {
-        pop("ズドドドッ", cx, r.top - 10, "power-pop-word is-gold is-big", 900);
-        target.el.classList.add("power-hit");
-        window.setTimeout(() => target.el.classList.remove("power-hit"), 320);
-      }, 260);
-      return target.el;
-    }
     const onTimeStop = (event: Event) => {
       const { active, by } = (event as CustomEvent<TimeStopDetail>).detail;
       // En la entrada con ZA WARUDO el Stand no se congela ni se burla al
@@ -554,12 +559,11 @@ export function MiniStand() {
         return;
       }
       if (by === "stand") {
-        const hit = knives();
-        teleport(hit ?? undefined);
-        sfx("ドン!", "sfx");
-      }
-      act.current("smug", 2000);
-      sfx("ﾌﾌﾌ", "mark");
+        teleport();
+        sfx("バァーン", "sfx");
+        act.current("pose", 2000, { face: "laugh" });
+      } else act.current("smug", 2000);
+      sfx("フフフ", "mark");
       const sections = lines.timeStop.sections;
       say.current(
         pickLine(short(attempted ? lines.timeStop.attempt : (sections[sectionId()] ?? sections.default))),
@@ -573,28 +577,44 @@ export function MiniStand() {
       if (stop) stop.attempted = true;
     };
     /*
-      La entrada con ZA WARUDO la dirige el hero (portfolio-hero.tsx) con
-      "jojo:intro": start (el tiempo se detiene; el grande hace todo y el
+      Las entradas del hero (portfolio-hero.tsx) avisan con "jojo:intro":
+      start (empieza el poder; con ZA WARUDO el tiempo se detiene y el
       chico espera escondido), end (el grande ya se hizo el chico: remata
-      con una frase) y cancel (se desmonto a medias: solo se limpia).
+      con una frase de la entrada que toco y, un rato despues, saluda
+      segun la hora) y cancel (se desmonto a medias: solo se limpia).
     */
+    let greetLater = 0;
     const onIntro = (event: Event) => {
-      const phase = (event as CustomEvent<{ phase: string }>).detail?.phase;
+      const { phase, kind } = (event as CustomEvent<{ phase: string; kind?: "world" | "diamond" }>).detail ?? {};
       const root = document.documentElement;
       if (phase === "start") {
-        introWorld = true;
-        // El saludo lo sustituye la frase del final.
+        introWorld = kind === "world";
+        // El saludo va despues de la frase del final.
         greeted = true;
-        root.classList.add("intro-world");
+        if (introWorld) root.classList.add("intro-world");
         return;
       }
       introWorld = false;
       root.classList.remove("intro-world");
-      if (phase === "end") {
-        act.current("smug", 1800);
-        sfx("ﾌﾌﾌ", "mark");
-        say.current(pickLine(short(linesRef.current.intro.world)), 2800);
-      }
+      if (phase !== "end") return;
+      const lines = linesRef.current;
+      say.current(pickLine(short(kind === "diamond" ? lines.intro.diamond : lines.intro.world)), 2600);
+      // La cara, cuando termina el cuadro del relevo (emerge, 800ms).
+      window.setTimeout(() => {
+        if (kind === "diamond") {
+          act.current("wink", 1500);
+          sfx("✦", "mark");
+        } else {
+          act.current("smug", 1500);
+          sfx("フフフ", "mark");
+        }
+      }, 850);
+      window.clearTimeout(greetLater);
+      greetLater = window.setTimeout(() => {
+        greeted = false;
+        if (!sleeping && !panelOpen.current && performance.now() - lastSpokeAt > 2500) greet();
+        else greeted = true;
+      }, 5200);
     };
     window.addEventListener("jojo:intro", onIntro);
     window.addEventListener("jojo:timestop", onTimeStop);
@@ -617,6 +637,7 @@ export function MiniStand() {
       pointerX = event.clientX;
       pointerY = event.clientY;
       activity();
+      if (event.pointerType === "mouse" && !reducedMotion) rub(event.clientX, event.clientY);
     };
     let lastScrollY = window.scrollY;
     let lastScrollT = performance.now();
@@ -656,6 +677,58 @@ export function MiniStand() {
     const onFocusIn = (event: FocusEvent) => {
       const field = event.target as Element | null;
       if (field?.matches?.("main input, main textarea, footer input, footer textarea")) react.current("typing");
+    };
+    /*
+      Sobarlo: con raton, ir y venir encima de el. Cuenta los cambios de
+      direccion del puntero sobre el sprite; cuatro en poco mas de un
+      segundo es una caricia.
+    */
+    let rubTurns = 0;
+    let rubDir = 0;
+    let rubLastX = 0;
+    let rubSince = 0;
+    function rub(x: number, y: number) {
+      const spriteW = SPRITE_W * scale;
+      const spriteH = SPRITE_H * scale;
+      const over = Math.abs(x - body.x) < spriteW * 0.6 && y < body.y + 4 && y > body.y - spriteH - 4;
+      const now = performance.now();
+      if (!over || drag) {
+        rubTurns = 0;
+        return;
+      }
+      const dx = x - rubLastX;
+      rubLastX = x;
+      if (Math.abs(dx) < 2) return;
+      const dir = Math.sign(dx);
+      if (dir !== rubDir) {
+        rubDir = dir;
+        if (now - rubSince > 1400) rubTurns = 0;
+        if (!rubTurns) rubSince = now;
+        rubTurns += 1;
+      }
+      if (rubTurns >= 5 && now - rubSince < 1600) {
+        rubTurns = 0;
+        react.current("pet", 2400);
+      }
+    }
+    const onContextMenu = (event: MouseEvent) => {
+      if ((event.target as Element | null)?.closest?.("input, textarea")) return;
+      react.current("rightclick");
+    };
+    const onLeaveWindow = (event: MouseEvent) => {
+      if (fine && !event.relatedTarget && event.clientY <= 0) react.current("leave");
+    };
+    const onOffline = () => react.current("offline", 2600);
+    const onOnline = () => react.current("online", 2200);
+    const onPrint = () => react.current("print");
+    // Seleccionar un buen trozo de texto (con calma: se espera a que suelte).
+    let selectTimer = 0;
+    const onSelection = () => {
+      window.clearTimeout(selectTimer);
+      selectTimer = window.setTimeout(() => {
+        const text = document.getSelection()?.toString().trim() ?? "";
+        if (text.length > 24) react.current("select");
+      }, 900);
     };
     let resizeTimer = 0;
     let lastWidth = width;
@@ -745,6 +818,12 @@ export function MiniStand() {
     document.addEventListener("pointerover", onOver);
     document.addEventListener("focusin", onFocusIn);
     window.addEventListener("resize", onResize);
+    document.addEventListener("contextmenu", onContextMenu);
+    document.documentElement.addEventListener("mouseleave", onLeaveWindow);
+    document.addEventListener("selectionchange", onSelection);
+    window.addEventListener("offline", onOffline);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("beforeprint", onPrint);
 
     // --- Bucle --------------------------------------------------------
     /*
@@ -950,6 +1029,7 @@ export function MiniStand() {
         settledSince ||= now;
         if (!landedHere && !reducedMotion) {
           landedHere = true;
+          squashUntil = now + 240;
           if (Math.random() < 0.55) sfx(pickLine(linesRef.current.landing), "sfx");
           // Polvo a los lados al tocar suelo.
           sfx("", "dust", -spriteW * 0.45, -2);
@@ -977,11 +1057,16 @@ export function MiniStand() {
           // Un numero distinto cada vez: no siempre la misma pose.
           const skits: [Action, number, string | null][] = [
             ["pose", 1500, "ゴゴゴ"],
+            ["pose", 1500, "バァーン"],
             ["happy", 1200, null],
             ["twirl", 700, null],
             ["punch", 1100, "シュッ"],
+            ["rush", 900, "ドラララ"],
             ["yawn", 1300, "ふぁ…"],
             ["lookaround", 1800, null],
+            ["laugh", 1300, "フフフ"],
+            ["wink", 900, "☆"],
+            ["think", 1800, "…"],
           ];
           const [kind, ms, word] = skits[Math.floor(Math.random() * skits.length)];
           act.current(kind, ms);
@@ -1001,7 +1086,8 @@ export function MiniStand() {
       // Mirarlo fijo (con raton): reacciona.
       if (fine && !dialog && Math.hypot(pointerX - body.x, pointerY - (body.y - spriteH / 2)) < spriteW * 0.7) {
         stareSince ||= now;
-        if (now - stareSince > 1500 && now - lastStare > 30000) {
+        // Si acaba de hablar (lo sobaste, por ejemplo), mirarlo no lo interrumpe.
+        if (now - stareSince > 1500 && now - lastStare > 30000 && now - lastSpokeAt > 4000) {
           lastStare = now;
           react.current("stare");
         }
@@ -1025,7 +1111,10 @@ export function MiniStand() {
       else if (action && FACES.includes(action.kind)) frame = action.kind as Frame;
       else if (action?.kind === "pose") frame = "pose";
       else if (action?.kind === "punch") frame = Math.floor(now / 70) % 2 ? "punch" : "idle";
+      else if (action?.kind === "rush") frame = Math.floor(now / 60) % 2 ? "jab" : "jabL";
       else if (now < blinkUntil) frame = "blink";
+      // La pose o la cara que se pidio con la accion (una pose JoJo concreta, la risa...).
+      const extra: Look | undefined = action?.look && !emerging ? { ...action.look } : undefined;
       const look =
         emerging
           ? 1
@@ -1034,26 +1123,45 @@ export function MiniStand() {
           : fine
             ? Math.sign(pointerX - body.x) * body.face
             : 0;
+      // Mirada vertical: el puntero arriba de su cabeza o por debajo de sus pies.
+      const lookY =
+        fine && !emerging && frame !== "think"
+          ? pointerY < body.y - spriteH * 1.4
+            ? -1
+            : pointerY > body.y + spriteH * 0.6
+              ? 1
+              : 0
+          : 0;
       const spin = action?.kind === "twirl" && !frozen ? progress * Math.PI * 2 * body.face : 0;
       const tilt = frozen || spin
         ? 0
         : action?.kind === "dizzy"
             ? Math.sin(now / 90) * 0.3
             : action?.kind === "pose"
-              ? -0.14 * body.face
+              ? (action.look?.body === "high" ? 0.12 : action.look?.body === "point" ? 0.08 : -0.14) * body.face
               : held
                 ? Math.sin(now / 70) * 0.18
                 : Math.max(-0.35, Math.min(0.35, body.vx / 900));
       const idleBob = !flying && !sleeping && !frozen && !emerging && !reducedMotion ? Math.round(Math.sin(now / 420) * 1.2) * scale * 0.5 : 0;
+      /*
+        Aplastado al aterrizar (se recupera en 240ms) y un poco estirado al
+        volar rapido. En pasos de 0.04 para no redibujar cada cuadro.
+      */
+      const landing = now < squashUntil ? (squashUntil - now) / 240 : 0;
+      const squash = reducedMotion || held || emerging
+        ? 0
+        : Math.round((landing ? Math.sin(landing * Math.PI) * 0.16 : -Math.min(0.08, speed / 9000)) / 0.04) * 0.04;
+      // Riendose tiembla un poco.
+      const shakeX = action?.kind === "laugh" && !reducedMotion ? (Math.floor(now / 50) % 2 ? 1 : -1) * Math.max(1, scale / 2) : 0;
 
       // Solo se redibuja si algo cambio: quieto, el dibujo es el mismo.
       const tail = frozen || sleeping || emerging ? 0 : Math.floor(now / 260) % 2;
-      const key = `${idleBob}|${body.face}|${frame}|${tail}|${look}|${tilt.toFixed(3)}|${spin.toFixed(3)}`;
+      const key = `${idleBob}|${body.face}|${frame}|${tail}|${look}|${lookY}|${extra?.body}|${extra?.face}|${squash}|${shakeX}|${tilt.toFixed(3)}|${spin.toFixed(3)}`;
       if (key !== drawn) {
         drawn = key;
         ctx!.clearRect(0, 0, cw, ch);
         drawStand(ctx!, {
-          x: cw / 2,
+          x: cw / 2 + shakeX,
           y: ch - scale * PAD_BOTTOM + idleBob,
           scale,
           face: body.face,
@@ -1062,6 +1170,8 @@ export function MiniStand() {
           look,
           tilt,
           spin,
+          squash,
+          extra: { ...extra, lookY: extra?.lookY ?? lookY },
         });
       }
       canvas!.style.transform = `translate3d(${Math.round(body.x - cw / 2)}px, ${Math.round(body.y - ch + scale * PAD_BOTTOM)}px, 0)`;
@@ -1124,6 +1234,14 @@ export function MiniStand() {
       document.removeEventListener("pointerover", onOver);
       document.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("contextmenu", onContextMenu);
+      document.documentElement.removeEventListener("mouseleave", onLeaveWindow);
+      document.removeEventListener("selectionchange", onSelection);
+      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("beforeprint", onPrint);
+      window.clearTimeout(selectTimer);
+      window.clearTimeout(greetLater);
       window.removeEventListener("jojo:intro", onIntro);
       document.documentElement.classList.remove("intro-world");
       window.removeEventListener("jojo:timestop", onTimeStop);
@@ -1161,7 +1279,7 @@ export function MiniStand() {
 
   // En el chat gesticula con caras distintas, no siempre la misma.
   const onTalk = useCallback(() => {
-    const faces: Action[] = ["happy", "happy", "smug", "starry", "pose"];
+    const faces: Action[] = ["happy", "happy", "smug", "starry", "pose", "wink", "laugh", "blush", "think"];
     act.current(faces[Math.floor(Math.random() * faces.length)], 700);
   }, []);
 
@@ -1183,7 +1301,8 @@ export function MiniStand() {
     await wait(700);
     const info = probe.current();
     // Giorno tambien golpea para dar vida.
-    if (id === "starplatinum" || id === "crazydiamond" || id === "goldexperience") act.current("punch", id === "goldexperience" ? 700 : 1500);
+    if (id === "crazydiamond") act.current("rush", 1500);
+    else if (id === "starplatinum" || id === "goldexperience") act.current("punch", id === "goldexperience" ? 700 : 1500);
     else if (id === "madeinheaven") act.current("twirl", 2600);
 
     const found = readSecrets().length;
@@ -1258,7 +1377,7 @@ export function MiniStand() {
       case "starplatinum":
         return variant === "rush" ? ["sweat", "ハァ"] : ["smug", null];
       case "crazydiamond":
-        return Math.random() < 0.5 ? ["starry", "✦"] : ["angry", "＃"];
+        return Math.random() < 0.5 ? ["wink", "✦"] : ["angry", "＃"];
       case "goldexperience":
         return ["starry", "✿"];
       case "echoes":
@@ -1266,11 +1385,13 @@ export function MiniStand() {
       case "softwet":
         return ["sad", "…"];
       case "hermit":
-        return ["smug", "ﾌﾌ"];
+        return ["smug", "フフ"];
       case "madeinheaven":
         return ["sweat", "ハァハァ"];
       case "kingcrimson":
         return ["smug", "!"];
+      case "bitesthedust":
+        return ["laugh", "フフフ"];
       default:
         return ["happy", null];
     }
@@ -1280,13 +1401,13 @@ export function MiniStand() {
   function reactToRound(result: "win" | "lose" | "draw") {
     // "lose" es que perdiste tu: el Stand se pone engreido.
     if (result === "lose") {
-      act.current("smug", 1400);
-      markRef.current("ﾌﾌﾌ");
+      act.current(Math.random() < 0.5 ? "smug" : "laugh", 1400);
+      markRef.current("フフフ");
     } else if (result === "win") {
       act.current(Math.random() < 0.5 ? "angry" : "sad", 1400);
       markRef.current(Math.random() < 0.5 ? "＃" : "…");
     } else {
-      act.current("sweat", 900);
+      act.current(Math.random() < 0.5 ? "sweat" : "think", 900);
       markRef.current("!?");
     }
   }

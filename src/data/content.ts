@@ -372,7 +372,7 @@ const en: Dictionary = {
       },
       {
         title: "Brand & content",
-        body: "A website works better when the brand behind it is clear. I built a TikTok audience of 35K+ followers and 2.5M likes by talking to people the way they talk, and I use that to make content that brings your business customers, not just views. Logo and colours included.",
+        body: "A website works better when the brand behind it is clear. I built a TikTok audience of 35K+ followers and 2.5M likes by talking to people the way they talk, and I put that same voice into content that brings customers to your business. Logo and colours included.",
         traits: [
           { label: "Visual identity", detail: "logo, colours, fonts" },
           { label: "Content for social media", detail: "scripts and editing that hold attention" },
@@ -684,7 +684,7 @@ const en: Dictionary = {
         scans: { title: "PDFs & scans", detail: "Paper, forms" },
         ocr: { title: "OCR", detail: "Azure Doc Intelligence" },
         llm: { title: "LLM", detail: "Structures & validates" },
-        search: { title: "Search", detail: "Seconds, not hours" },
+        search: { title: "Search", detail: "Answers in seconds" },
       },
     },
     "svc-audit": {
@@ -740,7 +740,7 @@ const en: Dictionary = {
       web: {
         name: "Website + Google & AI",
         short: "Web + AI",
-        summary: "For people to find you when they search, not only when you share the link.",
+        summary: "So people find you when they search, even if they've never seen your link.",
         time: "2 to 3 weeks",
         features: [
           "Up to 5 sections or pages",
@@ -762,7 +762,7 @@ const en: Dictionary = {
     },
     custom: {
       name: "App or custom system",
-      summary: "Automations, internal systems, AI that reads your documents. I understand the problem first and give you a fixed price.",
+      summary: "Automations, internal systems, AI that reads your documents. First I get to know the problem, then I give you a fixed price.",
       cta: "Ask for a quote",
       whatsappMessage: "Hi Cristian, I'd like a quote for an app or custom system.",
     },
@@ -776,9 +776,9 @@ const en: Dictionary = {
       title: "Paid separately, by you",
       intro: "They go in your name and on your card, paid directly to the provider. I help you set them up and leave usage alerts on.",
       items: [
-        { label: "Domain (yourbusiness.com)", value: "about US$15–30 a year" },
+        { label: "Domain (yourbusiness.com)", value: "about US$15 to 30 a year" },
         { label: "Hosting for a landing page", value: "from US$0 to about US$25 a year" },
-        { label: "Hosting with admin panel and database", value: "about US$5–25 a month, depending on traffic" },
+        { label: "Hosting with admin panel and database", value: "about US$5 to 25 a month, depending on traffic" },
         { label: "Support after the first 30 days", value: "quoted separately" },
       ],
     },
@@ -899,7 +899,7 @@ const en: Dictionary = {
       nameJp: "パラノイド・アンドロイド",
       user: "Stand user: Cristian Pérez",
       description:
-        "Builds software, websites and apps that businesses actually use, and makes content that goes viral. Has a cybersecurity streak: checks the locks before handing over the keys.",
+        "Builds software, websites and apps that businesses put to work, and makes content that goes viral. Has a cybersecurity streak: checks the locks before handing over the keys.",
       stats: ["Power", "Speed", "Range", "Stamina", "Precision", "Potential"],
       chartLabel: "Stand stats: Power C, Speed B, Range A, Stamina A, Precision A, Potential A.",
       explainerTitle: "What's a Stand?",
@@ -954,7 +954,7 @@ const es: Dictionary = {
       },
       {
         title: "Marca y contenido",
-        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 35K+ seguidores y 2.5M de likes en TikTok hablándole a la gente en su idioma, y eso mismo lo pongo en contenido que le trae clientes a tu negocio, no solo vistas. Logo y colores incluidos.",
+        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 35K+ seguidores y 2.5M de likes en TikTok hablándole a la gente en su idioma, y esa misma forma de hablar la pongo en contenido que le trae clientes a tu negocio. Logo y colores incluidos.",
         traits: [
           { label: "Identidad visual", detail: "logo, colores, tipografías" },
           { label: "Contenido para redes", detail: "guiones y edición que retienen" },
@@ -1266,7 +1266,7 @@ const es: Dictionary = {
         scans: { title: "PDFs y escaneos", detail: "Papel, formularios" },
         ocr: { title: "OCR", detail: "Azure Doc Intelligence" },
         llm: { title: "LLM", detail: "Estructura y valida" },
-        search: { title: "Búsqueda", detail: "Segundos, no horas" },
+        search: { title: "Búsqueda", detail: "Respuesta en segundos" },
       },
     },
     "svc-audit": {
@@ -1322,7 +1322,7 @@ const es: Dictionary = {
       web: {
         name: "Web + Google e IA",
         short: "Web + IA",
-        summary: "Para que te encuentren cuando buscan, no solo cuando compartes el link.",
+        summary: "Para que te encuentren cuando buscan, aunque nunca hayan visto tu link.",
         time: "2 a 3 semanas",
         features: [
           "Hasta 5 secciones o páginas",
@@ -1358,9 +1358,9 @@ const es: Dictionary = {
       title: "Lo que pagas aparte",
       intro: "Van a tu nombre y con tu tarjeta, directo al proveedor. Te ayudo a crearlos y dejo alertas de consumo activas.",
       items: [
-        { label: "Dominio (tunegocio.com)", value: "aprox. $60.000 – $120.000 al año" },
+        { label: "Dominio (tunegocio.com)", value: "entre $60.000 y $120.000 al año, aprox." },
         { label: "Hosting de una página de presentación", value: "desde $0 hasta aprox. $100.000 al año" },
-        { label: "Hosting con panel y base de datos", value: "aprox. $20.000 – $100.000 al mes, según visitas" },
+        { label: "Hosting con panel y base de datos", value: "entre $20.000 y $100.000 al mes, según las visitas" },
         { label: "Soporte después de los primeros 30 días", value: "se cotiza aparte" },
       ],
     },

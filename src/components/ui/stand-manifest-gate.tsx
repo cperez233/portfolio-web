@@ -17,12 +17,12 @@
   componente de cliente avisa en desarrollo y React no lo ejecuta.
 
   Sin red de seguridad el chico no volveria si el hero no llega a
-  hidratar: a los 8.5s se suelta pase lo que pase (la entrada mas larga,
-  ZA WARUDO, termina hacia los 6s). El hero lo suelta antes
+  hidratar: a los 11.5s se suelta pase lo que pase (las entradas terminan
+  hacia los 7s; el Stand grande se desvanece solo a los 11s). El hero lo suelta antes
   (al terminar el relevo, o en cuanto sabe que no habra relevo). Con
   reduced motion no hay grande, asi que no se esconde nada.
 */
-const script = `(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var r=document.documentElement;r.classList.add("stand-manifest");setTimeout(function(){r.classList.remove("stand-manifest")},8500)}catch(e){}})()`;
+const script = `(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var r=document.documentElement;r.classList.add("stand-manifest");setTimeout(function(){r.classList.remove("stand-manifest")},11500)}catch(e){}})()`;
 
 export function StandManifestGate() {
   return <script dangerouslySetInnerHTML={{ __html: script }} />;
