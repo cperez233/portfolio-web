@@ -356,6 +356,8 @@ export const standLines: Record<Language, StandLines> = {
         "Hora de almuerzo. Yo no como.",
         "Sol a plomo. Hamon al máximo.",
         "Mediodía. Hora de un capítulo.",
+        "Almuerzo en pausa. Lee un rato.",
+        "Mediodía. Hasta el Stand tiene hambre.",
       ],
       afternoon: [
         "Buenas tardes. Hora de leer.",
@@ -376,6 +378,8 @@ export const standLines: Record<Language, StandLines> = {
         "Casi medianoche. Hora de DIO.",
         "La noche es joven. Quédate.",
         "Noche cerrada. Me gusta.",
+        "Todos duermen. Tú y yo, no.",
+        "Tarde, pero ゴゴゴ no duerme.",
       ],
       visit: [
         "Volviste. Visita {n}.",
@@ -994,6 +998,8 @@ export const standLines: Record<Language, StandLines> = {
         "Lunch break. I don't eat.",
         "Sun's overhead. Max Hamon.",
         "Noon. Time for a chapter.",
+        "Lunch is waiting. Read first.",
+        "Noon. Even Stands get hungry.",
       ],
       afternoon: [
         "Good afternoon. Reading time.",
@@ -1014,6 +1020,8 @@ export const standLines: Record<Language, StandLines> = {
         "Almost midnight. DIO's hour.",
         "The night is young. Stay.",
         "Dead of night. I like it.",
+        "Everyone sleeps. Not us.",
+        "Late, but ゴゴゴ never sleeps.",
       ],
       visit: ["You're back. Visit {n}.", "Visit {n}. Family now.", "{n} visits. Suspicious. I like it.", "Visit {n}. One more Joestar.", "You again. Visit {n}."],
     },
