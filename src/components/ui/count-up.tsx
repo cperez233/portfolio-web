@@ -6,22 +6,24 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
  * Cifra que cuenta desde cero al entrar en pantalla. Solo la parte
- * numerica inicial ("32" de "32K+"); lo que no empieza por numero se
- * pinta tal cual. El HTML del servidor trae el valor final, que es lo
+ * numerica inicial ("32" de "32K+", "8.5" de "8.5K+", con sus decimales);
+ * lo que no empieza por numero se pinta tal cual. El HTML del servidor trae el valor final, que es lo
  * que leen buscadores y lectores de pantalla.
  */
 export function CountUp({ value }: { value: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
   const shouldReduceMotion = useReducedMotion();
-  const match = /^(\d+)(.*)$/.exec(value);
+  const match = /^(\d+(?:\.\d+)?)(.*)$/.exec(value);
+  // "8.5K+" cuenta de 0.0 a 8.5 con un decimal, no de 0 a 8 pegado a ".5K+".
+  const decimals = match?.[1].split(".")[1]?.length ?? 0;
 
   // Al hidratar arranca en cero, para que no se vea la cifra final
   // saltar a 0 justo cuando empieza la cuenta.
   useEffect(() => {
     const element = ref.current;
     if (!element || !match || inView || shouldReduceMotion) return;
-    element.textContent = `0${match[2]}`;
+    element.textContent = `${(0).toFixed(decimals)}${match[2]}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -35,7 +37,7 @@ export function CountUp({ value }: { value: string }) {
       duration: 1.4,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
-        element.textContent = `${Math.round(latest)}${suffix}`;
+        element.textContent = `${latest.toFixed(decimals)}${suffix}`;
       },
     });
     return () => controls.stop();

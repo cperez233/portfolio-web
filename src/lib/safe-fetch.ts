@@ -1,7 +1,7 @@
 import dns from "node:dns";
 import http from "node:http";
 import https from "node:https";
-import { isIP } from "node:net";
+import { BlockList, isIP } from "node:net";
 import { createBrotliDecompress, createGunzip, createInflate } from "node:zlib";
 import type { Readable } from "node:stream";
 
@@ -18,47 +18,46 @@ import type { Readable } from "node:stream";
 
 export class BlockedAddressError extends Error {}
 
+/**
+ * Rangos que nunca se deben alcanzar desde el servidor. IPv4 por lista de
+ * rangos prohibidos; IPv6 al reves: solo se admite el unicast global
+ * (2000::/3) menos los rangos reservados que caen dentro. Cualquier forma
+ * rara (compatible con IPv4, mapeada, NAT64, local) queda fuera por defecto.
+ */
+const denied = new BlockList();
+for (const [net, prefix] of [
+  ["0.0.0.0", 8],
+  ["10.0.0.0", 8],
+  ["100.64.0.0", 10],
+  ["127.0.0.0", 8],
+  ["169.254.0.0", 16],
+  ["172.16.0.0", 12],
+  ["192.0.0.0", 24],
+  ["192.0.2.0", 24],
+  ["192.168.0.0", 16],
+  ["198.18.0.0", 15],
+  ["198.51.100.0", 24],
+  ["203.0.113.0", 24],
+  ["224.0.0.0", 3],
+] as const) {
+  denied.addSubnet(net, prefix, "ipv4");
+}
+for (const [net, prefix] of [
+  ["2001::", 23], // protocolos IETF: Teredo, ORCHID, etc.
+  ["2001:db8::", 32], // documentacion
+  ["2002::", 16], // 6to4
+  ["3fff::", 20], // documentacion
+] as const) {
+  denied.addSubnet(net, prefix, "ipv6");
+}
+const globalUnicast = new BlockList();
+globalUnicast.addSubnet("2000::", 3, "ipv6");
+
 export function isPrivateAddress(address: string): boolean {
-  if (isIP(address) === 4) {
-    const [a, b, c] = address.split(".").map(Number);
-    return (
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      (a === 100 && b >= 64 && b <= 127) ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 192 && b === 0 && (c === 0 || c === 2)) ||
-      (a === 198 && (b === 18 || b === 19)) ||
-      (a === 198 && b === 51 && c === 100) ||
-      (a === 203 && b === 0 && c === 113) ||
-      a >= 224
-    );
-  }
-  const v6 = address.toLowerCase();
-  if (v6.startsWith("::ffff:")) {
-    const rest = v6.slice(7);
-    if (isIP(rest) === 4) return isPrivateAddress(rest);
-    // Forma hexadecimal (::ffff:7f00:1): se reconstruye la IPv4.
-    const hex = rest.split(":");
-    if (hex.length === 2 && hex.every((part) => /^[0-9a-f]{1,4}$/.test(part))) {
-      const [hi, lo] = hex.map((part) => parseInt(part, 16));
-      return isPrivateAddress(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
-    }
-    return true;
-  }
-  return (
-    v6 === "::" ||
-    v6 === "::1" ||
-    v6.startsWith("fc") ||
-    v6.startsWith("fd") ||
-    /^fe[89a-f]/.test(v6) ||
-    v6.startsWith("ff") ||
-    // NAT64 y 6to4 envuelven una IPv4 cualquiera: no se admiten.
-    v6.startsWith("64:ff9b:") ||
-    v6.startsWith("2002:")
-  );
+  const family = isIP(address);
+  if (family === 4) return denied.check(address, "ipv4");
+  if (family === 6) return !globalUnicast.check(address, "ipv6") || denied.check(address, "ipv6");
+  return true;
 }
 
 type LookupCallback = (
@@ -111,7 +110,11 @@ export function safeGet(url: URL, headers: Record<string, string>, signal: Abort
         const decoder =
           encoding === "gzip" ? createGunzip() : encoding === "br" ? createBrotliDecompress() : encoding === "deflate" ? createInflate() : null;
         const body = decoder ? response.pipe(decoder) : response;
-        if (decoder) response.on("error", (error) => decoder.destroy(error));
+        if (decoder) {
+          response.on("error", (error) => decoder.destroy(error));
+          // Destruir el descompresor tambien debe cerrar la conexion.
+          decoder.on("close", () => response.destroy());
+        }
         resolve({ status: response.statusCode ?? 0, headers: toHeaders(response.headers), body });
       },
     );

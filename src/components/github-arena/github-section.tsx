@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ContributionYear } from "@/lib/github-contributions";
 import { useLanguage } from "@/lib/language";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { hasWebGL } from "@/lib/webgl";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { site } from "@/data/site";
 import { FadeIn } from "@/components/ui/FadeIn";
@@ -43,17 +44,6 @@ function readColors(): ArenaColors {
     shadow: read("--panel-shadow"),
     fog: read("--color-surface"),
   };
-}
-
-/** Prueba de soporte. Suelta el contexto: los celulares aguantan pocos a la vez. */
-function hasWebGL() {
-  try {
-    const gl = document.createElement("canvas").getContext("webgl2");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    return Boolean(gl);
-  } catch {
-    return false;
-  }
 }
 
 /**

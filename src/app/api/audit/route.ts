@@ -109,11 +109,16 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "rateLimited" } satisfies AuditResponse, { status: 429 });
   }
 
-  // Un cuerpo legitimo es {"url": "..."}: cualquier cosa grande se descarta.
-  if (Number(request.headers.get("content-length") ?? 0) > 2000) {
-    return Response.json({ ok: false, error: "invalid" } satisfies AuditResponse, { status: 413 });
-  }
-  const body = await request.json().catch(() => null);
+  // Un cuerpo legitimo es {"url": "..."}: cualquier cosa grande se descarta,
+  // venga o no con Content-Length (un cuerpo chunked no lo trae).
+  const tooBig = () => Response.json({ ok: false, error: "invalid" } satisfies AuditResponse, { status: 413 });
+  if (Number(request.headers.get("content-length") ?? 0) > 2000) return tooBig();
+  const raw = await request.text().catch(() => "");
+  if (raw.length > 2000) return tooBig();
+  let body: { url?: unknown } | null = null;
+  try {
+    body = JSON.parse(raw);
+  } catch {}
   const url = normalizeUrl(body?.url);
   if (!url) {
     return Response.json({ ok: false, error: "invalid" } satisfies AuditResponse, { status: 400 });
@@ -124,7 +129,7 @@ export async function POST(request: Request) {
     const attempt = (target: URL) => fetchPage(target).catch(() => null);
     let page = await attempt(url);
     // Si la version https no responde, algunas paginas viejas solo tienen http.
-    if (!page && url.protocol === "https:" && !/^https:/i.test(String(body.url).trim())) {
+    if (!page && url.protocol === "https:" && !/^https:/i.test(String(body?.url ?? "").trim())) {
       page = await attempt(new URL(url.href.replace(/^https:/, "http:")));
     }
     if (!page) {

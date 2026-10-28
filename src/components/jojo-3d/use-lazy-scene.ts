@@ -2,21 +2,11 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { hasWebGL } from "@/lib/webgl";
 
 interface Controllable {
   setVisible: (visible: boolean) => void;
   dispose: () => void;
-}
-
-/** Prueba de soporte. Suelta el contexto: los celulares aguantan pocos a la vez. */
-function hasWebGL() {
-  try {
-    const gl = document.createElement("canvas").getContext("webgl2");
-    gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    return Boolean(gl);
-  } catch {
-    return false;
-  }
 }
 
 /**
