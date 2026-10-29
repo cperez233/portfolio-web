@@ -261,27 +261,35 @@ The render loop stops off-screen.
     use the `IntroKit` the hero effect lends them (the Stand's clock,
     frames, bubble, effect layers and the handover):
     - **King Crimson** (`crimson.ts`): a huge loading meter in the middle
-      of the screen, "Loading Cris…", crawling through three hours.
-      Epitaph flashes a frame of the future (the meter at 100%), then
-      キング・クリムゾン: time is erased across the whole screen. The page
-      falls into a crimson void where only the Stand moves; the name, the
-      portrait and the copy become ghosts trailing what "would have
-      happened", and the meter's missing frames shatter and fall. Time
-      snaps back with the meter already full (結果だけだ): systems engineer
-      and content creator.
-    - **Bites the Dust** (`dust.ts`): Killer Queen flies from its hand to
-      the portrait (すでに触っている…), カチッ, and the explosion takes the
-      page: an impact frame, a spiked burst, an inked smoke cloud,
-      debris, and the letters, the portrait, the copy, the buttons and
-      the nav all blown away. バイツァ・ダスト: the tape rewinds like a VHS
-      (tracking noise, a counter going down, a big clock spinning
-      backwards), everything flies back in jolts, and the whole CSS
-      entrance plays backwards (`entrance.ts`) and then again. Déjà vu.
+      of the screen, "Loading Cris…", crawling through three hours, with
+      its steps (design, code, delivery) and the real clock. Epitaph
+      flashes a frame of the future (the meter at 100%), then
+      キング・クリムゾン: the picture glitches for a few frames, as if the
+      animation skipped (like in the anime), and the crimson void falls.
+      Nothing of the page is there or moves: only King Crimson. Another
+      glitch and the page is already somewhere else, with no transition:
+      the meter full, every step done, the clock three hours later and
+      the Stand in another spot and pose (結果だけだ).
+    - **Bites the Dust** (`dust.ts`): the Stand (Killer Queen) reaches
+      out and touches the portrait (すでに触っている…), steps back and
+      presses the trigger with its thumb (カチッ). The portrait lights up
+      from inside and explodes like in Diamond is Unbreakable, drawn on a
+      canvas as a function of time (`boom.ts`): white core, a manga
+      fireball with ink outline and two-tone shading, sparks, a shock
+      ring and purple smoke. The letters, the portrait, the copy, the
+      buttons and the nav are blown away. バイツァ・ダスト: each piece's
+      empty slot shows as a dashed outline and the pieces fly back one by
+      one along the path they left by, with a trail, snapping into their
+      slot; the explosion swallows itself. Then the whole CSS entrance
+      plays backwards (`entrance.ts`) and again. Déjà vu.
     - **Gold Experience** (`gold.ts`): a 無駄無駄 rush on the name and a
       無駄ァ! finisher; a golden wave turns the letters into real wood
       (stretched `feTurbulence` grain clipped to the glyphs), a tree
-      bursts out of the punched letter across the page with leaves and
-      flowers, the hero's buttons become butterflies (like Giorno's
+      bursts out of the punched letter across the page in three planes
+      (`gold-art.ts`, no ink outlines: shaded bark that casts a shadow on
+      the letters, gradient leaves along the branches, soft flowers;
+      blurred far branches behind the name and blurred leaves close to
+      the camera), the hero's buttons become butterflies (like Giorno's
       banknotes) and the flowers shed hearts. Then it all goes back:
       butterflies into buttons, falling leaves, branches retracting.
     - **Sticky Fingers** (`zipper.ts`), which replaced Star Finger (a
@@ -298,27 +306,28 @@ The render loop stops off-screen.
       screen; an impact frame, cracks across the floor and dust. The
       Stand lifts it all back up, sweating (ヨイショ).
     - **To Be Continued** (`tbc.ts`): a dramatic pose, then the freeze
-      frame: sepia, grain, film scratches, a slow push-in, and the arrow
-      sliding in. The ending credits roll over the still frame (nearly
-      every credit is Cris: engineering, design, video, content), ending
-      on the next episode, 第N話 (your next visit). Colour comes back with
+      frame: sepia, grain, film scratches, a slow push-in, and the anime's
+      arrow sliding in (olive brown, ink outline, "To Be Continued" in the
+      JoJo display face). Nothing else, like the show. Colour comes back with
       a wipe behind the departing arrow, with no cut. Roundabout is not
       bundled (no license for the recording): set
       `NEXT_PUBLIC_ROUNDABOUT_URL` to an audio file you can use and
       `NEXT_PUBLIC_ROUNDABOUT_CUE` to the second that should land on the
       freeze; it plays only with the site's sound on and once the browser
       allows audio.
-    - **Heaven's Door** (`door.ts`): the Stand scribbles in the air and
-      the screen opens into a book whose pages riffle past; it settles
-      on a manga spread (your "life" page, then panels, screentone, speed
-      lines and a speech balloon) where the Stand handwrites an order in
-      the balloon (Caveat), picked at random: "You will buy a website, an
-      app, or several", "You will remember Cris is a systems engineer and
-      content creator"… Underline, seal (ドン), a laugh, and the book
-      closes. One page on phones, a spread on desktop, never over the
-      Stand.
-  - Either way, after the handover the mini Stand closes with a line
-    about what just happened and, a few seconds later, greets you
+    - **Heaven's Door** (`door.ts`): like in the anime there is no book:
+      the person opens. The Stand scribbles in the air to the portrait, a
+      seam splits the photo and the two halves of the face swing open as
+      covers (the skin; no real cover), unfolding pages from inside.
+      Rohan tears a scrap off a page (ビリッ). On the order page the Stand
+      handwrites an order in a balloon (Caveat), picked at random: "You
+      will buy a website, an app, or several"… Underline, seal (ドン),
+      then the pages fold, the face closes and is the photo again. One
+      page on phones, a spread on desktop, never over the Stand.
+  - Each one starts with the Stand shouting the name of the Stand it
+    copies in its bubble ("KILLER QUEEN!"), like in the show. Bubbles stay
+    up long enough to read (by length). After the handover the mini Stand
+    closes with one line about what just happened, and nothing more
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines
     in `lines.ts` under `intro`, `end` per entrance and `skipped`).
 
