@@ -6,7 +6,7 @@ import { BUTTERFLY, impact } from "@/components/mini-stand/powers";
 import { playSfx } from "@/lib/sfx";
 import { place, type IntroDef } from "./kit";
 import { copyPieces, movePiece } from "./parts";
-import { along, branch, defs, flower, grow, leaf, svgEl, type Limb } from "./gold-art";
+import { defs, grow, leaf, paint, svgEl, type Limb } from "./gold-art";
 
 /*
   Gold Experience: le da vida a lo que golpea. El Stand le cae al nombre
@@ -124,54 +124,26 @@ export const gold: IntroDef = {
     const leaves: SVGGElement[] = [];
     const flowers: SVGGElement[] = [];
     const grown: Animation[] = [];
-    /** Pinta un plano entero: ramas que crecen y, a lo largo de ellas, hojas y flores. */
+    /** Pinta un plano entero (gold-art.ts) y hace crecer sus ramas. */
     const plant = (layer: HTMLElement, id: string, tone: "back" | "mid", limbs: Limb[], size: number) => {
       const svg = svgEl("svg", { class: "ge-branches", width: vw, height: vh });
       layer.appendChild(svg);
-      defs(svg, id, tone);
-      const wood = svgEl("g");
-      const green = svgEl("g");
-      svg.append(wood, green);
-      for (const limb of limbs) {
-        const ms = 260 + limb.width * 7;
-        for (const stroke of branch(wood, limb, tone)) {
-          strokes.push(stroke);
-          grown.push(
-            kit.keep(
-              stroke.el.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], {
-                duration: ms,
-                delay: limb.delay,
-                easing: "cubic-bezier(0.2, 0.8, 0.3, 1)",
-                fill: "both",
-              }),
-            ),
-          );
-        }
-        if (limb.depth < 1) continue;
-        // Hojas a lo largo de la rama, a un lado y al otro, hacia afuera.
-        const spots = limb.depth >= 2 ? [0.4, 0.7, 0.95] : [0.55, 0.85];
-        spots.forEach((t, k) => {
-          const [x, y, dir] = along(limb, t);
-          const side = k % 2 ? 1 : -1;
-          const angle = dir + side * rand(0.55, 1.05);
-          const g = svgEl("g", { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${((angle * 180) / Math.PI).toFixed(0)})` });
-          const l = leaf(id, size * rand(0.75, 1.3), tone);
-          l.style.setProperty("--d", `${Math.round(limb.delay + ms * t + 60)}ms`);
-          g.appendChild(l);
-          green.appendChild(g);
-          leaves.push(l);
-        });
-        // Flores en algunas puntas (las del plano lejano no).
-        if (tone === "mid" && limb.depth >= 2 && Math.random() < 0.42) {
-          const [x, y] = along(limb, 1);
-          const g = svgEl("g", { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rand(0, 72).toFixed(0)})` });
-          const f = flower(id, size * rand(0.5, 0.72));
-          f.style.setProperty("--d", `${Math.round(limb.delay + ms + 120)}ms`);
-          g.appendChild(f);
-          green.appendChild(g);
-          flowers.push(f);
-        }
+      const painted = paint(svg, id, tone, limbs, size);
+      for (const stroke of painted.strokes) {
+        strokes.push(stroke);
+        grown.push(
+          kit.keep(
+            stroke.el.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], {
+              duration: stroke.ms,
+              delay: stroke.delay,
+              easing: "cubic-bezier(0.2, 0.8, 0.3, 1)",
+              fill: "both",
+            }),
+          ),
+        );
       }
+      leaves.push(...painted.leaves);
+      flowers.push(...painted.flowers);
     };
 
     kit.at(T.tree, () => {

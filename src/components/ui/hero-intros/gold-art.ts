@@ -73,6 +73,7 @@ export function defs(svg: SVGSVGElement, id: string, tone: "back" | "mid" | "fro
       `<linearGradient id="${id}-leaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${leaf[1]}"/><stop offset="1" stop-color="${leaf[0]}"/></linearGradient>` +
       `<radialGradient id="${id}-petal" cx="0.5" cy="0.15" r="0.95"><stop offset="0" stop-color="${petal[0]}"/><stop offset="1" stop-color="${petal[1]}"/></radialGradient>` +
       `<radialGradient id="${id}-heart" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#d99a2b"/></radialGradient>` +
+      `<radialGradient id="${id}-fruit" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff6d2"/><stop offset="0.45" stop-color="#e8b84a"/><stop offset="1" stop-color="#9a6a1c"/></radialGradient>` +
       `</defs>`,
   );
 }
@@ -137,4 +138,80 @@ export function flower(id: string, r: number) {
   }
   g.appendChild(svgEl("circle", { r: (r * 0.24).toFixed(1), fill: `url(#${id}-heart)` }));
   return g;
+}
+
+/** Una fruta dorada colgando de su rabito, con la base en (0, 0) (el arbol de Giorno da fruto). */
+export function fruit(id: string, r: number) {
+  const g = svgEl("g", { class: "ge-flower" });
+  g.appendChild(svgEl("path", { d: `M0 0 Q${(r * 0.2).toFixed(1)} ${(r * 0.6).toFixed(1)} 0 ${(r * 1.1).toFixed(1)}`, fill: "none", stroke: "#6e4526", "stroke-width": Math.max(1, r * 0.14).toFixed(1), "stroke-linecap": "round" }));
+  g.appendChild(svgEl("circle", { cy: (r * 2).toFixed(1), r: r.toFixed(1), fill: `url(#${id}-fruit)` }));
+  g.appendChild(svgEl("ellipse", { cx: (-r * 0.32).toFixed(1), cy: (r * 1.62).toFixed(1), rx: (r * 0.24).toFixed(1), ry: (r * 0.16).toFixed(1), fill: "rgba(255, 255, 255, 0.7)" }));
+  return g;
+}
+
+export interface Painted {
+  /** Los trazos de las ramas, con cuando y cuanto tardan en crecer. */
+  strokes: { el: SVGPathElement; f: number; delay: number; ms: number }[];
+  leaves: SVGGElement[];
+  /** Flores y frutas: se cierran al marchitarse. */
+  flowers: SVGGElement[];
+}
+
+/**
+ * Pinta un plano entero en `svg`: las ramas (sin animar: quien llama hace
+ * crecer los trazos con `delay` y `ms`) y, a lo largo de ellas, hojas que
+ * brotan a su tiempo (--d) y flores, o frutas, en algunas puntas.
+ */
+export function paint(
+  svg: SVGSVGElement,
+  id: string,
+  tone: "back" | "mid",
+  limbs: Limb[],
+  size: number,
+  { flowers = tone === "mid" ? 0.42 : 0, fruits = 0 }: { flowers?: number; fruits?: number } = {},
+): Painted {
+  defs(svg, id, tone);
+  const wood = svgEl("g");
+  const green = svgEl("g");
+  svg.append(wood, green);
+  const out: Painted = { strokes: [], leaves: [], flowers: [] };
+  for (const limb of limbs) {
+    const ms = 260 + limb.width * 7;
+    for (const stroke of branch(wood, limb, tone)) out.strokes.push({ ...stroke, delay: limb.delay, ms });
+    if (limb.depth < 1) continue;
+    // Hojas a lo largo de la rama, a un lado y al otro, hacia afuera.
+    const spots = limb.depth >= 2 ? [0.4, 0.7, 0.95] : [0.55, 0.85];
+    spots.forEach((t, k) => {
+      const [x, y, dir] = along(limb, t);
+      const side = k % 2 ? 1 : -1;
+      const angle = dir + side * rand(0.55, 1.05);
+      const g = svgEl("g", { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${((angle * 180) / Math.PI).toFixed(0)})` });
+      const l = leaf(id, size * rand(0.75, 1.3), tone);
+      l.style.setProperty("--d", `${Math.round(limb.delay + ms * t + 60)}ms`);
+      g.appendChild(l);
+      green.appendChild(g);
+      out.leaves.push(l);
+    });
+    if (limb.depth < 2) continue;
+    // En algunas puntas, una flor; en otras, colgando de la rama, una fruta.
+    const roll = Math.random();
+    if (roll < flowers) {
+      const [x, y] = along(limb, 1);
+      const g = svgEl("g", { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rand(0, 72).toFixed(0)})` });
+      const f = flower(id, size * rand(0.5, 0.72));
+      f.style.setProperty("--d", `${Math.round(limb.delay + ms + 120)}ms`);
+      g.appendChild(f);
+      green.appendChild(g);
+      out.flowers.push(f);
+    } else if (roll < flowers + fruits) {
+      const [x, y] = along(limb, 0.75);
+      const g = svgEl("g", { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})` });
+      const f = fruit(id, size * rand(0.26, 0.34));
+      f.style.setProperty("--d", `${Math.round(limb.delay + ms + 260)}ms`);
+      g.appendChild(f);
+      green.appendChild(g);
+      out.flowers.push(f);
+    }
+  }
+  return out;
 }

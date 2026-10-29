@@ -3481,66 +3481,7 @@ html.intro-banner-low .power-zw-text {
   animation: power-pop 0.45s var(--ease-premium) both;
 }
 
-/* Gold Experience: hojas, flores, mariquitas, arbol, rana, mariposas, serpiente. */
-/* Brote generico (hojas, flores, mariquitas): sale, sube y se va. */
-.power-ge-item {
-  position: absolute;
-  translate: -50% -50%;
-  opacity: 0;
-  animation: power-ge-item 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.power-ge-item svg {
-  display: block;
-  overflow: visible;
-  animation: power-sway 1.2s ease-in-out infinite alternate;
-}
-.power-ge-item.is-falling {
-  animation: power-ge-fall 1.8s ease-in both;
-}
-@keyframes power-ge-item {
-  0% {
-    opacity: 0;
-    scale: 0;
-    translate: -50% -50%;
-    rotate: 0deg;
-  }
-  14% {
-    opacity: 1;
-    scale: 1.25;
-  }
-  24% {
-    scale: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    translate: calc(-50% + var(--gx)) calc(-50% + var(--gy));
-    rotate: var(--gr);
-  }
-}
-@keyframes power-ge-fall {
-  0% {
-    opacity: 1;
-    translate: -50% -50%;
-    rotate: 0deg;
-  }
-  100% {
-    opacity: 0;
-    translate: calc(-50% + var(--gx)) 50vh;
-    rotate: 400deg;
-  }
-}
-@keyframes power-sway {
-  from {
-    rotate: -8deg;
-  }
-  to {
-    rotate: 8deg;
-  }
-}
-
+/* Gold Experience: arbol, jardin, rana, mariposas, serpiente. */
 /* Destello de vida: anillo dorado y chispas. */
 .power-life {
   position: fixed;
@@ -3597,67 +3538,24 @@ html.intro-banner-low .power-zw-text {
   }
 }
 
-/* El arbol: tronco que sube, ramas que se dibujan, copa que brota y se mece. */
-.power-tree {
-  position: absolute;
-  bottom: 0;
-  transform-origin: 50% 100%;
-  transition:
-    scale 0.6s ease-in,
-    opacity 0.6s;
+/*
+  El arbol y el jardin: las mismas ramas, hojas, flores y frutas pintadas
+  de la intro (gold-art.ts, .ge-branches/.ge-leaf/.ge-flower). El arbol
+  se mece desde la base y los dos proyectan sombra sobre la pagina.
+*/
+.power-ge-tree,
+.power-ge-garden {
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.28));
 }
-.power-tree.is-leaving {
-  scale: 1 0;
-  opacity: 0;
-}
-.power-tree svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.power-tree .trunk {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: power-trunk 0.9s cubic-bezier(0.3, 1.3, 0.5, 1) both;
-}
-@keyframes power-trunk {
-  from {
-    scale: 0.4 0;
-  }
-}
-.power-tree .branches path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: power-crack 0.7s cubic-bezier(0.3, 0.6, 0.3, 1) 0.55s forwards;
-}
-.power-tree .sway {
-  transform-box: view-box;
-  transform-origin: 170px 400px;
-  animation: power-tree-sway 2.4s ease-in-out 1.6s infinite alternate;
+.power-ge-tree {
+  animation: power-tree-sway 2.6s ease-in-out 1.8s infinite alternate;
 }
 @keyframes power-tree-sway {
   from {
-    rotate: -1.5deg;
+    rotate: -1.2deg;
   }
   to {
-    rotate: 1.5deg;
-  }
-}
-.power-tree .crown,
-.power-tree .fruit,
-.power-tree .fruit g {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.power-tree .crown,
-.power-tree > svg > .fruit,
-.power-tree .sway .fruit {
-  scale: 0;
-  animation: power-bloom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes power-bloom {
-  to {
-    scale: 1;
+    rotate: 1.2deg;
   }
 }
 
@@ -3674,6 +3572,7 @@ html.intro-banner-low .power-zw-text {
 }
 .power-frog-body {
   display: block;
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.25));
   transform-origin: 50% 100%;
   animation: power-breathe 0.6s ease-in-out infinite alternate;
 }
@@ -3775,6 +3674,7 @@ html.intro-banner-low .power-zw-text {
 }
 .power-snake svg {
   overflow: visible;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.22));
   animation: power-wiggle 0.3s ease-in-out infinite alternate;
 }
 .power-snake .scales {
@@ -4594,9 +4494,7 @@ html.intro-banner-low .power-zw-text {
     animation: none;
   }
   .power-fist,
-  .power-ge-item,
   .power-butterfly,
-  .power-tree *,
   .power-life {
     animation: none;
     opacity: 1;

@@ -4,6 +4,7 @@ import type { PowerId, StandLines } from "./lines";
 import { stopTime } from "@/lib/time-stop";
 import { playSfx } from "@/lib/sfx";
 import { createGlass } from "@/components/ui/hero-crack";
+import { grow, paint, svgEl, type Limb, type Painted } from "@/components/ui/hero-intros/gold-art";
 import {
   centerTarget,
   layer,
@@ -419,38 +420,34 @@ async function crazyDiamond(ctx: PowerContext) {
 /* ------------------------------------------------------------------ */
 
 /*
-  Dibujos de Gold Experience: tinta de 2-3 px, dos tonos (base y sombra)
-  y un brillo, como pegatinas de manga. Todo en SVG en linea.
+  Dibujos de Gold Experience, pintados como los de la intro (gold-art.ts):
+  sin contorno de tinta, con volumen de luz y sombra. Las ramas, hojas,
+  flores y frutas del arbol y del jardin salen de gold-art.ts; aqui van la
+  rana, la serpiente y la mariposa.
 */
-const INK = `stroke="#161418" stroke-linejoin="round" stroke-linecap="round"`;
-
-export const LEAF = `<svg viewBox="0 0 32 32" width="30" height="30"><path d="M4 28 C4 12 14 4 28 4 C28 18 20 28 4 28Z" fill="#6fbf5b" ${INK} stroke-width="2.5"/><path d="M4 28 C18 26 26 18 28 4 C24 18 16 24 4 28Z" fill="#4f9e44"/><path d="M5 27 C12 21 20 13 27 5" fill="none" stroke="#2f6b2a" stroke-width="2" stroke-linecap="round"/><path d="M11 21 l1 -6 M16 16 l1 -6 M12 21 l6 -1 M17 16 l6 -1" stroke="#2f6b2a" stroke-width="1.4" stroke-linecap="round"/><path d="M8 22 C9 15 14 10 20 8" fill="none" stroke="#b6eda0" stroke-width="2" stroke-linecap="round"/></svg>`;
-
-export const FLOWER = (petal: string, shade: string) =>
-  `<svg viewBox="0 0 40 40" width="34" height="34"><g ${INK} stroke-width="2.2">${[0, 72, 144, 216, 288]
-    .map((a) => `<ellipse cx="20" cy="9.5" rx="6.5" ry="9" fill="${petal}" transform="rotate(${a} 20 20)"/>`)
-    .join("")}</g>${[0, 72, 144, 216, 288]
-    .map((a) => `<ellipse cx="20" cy="12" rx="2.6" ry="5" fill="${shade}" transform="rotate(${a} 20 20)"/>`)
-    .join("")}<circle cx="20" cy="20" r="6" fill="#e3b341" ${INK} stroke-width="2.2"/><circle cx="18" cy="18" r="1.6" fill="#fff3c4"/><circle cx="22" cy="21.5" r="1" fill="#a87a1f"/><circle cx="19" cy="22.5" r="1" fill="#a87a1f"/></svg>`;
-
-export const LADYBUG = `<svg viewBox="0 0 36 32" width="32" height="28"><g ${INK} stroke-width="2"><path d="M7 21 l-4 3 M7 15 l-5 0 M29 21 l4 3 M29 15 l5 0" fill="none"/><path d="M13 7 Q10 2 7 3 M23 7 Q26 2 29 3" fill="none"/><circle cx="18" cy="9" r="6" fill="#161418"/><ellipse cx="18" cy="19" rx="12" ry="11" fill="#d8443c"/></g><path d="M18 9 V30" stroke="#161418" stroke-width="2"/><path d="M7 21 A12 11 0 0 0 29 21 A14 8 0 0 1 7 21Z" fill="#a8302a"/><circle cx="12" cy="16" r="2.6" fill="#161418"/><circle cx="24" cy="16" r="2.6" fill="#161418"/><circle cx="13" cy="24" r="2.2" fill="#161418"/><circle cx="23" cy="24" r="2.2" fill="#161418"/><path d="M10 13 Q12 10 15 10" stroke="#ffb3a8" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="7" r="1.3" fill="#ece6d8"/><circle cx="20" cy="7" r="1.3" fill="#ece6d8"/></svg>`;
-
-const FROG = `<svg viewBox="0 0 80 66" width="120" height="99"><g ${INK} stroke-width="3">
-  <path d="M10 56 Q2 62 8 64 Q14 66 20 60Z" fill="#4f9e44"/><path d="M70 56 Q78 62 72 64 Q66 66 60 60Z" fill="#4f9e44"/>
-  <path d="M8 46 Q8 24 40 24 Q72 24 72 46 Q72 62 40 62 Q8 62 8 46Z" fill="#6fbf5b"/>
-  <circle cx="24" cy="22" r="11" fill="#6fbf5b"/><circle cx="56" cy="22" r="11" fill="#6fbf5b"/>
-  <circle cx="24" cy="21" r="7" fill="#fbf7ec"/><circle cx="56" cy="21" r="7" fill="#fbf7ec"/>
-  <path d="M22 56 q-2 6 -8 6 q4 -1 4 -5 M58 56 q2 6 8 6 q-4 -1 -4 -5" fill="#86d16f"/>
-  </g>
-  <path d="M10 48 Q12 60 40 61 Q68 60 70 48 Q60 56 40 56 Q20 56 10 48Z" fill="#4f9e44"/>
-  <ellipse cx="40" cy="50" rx="16" ry="8" fill="#d9f2c5" stroke="#161418" stroke-width="2"/>
-  <circle class="pupil" cx="25" cy="21.5" r="3.6" fill="#161418"/><circle class="pupil" cx="57" cy="21.5" r="3.6" fill="#161418"/>
+/*
+  La rana (Giorno convierte cosas en ranas): cuerpo con degradado (luz
+  arriba a la izquierda), panza clara, ojos saltones brillantes, manchas y
+  mejillas. Los bordes los da un verde mas oscuro, no la tinta.
+*/
+const FROG = (id: string) => `<svg viewBox="0 0 80 66" width="120" height="99"><defs>
+  <radialGradient id="${id}b" cx="0.35" cy="0.25" r="0.85"><stop offset="0" stop-color="#a6dc86"/><stop offset="0.55" stop-color="#5fae4b"/><stop offset="1" stop-color="#2f6b2a"/></radialGradient>
+  <radialGradient id="${id}e" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d7e4c6"/></radialGradient>
+  <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f6d8"/><stop offset="1" stop-color="#c9dca0"/></linearGradient>
+  </defs>
+  <ellipse cx="40" cy="64" rx="30" ry="3.2" fill="rgba(0, 0, 0, 0.22)"/>
+  <path d="M9 55 Q1 62 7 64.5 Q14 66 21 59Z" fill="#3f8436"/><path d="M71 55 Q79 62 73 64.5 Q66 66 59 59Z" fill="#3f8436"/>
+  <path d="M8 46 Q8 24 40 24 Q72 24 72 46 Q72 62 40 62 Q8 62 8 46Z" fill="url(#${id}b)"/>
+  <circle cx="24" cy="22" r="11" fill="url(#${id}b)"/><circle cx="56" cy="22" r="11" fill="url(#${id}b)"/>
+  <circle cx="24" cy="21" r="7" fill="url(#${id}e)"/><circle cx="56" cy="21" r="7" fill="url(#${id}e)"/>
+  <ellipse cx="40" cy="51" rx="18" ry="9" fill="url(#${id}p)"/>
+  <path d="M22 56 q-2 6 -8 6 q4 -1 4 -5Z M58 56 q2 6 8 6 q-4 -1 -4 -5Z" fill="#4c9a3f"/>
+  <circle class="pupil" cx="25" cy="21.5" r="3.6" fill="#1d2a18"/><circle class="pupil" cx="57" cy="21.5" r="3.6" fill="#1d2a18"/>
   <circle cx="26.5" cy="19.5" r="1.4" fill="#fff"/><circle cx="58.5" cy="19.5" r="1.4" fill="#fff"/>
-  <ellipse cx="20" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".85"/><ellipse cx="60" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".85"/>
-  <path d="M30 37 Q35 42 40 38 Q45 42 50 37" fill="none" stroke="#161418" stroke-width="2.6" stroke-linecap="round"/>
-  <circle cx="30" cy="31" r="2.2" fill="#4f9e44"/><circle cx="52" cy="30" r="1.8" fill="#4f9e44"/><circle cx="45" cy="28" r="1.4" fill="#4f9e44"/>
-  <path d="M16 30 Q20 27 26 28" stroke="#b6eda0" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-  <path d="M27 12 Q31 11 33 14" stroke="#b6eda0" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="20" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".7"/><ellipse cx="60" cy="38" rx="4.5" ry="2.6" fill="#f2a3b8" opacity=".7"/>
+  <path d="M30 37 Q35 42 40 38 Q45 42 50 37" fill="none" stroke="#24521f" stroke-width="2.2" stroke-linecap="round"/>
+  <ellipse cx="31" cy="30" rx="2.4" ry="1.8" fill="#3f8436" opacity=".75"/><ellipse cx="52" cy="29.5" rx="2" ry="1.5" fill="#3f8436" opacity=".75"/><circle cx="45" cy="28" r="1.3" fill="#3f8436" opacity=".75"/>
+  <path d="M15 32 Q19 27 26 27.5" stroke="#d4f2bd" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".7"/>
 </svg>`;
 
 /** Un color hex mas oscuro (k < 1) o mas claro hacia blanco (k > 1). */
@@ -532,115 +529,86 @@ function sprout(node: HTMLElement, html: string, className: string, x: number, y
   return item;
 }
 
-/** Jardin: hojas, flores y mariquitas que brotan de lo que se ve. */
+/** Hace crecer las ramas pintadas (gold-art.ts) trazo a trazo; sin movimiento, ya crecidas. */
+function growPainted(painted: Painted, reducedMotion: boolean) {
+  for (const { el, delay, ms } of painted.strokes) {
+    if (reducedMotion) {
+      el.style.strokeDashoffset = "0";
+      continue;
+    }
+    el.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: ms, delay, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)", fill: "both" });
+  }
+}
+
+/** Se marchita: las hojas caen girando, flores y frutas se cierran y las ramas se recogen. */
+async function witherPainted(painted: Painted) {
+  painted.leaves.forEach((el, i) =>
+    el.animate(
+      [
+        { translate: "0 0", rotate: "0deg", opacity: 1 },
+        { translate: `${rand(-50, 50).toFixed(0)}px ${rand(120, 280).toFixed(0)}px`, rotate: `${rand(-160, 160).toFixed(0)}deg`, opacity: 0 },
+      ],
+      { duration: rand(700, 1100), delay: (i % 16) * 22, easing: "cubic-bezier(0.4, 0, 0.8, 0.6)", fill: "forwards" },
+    ),
+  );
+  painted.flowers.forEach((el, i) => el.animate([{ scale: "1" }, { scale: "0" }], { duration: 320, delay: (i % 10) * 30, easing: "ease-in", fill: "forwards" }));
+  for (const { el } of painted.strokes) {
+    el.getAnimations().forEach((a) => a.cancel());
+    el.animate([{ strokeDashoffset: "0" }, { strokeDashoffset: "1" }], { duration: 560, delay: 380, easing: "cubic-bezier(0.6, 0, 0.7, 0.3)", fill: "both" });
+  }
+  await wait(1000);
+}
+
+/** Jardin: de lo que se ve brotan ramitas con hojas y flores, como las de la intro. */
 async function geGarden(ctx: PowerContext) {
-  const sources = onScreen("main img, main h2, main h3, main p, main a.accent-fill, footer h2", 7);
+  const sources = onScreen("main img, main h2, main h3, main p, main a.accent-fill, footer h2", 5);
   const origins = sources.length ? sources.map((el) => el.getBoundingClientRect()) : [new DOMRect(ctx.x - 20, ctx.y - 20, 40, 40)];
   const node = layer("power-ge", true);
-  const art = [LEAF, FLOWER("#f4c6e0", "#e891c4"), LEAF, LADYBUG, FLOWER("#fbf7ec", "#e3d6b8"), LEAF];
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const svg = svgEl("svg", { class: "ge-branches power-ge-garden", width: w, height: h });
+  node.appendChild(svg);
+  const limbs: Limb[] = [];
+  const small = w < 640;
   origins.forEach((r, i) => {
-    const x0 = r.left + r.width * rand(0.2, 0.8);
-    const y0 = r.top + r.height * 0.5;
-    window.setTimeout(() => lifeBurst(x0, y0, 0.7), ctx.reducedMotion ? 0 : i * 120);
-    for (let j = 0; j < 5; j++) {
-      sprout(
-        node,
-        art[(i + j) % art.length],
-        "power-ge-item",
-        x0 + rand(-r.width * 0.3, r.width * 0.3),
-        y0 + rand(-10, 10),
-        {
-          "--gx": `${Math.round(rand(-70, 70))}px`,
-          "--gy": `${Math.round(rand(-190, -70))}px`,
-          "--gr": `${Math.round(rand(-200, 200))}deg`,
-        },
-        ctx.reducedMotion ? 0 : i * 120 + 150 + j * 70,
-      );
+    // Brotan del borde de arriba hacia arriba; si no hay sitio, del de abajo hacia abajo.
+    const up = r.top > 110;
+    const sprigs = Math.random() < 0.5 ? 1 : 2;
+    for (let j = 0; j < sprigs; j++) {
+      const x = r.left + r.width * rand(0.12, 0.88);
+      const y = up ? r.top + 4 : r.bottom - 4;
+      const angle = (up ? -Math.PI / 2 : Math.PI / 2) + rand(-0.55, 0.55);
+      grow(limbs, x, y, angle, rand(55, 95) * (small ? 0.8 : 1), rand(6, 9), i * 140 + j * 90, 0, 2);
     }
+    window.setTimeout(() => lifeBurst(r.left + r.width / 2, r.top + r.height / 2, 0.7), ctx.reducedMotion ? 0 : i * 140);
   });
-  await wait(ctx.reducedMotion ? 1500 : 3200);
-  node.classList.add("is-leaving");
-  await wait(450);
+  const painted = paint(svg, `gegd${++uid}`, "mid", limbs, small ? 16 : 20, { flowers: 0.55, fruits: 0 });
+  growPainted(painted, ctx.reducedMotion);
+  await wait(ctx.reducedMotion ? 1500 : 3400);
+  if (!ctx.reducedMotion) await witherPainted(painted);
   node.remove();
 }
 
-/** Un arbol entero que crece desde el borde de abajo y se mece. */
+/** Un arbol entero que crece desde el borde de abajo, se mece, da flores y fruta, y se marchita. */
 async function geTree(ctx: PowerContext) {
   const w = window.innerWidth;
   const h = window.innerHeight;
   const node = layer("power-ge", true);
-  const tree = document.createElement("div");
-  tree.className = "power-tree";
   const size = Math.min(h * 0.74, 540);
-  tree.style.height = `${size}px`;
-  tree.style.width = `${size * 0.85}px`;
   // Del lado contrario al Stand, para que el lo mire crecer.
   const side = ctx.x > w / 2 ? rand(0.14, 0.3) : rand(0.6, 0.8);
-  tree.style.left = `${w * side - size * 0.425}px`;
-  const blob = (x: number, y: number, r: number, fill: string, delay: number, stroke = true) =>
-    `<circle class="crown" cx="${x}" cy="${y}" r="${r}" fill="${fill}" ${stroke ? `${INK} stroke-width="4"` : ""} style="animation-delay:${delay}s"/>`;
-  const crown = [
-    [170, 130, 70],
-    [100, 165, 56],
-    [245, 165, 58],
-    [70, 110, 44],
-    [270, 100, 46],
-    [170, 62, 52],
-    [120, 85, 46],
-    [222, 82, 46],
-  ];
-  const back = crown.map(([x, y, r], i) => blob(x + 4, y + 8, r, "#3b7a33", 0.95 + i * 0.07)).join("");
-  const mid = crown.map(([x, y, r], i) => blob(x, y, r - 4, "#5daf4c", 1 + i * 0.07, false)).join("");
-  const light = crown
-    .slice(0, 6)
-    .map(([x, y, r], i) => `<ellipse class="crown" cx="${x - r * 0.3}" cy="${y - r * 0.35}" rx="${r * 0.35}" ry="${r * 0.22}" fill="#9be07f" style="animation-delay:${1.2 + i * 0.06}s"/>`)
-    .join("");
-  const fruits = [
-    [130, 135],
-    [210, 125],
-    [170, 80],
-    [90, 180],
-    [250, 180],
-    [140, 60],
-  ]
-    .map(
-      ([x, y], i) =>
-        `<g class="fruit" style="animation-delay:${1.7 + i * 0.12}s"><circle cx="${x}" cy="${y}" r="10" fill="#e3b341" ${INK} stroke-width="3"/><circle cx="${x - 3}" cy="${y - 3}" r="3" fill="#fff3c4"/><path d="M${x} ${y - 10} q2 -6 7 -6" stroke="#161418" stroke-width="2.5" fill="none"/><path d="M${x + 2} ${y - 12} q6 -4 10 0 q-6 3 -10 0Z" fill="#6fbf5b" stroke="#161418" stroke-width="1.5"/></g>`,
-    )
-    .join("");
-  tree.innerHTML = `<svg viewBox="0 0 340 420" preserveAspectRatio="xMidYMax meet">
-    <defs><linearGradient id="ge-bark" x1="0" x2="1"><stop offset="0" stop-color="#6b4429"/><stop offset="0.55" stop-color="#9a6a42"/><stop offset="1" stop-color="#5a3922"/></linearGradient></defs>
-    <g class="trunk">
-      <path d="M140 420 Q132 404 118 400 L222 400 Q208 404 200 420Z" fill="#5a3922" ${INK} stroke-width="4"/>
-      <path d="M146 404 C150 330 156 270 150 200 L188 200 C184 270 190 330 194 404Z" fill="url(#ge-bark)" ${INK} stroke-width="4"/>
-      <path d="M160 380 q-4 -20 2 -40 M176 350 q4 -16 -2 -34 M164 300 q-3 -14 1 -26" stroke="#4a2f1c" stroke-width="3" fill="none" stroke-linecap="round"/>
-    </g>
-    <g class="branches" fill="none" stroke-linecap="round">
-      <path d="M168 270 C200 250 225 220 240 175 M166 240 C135 220 112 200 100 165 M170 215 C165 170 170 120 172 75" stroke="#161418" stroke-width="20" pathLength="1"/>
-      <path d="M168 270 C200 250 225 220 240 175 M166 240 C135 220 112 200 100 165 M170 215 C165 170 170 120 172 75" stroke="#8a5a34" stroke-width="13" pathLength="1"/>
-    </g>
-    <g class="sway">${back}${mid}${light}${fruits}</g>
-    <g class="fruit" style="animation-delay:2.2s"><g transform="translate(176 330) rotate(-80) scale(0.55)">${LADYBUG.replace(/^<svg[^>]*>|<\/svg>$/g, "")}</g></g>
-  </svg>`;
-  node.appendChild(tree);
-  lifeBurst(w * side, h - 20, 1.4);
-  window.setTimeout(() => pop("ニョキニョキ", w * side, h - size * 0.92, "power-pop-word is-green", 1000), 700);
-  await wait(ctx.reducedMotion ? 1200 : 3400);
-  // Caen unas hojas antes de que el arbol vuelva a la tierra.
-  for (let i = 0; i < 10; i++) {
-    sprout(
-      node,
-      LEAF,
-      "power-ge-item is-falling",
-      w * side + rand(-size * 0.35, size * 0.35),
-      h - size * rand(0.55, 0.95),
-      { "--gx": `${Math.round(rand(-90, 90))}px` },
-      i * 90,
-    );
-  }
-  await wait(1000);
-  tree.classList.add("is-leaving");
-  await wait(700);
+  const x0 = w * side;
+  const svg = svgEl("svg", { class: "ge-branches power-ge-tree", width: w, height: h });
+  svg.style.transformOrigin = `${x0.toFixed(0)}px ${h}px`;
+  node.appendChild(svg);
+  const limbs: Limb[] = [];
+  grow(limbs, x0, h + 8, -Math.PI / 2 + rand(-0.06, 0.06), size * 0.4, size * 0.085, 150, 0, 3);
+  const painted = paint(svg, `getr${++uid}`, "mid", limbs, size * 0.07, { flowers: 0.3, fruits: 0.3 });
+  growPainted(painted, ctx.reducedMotion);
+  lifeBurst(x0, h - 20, 1.4);
+  window.setTimeout(() => pop("ニョキニョキ", x0, h - size * 0.92, "power-pop-word is-green", 1000), 700);
+  await wait(ctx.reducedMotion ? 1200 : 3800);
+  if (!ctx.reducedMotion) await witherPainted(painted);
   node.remove();
 }
 
@@ -656,7 +624,7 @@ async function geFrog(ctx: PowerContext) {
   const node = layer("power-ge", true);
   const frog = document.createElement("span");
   frog.className = "power-frog";
-  frog.innerHTML = `<span class="power-frog-body">${FROG}</span>`;
+  frog.innerHTML = `<span class="power-frog-body">${FROG(`frog${++uid}`)}</span>`;
   let fx = r.left + r.width / 2;
   let fy = r.top + r.height / 2;
   frog.style.transform = `translate(${fx}px, ${fy}px)`;
@@ -753,17 +721,27 @@ async function geSnake(ctx: PowerContext) {
   const seg = len / waves;
   let d = `M0 26`;
   for (let i = 0; i < waves; i++) d += ` q${seg / 2} ${i % 2 ? 22 : -22} ${seg} 0`;
+  /*
+    Pintada como lo demas de Gold Experience: sin contorno de tinta. El
+    cuerpo va en capas (su sombra, el lomo con degradado, la panza clara,
+    las escamas y un filo de luz) y la cabeza con volumen y ojo de reptil.
+  */
   snake.innerHTML = `<svg width="${len + 60}" height="56" viewBox="0 0 ${len + 60} 56">
-    <defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="#4f9e44"/><stop offset="1" stop-color="#86d16f"/></linearGradient></defs>
-    <path d="${d}" fill="none" stroke="#161418" stroke-width="20" stroke-linecap="round"/>
-    <path d="${d}" fill="none" stroke="url(#${id})" stroke-width="13" stroke-linecap="round"/>
-    <path class="scales" d="${d}" fill="none" stroke="#2f6b2a" stroke-width="5" stroke-dasharray="3 9" stroke-linecap="round"/>
-    <path d="${d}" fill="none" stroke="#c6efb0" stroke-width="2.5" stroke-dasharray="14 10" transform="translate(0 -3)" stroke-linecap="round"/>
+    <defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="#3f8a36"/><stop offset="1" stop-color="#78c25e"/></linearGradient>
+    <radialGradient id="${id}h" cx="0.55" cy="0.3" r="0.8"><stop offset="0" stop-color="#a6dc86"/><stop offset="0.6" stop-color="#5fae4b"/><stop offset="1" stop-color="#2f6b2a"/></radialGradient></defs>
+    <path d="${d}" fill="none" stroke="rgba(10, 20, 8, 0.3)" stroke-width="14" stroke-linecap="round" transform="translate(2 5)"/>
+    <path d="${d}" fill="none" stroke="#2f6b2a" stroke-width="15" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="url(#${id})" stroke-width="12" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="#d9efb8" stroke-width="3" stroke-linecap="round" transform="translate(0 4)" opacity="0.75"/>
+    <path class="scales" d="${d}" fill="none" stroke="#2f6b2a" stroke-width="5" stroke-dasharray="3 9" stroke-linecap="round" opacity="0.55"/>
+    <path d="${d}" fill="none" stroke="#c6efb0" stroke-width="2" stroke-dasharray="14 10" transform="translate(0 -3.5)" stroke-linecap="round" opacity="0.7"/>
     <g transform="translate(${len} 26)">
-      <path class="tongue" d="M24 2 l12 0 l4 -4 m-4 4 l4 4" stroke="#d8443c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M-6 -11 Q16 -16 28 0 Q16 16 -6 11Z" fill="#6fbf5b" ${INK} stroke-width="3"/>
-      <ellipse cx="12" cy="-5" rx="4.5" ry="3.6" fill="#e3b341" stroke="#161418" stroke-width="1.6"/><rect x="11" y="-8" width="2" height="6" rx="1" fill="#161418"/>
-      <path d="M22 3 l2 0" stroke="#161418" stroke-width="2"/>
+      <path class="tongue" d="M24 2 l12 0 l4 -4 m-4 4 l4 4" stroke="#d8443c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M-7 -12.5 Q16 -18 29.5 0 Q16 18 -7 12.5Z" fill="#2f6b2a"/>
+      <path d="M-6 -11 Q16 -16 28 0 Q16 16 -6 11Z" fill="url(#${id}h)"/>
+      <ellipse cx="12" cy="-5" rx="4.5" ry="3.6" fill="#e3b341"/><ellipse cx="12" cy="-5" rx="1.1" ry="3.1" fill="#1d2a18"/><circle cx="10.6" cy="-6.4" r="0.9" fill="#fff"/>
+      <circle cx="23" cy="-2.2" r="0.9" fill="#1d2a18"/>
+      <path d="M4 7 Q14 9 24 4" stroke="#24521f" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.6"/>
     </g>
   </svg>`;
   snake.style.left = `${r.left}px`;
