@@ -6,7 +6,7 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { readSecrets, SECRET_IDS, unlockSecret } from "@/lib/secrets";
 import type { StandEvent } from "@/lib/stand-events";
 import { drawStand, POSES, SPRITE_H, SPRITE_W, type Body, type Frame, type Look } from "./sprite";
-import { standLines, type GuideId, type PowerId, type StandLines } from "./lines";
+import { standLines, type GuideId, type IntroLineId, type PowerId, type StandLines } from "./lines";
 import { Janken } from "./janken";
 import { Darby } from "./darby";
 import { StandChat } from "./stand-chat";
@@ -83,6 +83,20 @@ type Action =
   /** Rafaga de punos hacia la pantalla (alterna los dos). */
   | "rush"
   | "emerge";
+
+/** La cara y la marca con que el chico remata cada entrada del hero. */
+const INTRO_FACES: Record<string, [Action, string]> = {
+  diamond: ["wink", "✦"],
+  world: ["smug", "フフフ"],
+  crimson: ["smug", "…!"],
+  dust: ["wink", "?!"],
+  gold: ["blush", "♪"],
+  finger: ["smug", "✦"],
+  echoes: ["sweat", "ふぅ"],
+  tbc: ["pose", "ゴゴゴ"],
+  door: ["laugh", "フフフ"],
+  skip: ["happy", "!"],
+};
 
 /** Acciones que son solo una cara. */
 const FACES: Action[] = ["smug", "angry", "sweat", "starry", "sad", "laugh", "love", "wink", "think", "blush"];
@@ -773,7 +787,7 @@ export function MiniStand() {
     */
     let greetLater = 0;
     const onIntro = (event: Event) => {
-      const { phase, kind } = (event as CustomEvent<{ phase: string; kind?: "world" | "diamond" }>).detail ?? {};
+      const { phase, kind } = (event as CustomEvent<{ phase: string; kind?: string }>).detail ?? {};
       const root = document.documentElement;
       if (phase === "start") {
         introWorld = kind === "world";
@@ -785,17 +799,21 @@ export function MiniStand() {
       introWorld = false;
       root.classList.remove("intro-world");
       if (phase !== "end") return;
-      const lines = linesRef.current;
-      say.current(pickLine(short(kind === "diamond" ? lines.intro.diamond : lines.intro.world)), 2600);
+      const intro = linesRef.current.intro;
+      const list =
+        kind === "diamond"
+          ? intro.diamond
+          : kind === "world"
+            ? intro.world
+            : kind === "skip"
+              ? intro.skipped
+              : (intro.end[kind as IntroLineId] ?? intro.world);
+      say.current(pickLine(short(list)).replace("{n}", String(visits)), 2600);
       // La cara, cuando termina el cuadro del relevo (emerge, 800ms).
+      const [face, mark] = INTRO_FACES[kind ?? ""] ?? INTRO_FACES.world;
       window.setTimeout(() => {
-        if (kind === "diamond") {
-          act.current("wink", 1500);
-          sfx("✦", "mark");
-        } else {
-          act.current("smug", 1500);
-          sfx("フフフ", "mark");
-        }
+        act.current(face, 1500);
+        sfx(mark, "mark");
       }, 850);
       window.clearTimeout(greetLater);
       greetLater = window.setTimeout(() => {

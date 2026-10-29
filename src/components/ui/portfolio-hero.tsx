@@ -20,7 +20,7 @@ import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
-import { stopTime as freezeTime, isTimeStopped, type TimeStopDetail } from "@/lib/time-stop";
+import { endTimeStop, stopTime as freezeTime, isTimeStopped, type TimeStopDetail } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 import { POSES, SPRITE_W, type Body, type Face, type Frame } from "@/components/mini-stand/sprite";
@@ -28,6 +28,7 @@ import { standLines } from "@/components/mini-stand/lines";
 import { pickLine } from "@/components/mini-stand/pick";
 import { FRONT_FIST_SVG, HeroStand, showHeroFrame } from "./hero-stand";
 import { createGlass, shatterLetters, type HeroGlass, type Shattered } from "./hero-crack";
+import { finishEntrance, INTROS, nextIntro, type IntroId, type IntroKit } from "./hero-intros";
 import { impact, runPower, speedLines } from "@/components/mini-stand/powers";
 import { layer as effectLayer, pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
@@ -76,8 +77,11 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
     840   el retrato se pega encima: golpe, temblor y ドン
     1150  el copy sube, una pieza cada 80ms
     1150  el Stand se levanta junto al retrato, enorme (0.4s), y SE QUEDA
-          grande mientras hace una de dos cosas (ver pickIntro y DIAMOND /
-          WORLD):
+          grande mientras hace su entrada: una por visita, al azar y sin
+          repetir hasta que salgan todas (hero-intros/bag.ts). Dos viven
+          aqui (DIAMOND / WORLD); las otras siete, cada una en su archivo
+          de hero-intros/ (King Crimson, Bites the Dust, Gold Experience,
+          Star Finger, Echoes ACT 3, To Be Continued y Heaven's Door):
           · Crazy Diamond: rompe la cuarta pared. Le pega a la pantalla
             misma con una rafaga ドラララ: cada puno sale de el, crece hacia
             quien mira y choca contra el vidrio, que se agrieta donde pega.
@@ -145,26 +149,6 @@ function delay(ms: number): React.CSSProperties {
   return { animationDelay: `${ms}ms` };
 }
 
-/*
-  Que entrada toca. Se alternan: cada carga hace la otra que la anterior (se
-  recuerda en este navegador), asi quien vuelve ve las dos. `?intro=world` o
-  `?intro=diamond` fuerzan una, para verlas o probarlas.
-*/
-type Intro = "diamond" | "world";
-const INTRO_KEY = "jojo-intro";
-
-function pickIntro(): Intro {
-  try {
-    const forced = new URLSearchParams(window.location.search).get("intro");
-    if (forced === "world" || forced === "diamond") return forced;
-    const next: Intro = window.localStorage.getItem(INTRO_KEY) === "diamond" ? "world" : "diamond";
-    window.localStorage.setItem(INTRO_KEY, next);
-    return next;
-  } catch {
-    return "diamond";
-  }
-}
-
 /**
  * Profundidad con el puntero: cada capa se desplaza segun su distancia,
  * las del fondo al reves que las de delante. Devuelve px.
@@ -189,7 +173,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   const standRef = useRef<HTMLDivElement>(null);
   const standCoreRef = useRef<HTMLDivElement>(null);
   // Que entrada toca: se decide una vez (y sobrevive al doble efecto de StrictMode).
-  const introRef = useRef<Intro | null>(null);
+  const introRef = useRef<ReturnType<typeof nextIntro> | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
   /*
@@ -279,6 +263,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
   // Las frases del Stand grande, en el idioma de la carga (el efecto corre una vez).
   const languageRef = useRef(language);
+  const jojoRef = useRef(t.jojo);
 
   /*
     Relevo con el mini Stand: el grande se convierte en el chico. Mientras
@@ -292,8 +277,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     el mismo tamano, asi que se lee como un solo personaje que se hace
     pequeno.
 
-    Mientras esta grande hace una de dos (pickIntro), y no se encoge hasta
-    terminarla:
+    Mientras esta grande hace su entrada (nextIntro), y no se encoge hasta
+    terminarla. Las siete de hero-intros/ reciben un IntroKit (el reloj,
+    el dibujo, el globo, las capas y el relevo) y se describen en su
+    archivo. Las dos de aqui:
     - Crazy Diamond: le pega a la pantalla. Cada puno sale de su pecho y
       crece hacia quien mira hasta chocar con el vidrio (createGlass, en
       hero-crack.ts), que se agrieta donde pega; el Stand alterna los
@@ -310,7 +297,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     pagina): si hidrata tarde, espera lo que falte; si ya paso el momento
     del poder, se lo salta y se hace chico enseguida; si ya paso todo,
     suelta al chico y esconde al grande. Con reduced motion el grande no
-    sale.
+    sale (y la bolsa de entradas no se toca).
+
+    Mientras dura hay un boton "Saltar intro" (y Esc): corta todo, deja
+    la entrada CSS en su ultimo cuadro, reanuda el tiempo si estaba
+    detenido y el chico aparece ya en su sitio, con una frase.
   */
   useEffect(() => {
     const giant = standRef.current;
@@ -332,22 +323,29 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     if (!run || run.playState === "finished" || elapsed > ENTRY.stand + 1500) return skip();
     if (heroBox && heroBox.bottom < window.innerHeight * 0.45) return skip();
 
-    introRef.current ??= pickIntro();
-    const intro = introRef.current;
+    introRef.current ??= nextIntro();
+    const choice = introRef.current;
+    const intro: IntroId = choice.id;
+    const def = intro === "world" || intro === "diamond" ? null : INTROS[intro];
     const lines = standLines[languageRef.current].intro;
+    const startAt = def ? def.start : intro === "world" ? WORLD.shout : DIAMOND.windup;
     // El poder solo si no quedo atras (hidratacion tardia); sin el, el
     // grande se hace chico en cuanto termina de subir.
-    const show = elapsed < (intro === "world" ? WORLD.shout : DIAMOND.windup) + 250;
-    const condenseAt = show ? (intro === "world" ? WORLD.condense : DIAMOND.condense) : Math.max(elapsed, ENTRY.stand + 450);
+    const show = elapsed < startAt + 250;
+    const condenseAt = show ? (def ? def.condense : intro === "world" ? WORLD.condense : DIAMOND.condense) : Math.max(elapsed, ENTRY.stand + 450);
+    // Solo sale de la bolsa si de verdad se ve.
+    if (show) choice.commit();
 
     const timers: number[] = [];
     const animations: Animation[] = [];
     const layers: HTMLElement[] = [];
     let glass: HeroGlass | null = null;
     let shattered: Shattered | null = null;
-    let worldOn = false;
+    // Avisaron al chico que empezo una entrada (para avisarle si se corta a medias).
+    let introOn = false;
     root.classList.add("stand-manifest");
     const stage = stickyRef.current?.firstElementChild as HTMLElement | null | undefined;
+    if (!stage) return skip();
     const svg = core.querySelector("svg");
     // Envoltorio del dibujo: embiste, se estira y se inclina sin tocar el
     // transform del nucleo (el del viaje al mini Stand) ni el del SVG (el espejo).
@@ -375,6 +373,20 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const heart = () => {
       const from = svg?.getBoundingClientRect();
       return from?.width ? { x: from.left + from.width * 0.5, y: from.top + from.height * 0.62 } : null;
+    };
+
+    /*
+      La mano de una pose, en px de la ventana: el puno del brazo estirado
+      (point) o el puno en alto (high). Celdas del dibujo de 20 x 23 (con
+      el margen); espejado mira al retrato, y la mano cambia de lado.
+    */
+    const hand = (pose: "point" | "high") => {
+      const r = svg?.getBoundingClientRect();
+      if (!svg || !r?.width) return null;
+      const mirrored = getComputedStyle(svg).scale.trim().startsWith("-");
+      const cell = pose === "point" ? { x: 19, y: 15.5 } : { x: 16, y: 3 };
+      const fx = cell.x / 20;
+      return { x: r.left + r.width * (mirrored ? 1 - fx : fx), y: r.top + r.height * (cell.y / 23) };
     };
 
     /** Las letras del nombre que se ven. */
@@ -740,6 +752,28 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       parar el tiempo para posar, y se rie.
     */
     let moved = false;
+    /*
+      Del otro lado del retrato si cabe (en celular puede quedar un poco
+      fuera del borde); si no, mas arriba del mismo lado. Mirando al
+      retrato, en una pose JoJo torcida como en una viñeta.
+    */
+    const jumpAside = (pose: Body, face: Face) => {
+      const before = svg?.getBoundingClientRect();
+      const photo = portraitRef.current?.getBoundingClientRect();
+      if (!svg || !before?.width || !photo) return;
+      moved = true;
+      if (photo.left - before.width > -before.width * 0.12) {
+        giant.style.left = "auto";
+        giant.style.right = small ? "calc(100% + 0.25rem)" : "calc(100% - 0.5rem)";
+        // Mira hacia el retrato, que ahora le queda a la derecha.
+        svg.style.scale = "1 1";
+      } else giant.style.bottom = "10%";
+      frame("stand", { body: pose, face });
+      if (body) {
+        body.style.rotate = `${POSE_TILT[pose] ?? 0}deg`;
+        body.style.scale = "1.06";
+      }
+    };
     let resumed = false;
     let onResume: (event: Event) => void = () => {};
     const manifestWorld = () => {
@@ -759,7 +793,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       at(WORLD.stop, () => {
         const at0 = heart();
         if (!at0) return;
-        worldOn = true;
+        introOn = true;
         window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "world" } }));
         // El rotulo (時よ止まれ / 時は動き出す) abajo: arriba taparia al Stand.
         root.classList.add("intro-banner-low");
@@ -783,20 +817,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           height: `${before.height}px`,
         });
         fxLayer().appendChild(ghost);
-        // Del otro lado del retrato si cabe (en celular puede quedar un poco
-        // fuera del borde); si no, mas arriba del mismo lado.
-        moved = true;
-        if (photo.left - before.width > -before.width * 0.12) {
-          giant.style.left = "auto";
-          giant.style.right = small ? "calc(100% + 0.25rem)" : "calc(100% - 0.5rem)";
-          // Mira hacia el retrato, que ahora le queda a la derecha.
-          svg.style.scale = "1 1";
-        } else giant.style.bottom = "10%";
-        frame("stand", { body: pose, face: "smug" });
-        if (body) {
-          body.style.rotate = `${POSE_TILT[pose] ?? 0}deg`;
-          body.style.scale = "1.06";
-        }
+        jumpAside(pose, "smug");
         const now = heart();
         if (now) pop("バァーン", Math.min(vw - 70, Math.max(70, now.x)), Math.max(90, now.y - tall * 0.65), "power-pop-word is-gold is-big", 1000);
         for (let i = 0; i < 2; i++) {
@@ -845,13 +866,40 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       if (svg) svg.style.scale = "";
     };
 
+    // Lo que cada entrada de hero-intros/ pide deshacer (sus clases, el h1 de Star Finger...).
+    const cleanups: (() => void)[] = [];
+    const runCleanups = () =>
+      cleanups.splice(0).forEach((fn) => {
+        try {
+          fn();
+        } catch {}
+      });
+
+    /*
+      Saltar la entrada: un boton (y Esc) mientras dura. Va en el body, por
+      encima de los efectos, y sigue funcionando con el tiempo detenido
+      (data-time-free, ver lib/time-stop.ts). Se va en cuanto empieza el
+      relevo.
+    */
+    let skipButton: HTMLButtonElement | null = null;
+    const onSkipKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") skipIntro();
+    };
+    const removeSkip = () => {
+      skipButton?.remove();
+      skipButton = null;
+      window.removeEventListener("keydown", onSkipKey);
+    };
+
     /*
       Corte limpio, sin fundido: los dos son el mismo dibujo en el mismo
       sitio y tamano, y un fundido dejaria a los dos a media opacidad uno
       sobre otro (el nombre se transparentaria detras). Se quita la
       transicion de la capa del chico solo este fotograma.
     */
-    const finish = () => {
+    const finish = (kind: IntroId | "skip" = intro) => {
+      removeSkip();
+      runCleanups();
       const layerEl = document.querySelector<HTMLElement>(".stand-layer");
       if (layerEl) layerEl.style.transition = "none";
       root.classList.remove("stand-manifest");
@@ -859,12 +907,15 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       requestAnimationFrame(() => requestAnimationFrame(() => layerEl && (layerEl.style.transition = "")));
       // Las capas de efectos, cuando ya se desvanecio lo que llevan.
       later(1500, () => layers.forEach((node) => node.remove()));
-      // El chico remata con su frase (mini-stand.tsx).
-      if (show) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end", kind: intro } }));
-      worldOn = false;
+      // El chico remata con su frase (mini-stand.tsx). Si saltaste antes de
+      // que empezara, se le avisa igual: no saluda encima de su frase.
+      if (kind === "skip" && !introOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind } }));
+      if (show) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "end", kind } }));
+      introOn = false;
     };
 
     const condense = () => {
+      removeSkip();
       hush();
       rushArms(false);
       if (body) body.style.rotate = body.style.scale = "";
@@ -926,28 +977,102 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       animations.forEach((a) => a.effect && (a.effect as KeyframeEffect).target === body && a.cancel());
       condense();
     };
-    if (show) at(intro === "world" ? WORLD.shout : DIAMOND.windup, intro === "world" ? manifestWorld : manifestDiamond);
-    // Con ZA WARUDO el relevo lo marca la vuelta del tiempo (ver WORLD).
-    // Ultimo respaldo, antes de que la compuerta (stand-manifest-gate) lo suelte sola.
-    at(show && intro === "world" ? WORLD.condense + 3000 : condenseAt, relay);
-    return () => {
-      timers.forEach((timer) => {
+
+    /** Deshace todo lo de la entrada: al desmontar y al saltarla. */
+    const teardown = () => {
+      timers.splice(0).forEach((timer) => {
         window.clearTimeout(timer);
         window.clearInterval(timer);
       });
-      animations.forEach((a) => a.cancel());
-      layers.forEach((node) => node.remove());
+      animations.splice(0).forEach((a) => a.cancel());
+      layers.splice(0).forEach((node) => node.remove());
+      runCleanups();
+      removeSkip();
       glass?.cancel();
       shattered?.cancel();
-      stage?.classList.remove("hero-hitstop");
-      if (stage) stage.style.transformOrigin = "";
+      glass = shattered = null;
+      stage.classList.remove("hero-hitstop");
+      stage.style.transformOrigin = "";
       if (body) body.style.rotate = body.style.scale = "";
       unmove();
       rushArms(false);
       if (svg) showHeroFrame(svg, "stand");
       root.classList.remove("intro-banner-low");
       window.removeEventListener("jojo:timestop", onResume);
-      if (worldOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "cancel" } }));
+    };
+
+    /*
+      Saltar: se corta todo, la entrada CSS queda en su ultimo cuadro, el
+      tiempo vuelve si estaba detenido y el chico aparece ya en su sitio.
+    */
+    function skipIntro() {
+      if (relayed) return;
+      relayed = true;
+      teardown();
+      endTimeStop();
+      finishEntrance(stage!);
+      finish("skip");
+    }
+
+    const kit: IntroKit = {
+      at,
+      later,
+      keep,
+      onCleanup: (fn) => void cleanups.push(fn),
+      fx: (className) => {
+        const node = fxLayer();
+        if (className) node.classList.add(...className.split(" "));
+        return node;
+      },
+      frame,
+      heart,
+      hand,
+      tall: () => svg?.getBoundingClientRect().height ?? 200,
+      lunge,
+      jumpAside,
+      talk,
+      hush,
+      shout,
+      shake,
+      stage,
+      letters: letterEls,
+      portrait: () => portraitRef.current,
+      tagline: () => stage.querySelector("h1"),
+      relay,
+      vw,
+      vh,
+      small,
+      language: languageRef.current,
+      lines,
+      jojo: jojoRef.current,
+    };
+
+    if (show) {
+      skipButton = document.createElement("button");
+      skipButton.type = "button";
+      skipButton.className = "intro-skip power-live";
+      skipButton.dataset.timeFree = "";
+      skipButton.innerHTML = `<span>${jojoRef.current.skipIntro}</span><span class="intro-skip-icon" aria-hidden="true">▶▶</span>`;
+      skipButton.style.animationDelay = `${Math.max(0, ENTRY.stand - elapsed)}ms`;
+      skipButton.addEventListener("click", skipIntro);
+      document.body.appendChild(skipButton);
+      window.addEventListener("keydown", onSkipKey);
+
+      if (def) {
+        def.prepare?.(kit);
+        at(def.start, () => {
+          introOn = true;
+          window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: intro } }));
+          def.run(kit);
+        });
+      } else at(intro === "world" ? WORLD.shout : DIAMOND.windup, intro === "world" ? manifestWorld : manifestDiamond);
+    }
+    // Con ZA WARUDO el relevo lo marca la vuelta del tiempo (ver WORLD).
+    // Ultimo respaldo, antes de que la compuerta (stand-manifest-gate) lo suelte sola.
+    at(show && intro === "world" ? WORLD.condense + 3000 : condenseAt, relay);
+    return () => {
+      teardown();
+      if (introOn) window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "cancel" } }));
       root.classList.remove("stand-manifest");
     };
   }, []);

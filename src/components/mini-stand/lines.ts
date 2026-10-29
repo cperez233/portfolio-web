@@ -32,6 +32,9 @@ export type PowerId =
 /** Lugares a los que el Stand sabe llevarte desde la conversacion. */
 export type GuideId = "projects" | "sites" | "pricing" | "contact";
 
+/** Las entradas del hero que viven en components/ui/hero-intros/. */
+export type IntroLineId = "crimson" | "dust" | "gold" | "finger" | "echoes" | "tbc" | "door";
+
 export interface PowerLines {
   name: string;
   jp: string;
@@ -97,6 +100,26 @@ export interface StandLines {
     fixed: string[];
     jokes: [string, string][];
     laughs: string[];
+    /**
+     * Lo que remata el chico al terminar cada entrada de hero-intros/ (las
+     * cortas, para celular, de 30 caracteres o menos) y si la saltaste.
+     */
+    end: Record<IntroLineId, string[]>;
+    skipped: string[];
+    /** King Crimson: el discurso aburrido que se borra y lo que dice ya posado. */
+    crimson: { boring: string[]; slide: string; clips: [string, string, string]; cut: [string, string][] };
+    /** Bites the Dust: despues de rebobinar y repetir la entrada. */
+    dust: [string, string][];
+    /** Gold Experience: mientras florece el nombre. */
+    gold: string[];
+    /** Star Finger: cuando termina de escribir. */
+    finger: string[];
+    /** Echoes ACT 3: levantando el nombre (shout) y ya arriba. */
+    echoes: { strain: string[]; done: string[] };
+    /** To Be Continued: la tarjeta del episodio ({n}: numero de visita). */
+    tbc: { episode: string; subtitle: string; after: string[] };
+    /** Heaven's Door: la ficha de Cris, la orden que te escribe y el remate. */
+    door: { rows: [string, string][]; orderLabel: string; order: string; done: string[] };
   };
   /**
    * Tiempo detenido (toque en el retrato o ZA WARUDO): el Stand es el
@@ -571,6 +594,70 @@ export const standLines: Record<Language, StandLines> = {
         ["Nadie va a creer que pasó esto.", "Mejor. Así es más misterioso."],
       ],
       laughs: ["フハハハ", "WRYYY", "ハハハ", "フフフ"],
+      end: {
+        crimson: ["Saltamos a lo bueno.", "¿Qué pasó? Nada. King Crimson.", "Ese tiempo no vuelve. Sigue.", "Corte limpio. De nada."],
+        dust: ["¿Raro, no? Ya pasó una vez.", "Déjà vu resuelto. Sigue.", "Esto ya lo vi. Ah, no.", "Rollback exitoso."],
+        gold: ["Las flores se van. Cris no.", "Vuelve a ser texto. Por ahora.", "Todo lo que toco florece.", "Vida dorada. Sigue."],
+        finger: ["Ya está escrito. Léelo.", "Mi dedo descansa. Tú lee.", "Escrito y firmado. ORA.", "Cero typos. Revisa."],
+        echoes: ["Ya pesa normal. Creo.", "Mi espalda… Sigue.", "Todo en su sitio. Uf.", "Liviano otra vez. ズン."],
+        tbc: ["Empieza el episodio. ゴゴゴ.", "Hoy el protagonista eres tú.", "Nuevo capítulo. Sin spoilers.", "Dale play. Yo te acompaño."],
+        door: ["Ya lo sabes. Sin vuelta atrás.", "Lo escrito, escrito está.", "Pregúntame más. Tócame.", "Ahora no se te olvida."],
+      },
+      skipped: ["¿Saltaste mi entrada? Respeto.", "Directo al grano. Me gusta.", "Sin ceremonia. Muy ingeniero.", "Ok, ok. Ya llegué."],
+      crimson: {
+        boring: [
+          "Buenas. Antes de empezar, permíteme presentarte, punto por punto y en orden cronológico, la trayectoria académica y profesional completa de…",
+          "Bienvenido. A continuación, una breve introducción de cuarenta y siete diapositivas sobre la vida, la obra y los commits de…",
+          "Saludos cordiales. Procedo a leer, sin omitir ningún detalle, el acta de bienvenida número uno, sección primera, del portafolio de…",
+        ],
+        slide: "Diapositiva {n} de 47",
+        clips: ["Intro formal", "Diapositivas 2–46", "Lo importante"],
+        cut: [
+          ["Me salté la parte aburrida.", "Resumen: ingeniero de sistemas y creador de contenido. Listo."],
+          ["¿Las 47 diapositivas? Borradas.", "Queda lo importante: ingeniero de sistemas y creador de contenido."],
+          ["King Crimson editó la intro.", "Cris también edita: código de día, video de noche."],
+          ["Eso no pasó. Nadie lo vio.", "Corte limpio, como en los videos de Cris."],
+        ],
+      },
+      dust: [
+        ["¿Déjà vu?", "Le hice rollback a la página entera."],
+        ["Esto ya lo viste.", "Bites the Dust: Ctrl+Z, versión Stand."],
+        ["¿La misma intro otra vez?", "Sí. Deshacer con explosión incluida."],
+        ["Tranquilo, no explotó nada.", "Bueno, sí. Pero ya no."],
+      ],
+      gold: [
+        "Le di vida al nombre. Así crecen 35K seguidores.",
+        "Así crecieron 2.5M de likes: con vida.",
+        "Todo lo que toco florece. Las páginas de Cris también.",
+        "Una idea, un poco de vida, y crece sola.",
+      ],
+      finger: [
+        "Escrito a dedo. Cero typos.",
+        "Así se escribe el código: rápido y preciso.",
+        "Star Finger: el teclado más rápido de Bucaramanga.",
+        "Cien palabras por minuto. Con un dedo.",
+      ],
+      echoes: {
+        strain: ["¡Pesa como un deploy en viernes!", "¡Uf! Este nombre carga mucha experiencia.", "¡Ni el servidor pesa tanto!"],
+        done: ["Listo. Ya pesa normal.", "Arriba. Ese nombre tiene peso.", "Ingeniería: levantar lo que se cae."],
+      },
+      tbc: {
+        episode: "Episodio {n}",
+        subtitle: "Ingeniero de sistemas y creador de contenido",
+        after: ["Bienvenido al episodio {n}.", "Anteriormente: llegaste. Hoy: el portafolio.", "Nuevo episodio, misma pose."],
+      },
+      door: {
+        rows: [
+          ["Nombre", "Cristian Pérez · Cris"],
+          ["Oficio", "ingeniero de sistemas"],
+          ["También", "creador de contenido · 35K seguidores"],
+          ["Le gusta", "que las cosas funcionen"],
+          ["Le teme", "a los deploys en viernes"],
+        ],
+        orderLabel: "Orden escrita en ti",
+        order: "Recordarás que Cris es ingeniero de sistemas y creador de contenido.",
+        done: ["Listo. Ya no se te olvida.", "Escrito queda. Heaven's Door.", "Ahora lo sabes. Para siempre."],
+      },
     },
     timeStop: {
       sections: {
@@ -629,7 +716,7 @@ export const standLines: Record<Language, StandLines> = {
       ],
       options: {
         who: "¿Quién eres?",
-        cris: "Háblame de él",
+        cris: "Háblame de Cris",
         guide: "Llévame a…",
         trivia: "Algo de JoJo",
         power: "Usa un poder",
@@ -1306,6 +1393,70 @@ export const standLines: Record<Language, StandLines> = {
         ["Nobody will believe this happened.", "Good. More mysterious that way."],
       ],
       laughs: ["フハハハ", "WRYYY", "ハハハ", "フフフ"],
+      end: {
+        crimson: ["Straight to the good part.", "What happened? King Crimson.", "That time is gone. Go on.", "Clean cut. You're welcome."],
+        dust: ["Weird, right? Happened before.", "Déjà vu solved. Go on.", "Seen this. Oh wait, no.", "Rollback successful."],
+        gold: ["Flowers fade. Talent stays.", "Back to text. For now.", "Everything I touch blooms.", "Golden life. Go on."],
+        finger: ["It's written. Read it.", "My finger rests. You read.", "Signed and sealed. ORA.", "Zero typos. Check it."],
+        echoes: ["Normal weight again. I think.", "My back… Go on.", "Everything's in place. Phew.", "Light again. ズン."],
+        tbc: ["The episode begins. ゴゴゴ.", "Today you're the lead.", "New chapter. No spoilers.", "Hit play. I'll tag along."],
+        door: ["Now you know. No going back.", "What's written stays written.", "Ask me more. Tap me.", "Now you won't forget."],
+      },
+      skipped: ["Skipped my entrance? Respect.", "Straight to it. I like that.", "No ceremony. Very engineer.", "Ok, ok. I'm here."],
+      crimson: {
+        boring: [
+          "Hello. Before we begin, allow me to present, point by point and in chronological order, the complete academic and professional record of…",
+          "Welcome. What follows is a brief forty-seven-slide introduction to the life, the work and the commits of…",
+          "Greetings. I will now read, in full and without skipping a single detail, welcome statement number one, section one, of the portfolio of…",
+        ],
+        slide: "Slide {n} of 47",
+        clips: ["Formal intro", "Slides 2–46", "The good part"],
+        cut: [
+          ["I skipped the boring part.", "Summary: systems engineer and content creator. Done."],
+          ["The 47 slides? Erased.", "What's left matters: systems engineer and content creator."],
+          ["King Crimson edited the intro.", "Cris edits too: code by day, video by night."],
+          ["That never happened. Nobody saw it.", "A clean cut, like in Cris's videos."],
+        ],
+      },
+      dust: [
+        ["Déjà vu?", "I rolled the whole page back."],
+        ["You've seen this already.", "Bites the Dust: Ctrl+Z, Stand edition."],
+        ["Same intro again?", "Yep. Undo, explosion included."],
+        ["Relax, nothing blew up.", "Well, it did. Not anymore."],
+      ],
+      gold: [
+        "I gave the name life. That's how 35K followers grow.",
+        "That's how 2.5M likes grew: with life.",
+        "Everything I touch blooms. So do Cris's websites.",
+        "One idea, a little life, and it grows by itself.",
+      ],
+      finger: [
+        "Typed by finger. Zero typos.",
+        "That's how code gets written: fast and precise.",
+        "Star Finger: the fastest keyboard in Bucaramanga.",
+        "A hundred words a minute. One finger.",
+      ],
+      echoes: {
+        strain: ["Heavy as a Friday deploy!", "Oof! This name carries a lot of experience.", "Not even the server weighs this much!"],
+        done: ["There. Normal weight again.", "Up it goes. That name has weight.", "Engineering: lifting what falls."],
+      },
+      tbc: {
+        episode: "Episode {n}",
+        subtitle: "Systems engineer and content creator",
+        after: ["Welcome to episode {n}.", "Previously: you arrived. Today: the portfolio.", "New episode, same pose."],
+      },
+      door: {
+        rows: [
+          ["Name", "Cristian Pérez · Cris"],
+          ["Trade", "systems engineer"],
+          ["Also", "content creator · 35K followers"],
+          ["Likes", "things that just work"],
+          ["Fears", "Friday deploys"],
+        ],
+        orderLabel: "Order written on you",
+        order: "You will remember that Cris is a systems engineer and a content creator.",
+        done: ["Done. Now you won't forget.", "It's written. Heaven's Door.", "Now you know. For good."],
+      },
     },
     timeStop: {
       sections: {
@@ -1354,7 +1505,7 @@ export const standLines: Record<Language, StandLines> = {
       greetAgain: ["You again? I like you.", "Back. I knew you would be.", "It was our fate to talk again.", "We're friends now, right?", "You again. ゴゴゴ. Welcome.", "Another round? Love it.", "Missed me already? Sweet.", "You and me, again. ドン.", "You're back. The arrow marked you."],
       options: {
         who: "Who are you?",
-        cris: "Tell me about him",
+        cris: "Tell me about Cris",
         guide: "Take me to…",
         trivia: "Some JoJo trivia",
         power: "Use a power",

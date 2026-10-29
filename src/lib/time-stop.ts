@@ -27,6 +27,8 @@ export interface TimeStopDetail {
 
 let stopped = false;
 let lastAttempt = 0;
+/** Reanuda ya el tiempo detenido en curso (ver endTimeStop). */
+let resumeNow: (() => void) | null = null;
 
 export function isTimeStopped() {
   return stopped;
@@ -56,6 +58,8 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise
   };
   const block = (event: Event) => {
     if (event instanceof KeyboardEvent && !SCROLL_KEYS.has(event.key)) return;
+    // Lo que sigue funcionando con el tiempo detenido (el boton de saltar la entrada).
+    if (event.target instanceof Element && event.target.closest("[data-time-free]")) return;
     event.preventDefault();
     event.stopPropagation();
     attempt();
@@ -71,7 +75,10 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise
   window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: true, ms, by } }));
 
   return new Promise((resolve) => {
-    window.setTimeout(() => {
+    const resume = () => {
+      if (resumeNow !== early) return;
+      resumeNow = null;
+      window.clearTimeout(timer);
       kinds.forEach((kind) => window.removeEventListener(kind, block, options));
       window.removeEventListener("scroll", pin);
       root.classList.remove("time-stopped");
@@ -83,6 +90,14 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise
       stopped = false;
       window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: false, ms, by } }));
       resolve();
-    }, ms);
+    };
+    const early = () => resume();
+    resumeNow = early;
+    const timer = window.setTimeout(resume, ms);
   });
+}
+
+/** Reanuda el tiempo ahora, si esta detenido (saltar la entrada con ZA WARUDO). */
+export function endTimeStop() {
+  resumeNow?.();
 }

@@ -328,6 +328,8 @@ export interface Dictionary {
     /** Pista corta en el sello del retrato. */
     timeStopHint: string;
     toBeContinued: string;
+    /** Boton para saltar la entrada animada del hero. */
+    skipIntro: string;
     farewell: string;
   };
 }
@@ -910,6 +912,7 @@ const en: Dictionary = {
     timeStop: "Cristian Pérez: tap to stop time",
     timeStopHint: "Tap",
     toBeContinued: "To Be Continued",
+    skipIntro: "Skip intro",
     farewell: "Arrivederci.",
   },
 };
@@ -1492,6 +1495,7 @@ const es: Dictionary = {
     timeStop: "Cristian Pérez: toca para detener el tiempo",
     timeStopHint: "Toca",
     toBeContinued: "To Be Continued",
+    skipIntro: "Saltar intro",
     farewell: "Arrivederci.",
   },
 };

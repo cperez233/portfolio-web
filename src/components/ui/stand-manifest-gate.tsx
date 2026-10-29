@@ -18,7 +18,7 @@
 
   Sin red de seguridad el chico no volveria si el hero no llega a
   hidratar: a los 11.5s se suelta pase lo que pase (las entradas terminan
-  hacia los 7s; el Stand grande se desvanece solo a los 11s). El hero lo suelta antes
+  hacia los 8s; el Stand grande se desvanece solo a los 11s). El hero lo suelta antes
   (al terminar el relevo, o en cuanto sabe que no habra relevo). Con
   reduced motion no hay grande, asi que no se esconde nada.
 */

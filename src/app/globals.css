@@ -809,7 +809,7 @@ html.lenis body {
   adelante lo lleva el JS (portfolio-hero.tsx): ataca o posa, se sostiene
   y al final viaja hasta el mini Stand y se hace el. Dura 11s solo para
   que el desvanecido del final cuente si el JS no llega (las entradas
-  terminan hacia los 7s, mas lo que dure el tiempo detenido): sin el, el
+  terminan hacia los 8s, mas lo que dure el tiempo detenido): sin el, el
   grande se va solo. 0.4s de 11s = 3.64%.
 */
 @keyframes hero-stand {
@@ -4885,5 +4885,744 @@ html.intro-banner-low .power-zw-text {
   to {
     opacity: 0;
     filter: grayscale(1) blur(4px);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Entradas del hero (components/ui/hero-intros/). Mismo idioma que el
+   resto: tinta, papel, oro y un color plano por Stand (carmesi para King
+   Crimson, rosa para Killer Queen, verde para Echoes, sepia para el
+   final de episodio). Sin brillos ni degradados de color.
+------------------------------------------------------------------ */
+
+/* Saltar la entrada: placa de manga abajo a la derecha. */
+.intro-skip {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 80;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  box-shadow: 4px 4px 0 0 var(--panel-shadow);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: intro-skip-in 0.35s var(--ease-premium) both;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    translate 0.12s,
+    box-shadow 0.12s;
+}
+.intro-skip:hover {
+  background-color: var(--color-accent);
+  color: #161418;
+}
+.intro-skip:active {
+  translate: 2px 2px;
+  box-shadow: 2px 2px 0 0 var(--panel-shadow);
+}
+.intro-skip:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+@media (width < 40rem) {
+  .intro-skip {
+    min-height: 40px;
+    padding: 0 0.8rem;
+    font-size: 0.9rem;
+  }
+  /* En celular la linea de tiempo de King Crimson va encima del boton. */
+  .kc-timeline {
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 52px);
+  }
+  .kc-slide {
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 120px);
+  }
+}
+.intro-skip-icon {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: -0.12em;
+}
+@keyframes intro-skip-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+.power-pop-word.is-crimson {
+  color: #d4434f;
+}
+
+/* --- King Crimson: la presentacion aburrida y su linea de tiempo. --- */
+.kc-deck {
+  z-index: 69;
+}
+.kc-slide {
+  position: absolute;
+  left: max(16px, calc(50% - 360px));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 74px);
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #161418;
+  background-color: #e3b341;
+  border: 2px solid #161418;
+  box-shadow: 3px 3px 0 0 #161418;
+  animation: power-pop 0.3s var(--ease-premium) both;
+}
+.kc-slide.is-done {
+  color: #ece6d8;
+  background-color: #b3303c;
+}
+.kc-timeline {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: min(720px, calc(100% - 32px));
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  background-color: #1e1b21;
+  border: 2px solid #161418;
+  box-shadow: 4px 4px 0 0 var(--panel-shadow);
+  animation: kc-rise 0.35s var(--ease-premium) both;
+}
+@keyframes kc-rise {
+  from {
+    opacity: 0;
+    translate: -50% 16px;
+  }
+}
+.kc-tc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1;
+  color: #ece6d8;
+}
+.kc-tc i {
+  font-style: normal;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #d4434f;
+}
+.kc-track {
+  position: relative;
+  flex: 1;
+  display: flex;
+  gap: 3px;
+  height: 30px;
+}
+.kc-clip {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 30px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #161418;
+  background-color: #ece6d8;
+  border: 1.5px solid #161418;
+}
+.kc-clip.is-long {
+  flex-grow: 3;
+  background-color: #c9bfae;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(22, 20, 24, 0.14) 6px 8px);
+}
+.kc-clip.is-end {
+  flex-grow: 1.3;
+  background-color: #e3b341;
+}
+.kc-clip.is-cut {
+  color: #ece6d8;
+  text-decoration: line-through;
+  background-color: #b3303c;
+  background-image: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(22, 20, 24, 0.35) 6px 8px);
+}
+.kc-head {
+  position: absolute;
+  top: -7px;
+  bottom: -7px;
+  left: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  background-color: #e3b341;
+}
+.kc-head::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -5px;
+  width: 13px;
+  height: 9px;
+  background-color: #e3b341;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+/* El tiempo borrado: un cuadro carmesi, uno en tinta, y se va. */
+.kc-erase {
+  z-index: 71;
+  display: grid;
+  place-items: center;
+  background-color: #8c1d2c;
+  animation: kc-erase 0.56s steps(1, end) both;
+}
+@keyframes kc-erase {
+  0% {
+    opacity: 0.94;
+  }
+  16% {
+    opacity: 1;
+    background-color: #160406;
+  }
+  32% {
+    opacity: 0.9;
+    background-color: #8c1d2c;
+  }
+  58% {
+    opacity: 0.45;
+  }
+  80% {
+    opacity: 0.15;
+  }
+}
+.kc-erase-word {
+  font-family: var(--font-jp);
+  font-size: clamp(2.4rem, 10vw, 7rem);
+  line-height: 1;
+  color: #ece6d8;
+  -webkit-text-stroke: 8px #161418;
+  paint-order: stroke fill;
+  rotate: -6deg;
+}
+.kc-hidden-stand .hero-stand-core {
+  visibility: hidden;
+}
+
+/* --- Bites the Dust: Killer Queen y el estallido. --- */
+.dust-kq,
+.dust-boom {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.dust-kq svg,
+.dust-boom svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dust-boom svg {
+  width: auto;
+  height: auto;
+}
+
+/* --- Gold Experience: el nombre de madera, ramas, flores y corazones. --- */
+.ge-branches {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.ge-branches path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+}
+.ge-ink {
+  stroke: #161418;
+}
+.ge-bark {
+  stroke: #7a5230;
+}
+.ge-tween .hero-slam {
+  transition:
+    color 0.35s ease-out,
+    text-shadow 0.35s ease-out;
+}
+.hero-slam.ge-wood {
+  color: #7a5230;
+  text-shadow: 0.045em 0.045em 0 #3d2614;
+}
+.ge-ring {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  margin: -45px 0 0 -45px;
+  border: 5px solid #e3b341;
+  border-radius: 9999px;
+  box-shadow:
+    0 0 0 3px #161418,
+    inset 0 0 0 3px #161418;
+}
+.ge-bloom {
+  position: absolute;
+  translate: -50% -50%;
+  rotate: var(--r, 0deg);
+  scale: 0;
+  animation: ge-bloom 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.ge-bloom svg {
+  display: block;
+  overflow: visible;
+}
+.ge-bloom.is-closing {
+  animation: ge-close 0.32s ease-in var(--d, 0ms) both;
+}
+@keyframes ge-bloom {
+  to {
+    scale: var(--s, 1);
+  }
+}
+@keyframes ge-close {
+  from {
+    scale: var(--s, 1);
+  }
+  to {
+    scale: 0;
+  }
+}
+.ge-bug {
+  position: absolute;
+  margin: -27px 0 0 -14px;
+  rotate: 90deg;
+}
+.ge-bug svg {
+  display: block;
+}
+.ge-heart {
+  position: absolute;
+  translate: -50% -50%;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: #e891c4;
+  -webkit-text-stroke: 4px #161418;
+  paint-order: stroke fill;
+  opacity: 0;
+  animation: ge-heart 1.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes ge-heart {
+  0% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  14% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.9;
+    translate: calc(-50% + var(--hx)) calc(-50% + var(--hy));
+  }
+}
+
+/* --- Star Finger: el h1 tecleado y el dedo que se estira. --- */
+.sf-ghost {
+  position: relative;
+  color: transparent;
+}
+.sf-typed {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.sf-typed > span {
+  color: transparent;
+}
+.sf-typed > span.is-on {
+  color: var(--color-ink);
+  animation: sf-stamp 0.22s ease-out;
+}
+.sf-typed > span.is-slam {
+  animation: sf-stamp 0.6s ease-out;
+}
+@keyframes sf-stamp {
+  from {
+    color: #8a7fd6;
+  }
+}
+.sf-finger {
+  --fw: 22px;
+  position: absolute;
+  width: 0;
+  height: var(--fw);
+  margin-top: calc(var(--fw) / -2);
+  transform-origin: 0 50%;
+  background-color: #ece6d8;
+  background-image: repeating-linear-gradient(90deg, transparent 0 38px, #c9bfae 38px 41px);
+  border: 3px solid #161418;
+  border-left: 0;
+  box-shadow: inset 0 -4px 0 #c9bfae;
+  opacity: 0;
+  transition-property: width, rotate, left, top;
+  transition-timing-function: linear;
+}
+.sf-finger.is-on {
+  opacity: 1;
+}
+.sf-nail {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  bottom: 1px;
+  width: 8px;
+  background-color: #e3b341;
+  border-left: 2px solid #161418;
+}
+@media (width < 40rem) {
+  .sf-finger {
+    --fw: 14px;
+  }
+}
+
+/* --- Echoes ACT 3: letras pesadas y el suelo que se agrieta. --- */
+.hero-slam.ec-heavy {
+  text-shadow: 0.045em 0.045em 0 #3f7d32;
+}
+.ec-ground {
+  position: absolute;
+  height: 44px;
+  transform-origin: 50% 0;
+  animation: ec-ground 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  transition: opacity 0.4s;
+}
+.ec-ground.is-leaving {
+  opacity: 0;
+}
+.ec-ground svg {
+  display: block;
+  overflow: visible;
+}
+.ec-floor,
+.ec-crack {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ec-floor {
+  stroke-width: 3;
+}
+.ec-crack {
+  stroke-width: 2.5;
+}
+@keyframes ec-ground {
+  from {
+    scale: 1 0;
+    opacity: 0;
+  }
+}
+
+/* --- To Be Continued: congelado sepia, flecha y tarjeta del episodio. --- */
+html.tbc-frozen main *,
+html.tbc-frozen main *::before,
+html.tbc-frozen main *::after {
+  animation-play-state: paused !important;
+}
+.tbc-freeze {
+  background-color: rgba(112, 66, 20, 0.1);
+  -webkit-backdrop-filter: sepia(0.9) saturate(1.35) contrast(1.08);
+  backdrop-filter: sepia(0.9) saturate(1.35) contrast(1.08);
+}
+.tbc-grain {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(22, 20, 24, 0.28) 1px, transparent 1.4px);
+  background-size: 5px 5px;
+  opacity: 0.35;
+}
+.tbc-intro-arrow {
+  position: absolute;
+  left: max(16px, 5vw);
+  bottom: max(32px, 8vh);
+  animation: tbc-arrow-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes tbc-arrow-in {
+  from {
+    translate: 110vw 0;
+  }
+}
+.tbc-card {
+  z-index: 72;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background-color: #111013;
+  background-image: radial-gradient(rgba(236, 230, 216, 0.09) 1.2px, transparent 1.6px);
+  background-size: 7px 7px;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  animation: tbc-card-in 0.42s cubic-bezier(0.7, 0, 0.3, 1) both;
+  transition: clip-path 0.55s cubic-bezier(0.7, 0, 0.3, 1);
+}
+@keyframes tbc-card-in {
+  to {
+    clip-path: polygon(0 0, 125% 0, 100% 100%, 0 100%);
+  }
+}
+.tbc-card.is-open {
+  animation: none;
+  clip-path: polygon(100% 0, 125% 0, 100% 100%, 100% 100%);
+}
+.tbc-card-inner {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  max-width: min(980px, 100%);
+}
+.tbc-card-no {
+  font-family: var(--font-jp);
+  font-size: clamp(2.6rem, 11vw, 7.5rem);
+  line-height: 1;
+  color: #e3b341;
+  animation: power-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
+}
+.tbc-card-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 12vw, 8.5rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: #ece6d8;
+  animation: tbc-line 0.45s var(--ease-premium) 0.4s both;
+}
+.tbc-card-title b {
+  font-weight: inherit;
+}
+.tbc-card-title b + b {
+  color: #e3b341;
+}
+.tbc-card-sub {
+  max-width: 44ch;
+  font-size: clamp(1.05rem, 2.4vw, 1.6rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: #ece6d8;
+  border-left: 5px solid #e3b341;
+  padding-left: 0.7rem;
+  animation: tbc-line 0.45s var(--ease-premium) 0.55s both;
+}
+.tbc-card-ep {
+  margin-top: 0.5rem;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #161418;
+  background-color: #e3b341;
+  animation: tbc-line 0.45s var(--ease-premium) 0.7s both;
+}
+@keyframes tbc-line {
+  from {
+    opacity: 0;
+    translate: -24px 0;
+  }
+}
+
+/* --- Heaven's Door: el trazo en el aire y el libro que se abre. --- */
+.hd-stroke {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.hd-stroke path {
+  fill: none;
+  stroke: #e3b341;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+}
+.hd-book {
+  position: absolute;
+  display: flex;
+  perspective: 1400px;
+}
+.hd-page {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(0.75rem, 2vw, 1.4rem);
+  color: #161418;
+  background-color: #f7f2e8;
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(22, 20, 24, 0.09) 27px 28px);
+  border: 3px solid #161418;
+  box-shadow: 5px 5px 0 0 var(--panel-shadow);
+  backface-visibility: hidden;
+}
+.hd-page.is-left {
+  transform-origin: 100% 50%;
+  border-right-width: 1.5px;
+  animation: hd-open-left 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.hd-page.is-right {
+  transform-origin: 0 50%;
+  border-left-width: 1.5px;
+  animation: hd-open-right 0.5s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes hd-open-left {
+  from {
+    transform: rotateY(88deg);
+  }
+}
+@keyframes hd-open-right {
+  from {
+    transform: rotateY(-88deg);
+  }
+}
+.hd-book.is-closing .hd-page.is-left {
+  animation: hd-close-left 0.42s cubic-bezier(0.6, 0, 0.8, 0.4) both;
+}
+.hd-book.is-closing .hd-page.is-right {
+  animation: hd-close-right 0.42s cubic-bezier(0.6, 0, 0.8, 0.4) both;
+}
+@keyframes hd-close-left {
+  to {
+    transform: rotateY(88deg);
+  }
+}
+@keyframes hd-close-right {
+  to {
+    transform: rotateY(-88deg);
+  }
+}
+.hd-head {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.2vw, 1.6rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: inset 0 -0.3em 0 #e3b341;
+}
+.hd-head.is-order {
+  color: #8c1d2c;
+  box-shadow: none;
+}
+.hd-rows {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+.hd-row {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  transition:
+    clip-path 0.35s var(--ease-premium),
+    opacity 0.1s;
+}
+.hd-row.is-on {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+}
+@media (width < 40rem) {
+  .hd-rows {
+    gap: 0.35rem;
+  }
+  .hd-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+.hd-row dt {
+  font-family: var(--font-display);
+  font-size: clamp(0.72rem, 1.1vw, 0.88rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b655c;
+}
+.hd-row dd {
+  margin: 0;
+  font-size: clamp(0.82rem, 1.4vw, 1.12rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.hd-order {
+  margin: 0;
+  font-size: clamp(1.02rem, 2.2vw, 1.7rem);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.35;
+  color: #8c1d2c;
+}
+.hd-ink {
+  background-image: linear-gradient(#e3b341, #e3b341);
+  background-position: 0 92%;
+  background-size: 0 0.28em;
+  background-repeat: no-repeat;
+  transition: background-size 0.45s var(--ease-premium);
+}
+.hd-order.is-signed .hd-ink {
+  background-size: 100% 0.28em;
+}
+.hd-nib {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.8em;
+  margin-left: 0.1em;
+  vertical-align: -0.1em;
+  background-color: #161418;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  rotate: -25deg;
+}
+.hd-order.is-signed .hd-nib {
+  display: none;
+}
+.hd-sign {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.8rem;
+  padding: 0.2rem 0.35rem;
+  font-family: var(--font-jp);
+  font-size: 0.72rem;
+  color: #b3303c;
+  border: 2px solid #b3303c;
+  rotate: -8deg;
+  opacity: 0;
+  scale: 1.8;
+  transition:
+    opacity 0.15s,
+    scale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hd-order.is-signed ~ .hd-sign {
+  opacity: 1;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-skip {
+    display: none;
   }
 }

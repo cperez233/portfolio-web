@@ -223,9 +223,15 @@ The render loop stops off-screen.
   one-frame cut, no fade). The mini Stand is hidden from the first paint
   by `ui/stand-manifest-gate.tsx` (a server-rendered script that sets
   `html.stand-manifest`); it used to be set after hydration and left a
-  fading ghost. While the Stand is big, one of two things happens, and
-  they alternate on every load (remembered in `localStorage`, force one
-  with `?intro=diamond` or `?intro=world`):
+  fading ghost. While the Stand is big it performs one of nine entrances,
+  one per visit, picked at random from a bag in `localStorage` so none
+  repeats until all nine have played (and never the same one twice in a
+  row across bags; `ui/hero-intros/bag.ts`). Force one with
+  `?intro=diamond`, `world`, `crimson`, `dust`, `gold`, `finger`,
+  `echoes`, `tbc` or `door`. A "Skip intro" plate (bottom right, also
+  `Esc`, and it works while time is stopped) cuts everything, leaves the
+  CSS entrance on its last frame and hands over to the mini Stand, which
+  says it noticed. The two oldest live in `ui/portfolio-hero.tsx`:
   - **Crazy Diamond** (`ui/hero-crack.ts`): the Stand breaks the fourth
     wall. A ドラララ rush at the screen itself: every fist (pixel art,
     seen from the front) leaves its chest and grows toward the viewer
@@ -251,10 +257,42 @@ The render loop stops off-screen.
     hang off the resume event of `lib/time-stop.ts`, not a fixed clock:
     on a slow phone the stop can start late, and a timer used to move it
     while time was still frozen.
+  - The other seven live in `ui/hero-intros/`, one file each, and only
+    use the `IntroKit` the hero effect lends them (the Stand's clock,
+    frames, bubble, effect layers and the handover):
+    - **King Crimson** (`crimson.ts`): the Stand starts a painfully formal
+      speech ("slide 1 of 47") with an editor timeline crawling at the
+      bottom. キング・クリムゾン: two crimson frames (結果だけだ!!), the boring
+      clip is ripple-deleted from the timeline, and the Stand is already
+      posing somewhere else. Then the summary: systems engineer and
+      content creator.
+    - **Bites the Dust** (`dust.ts`): Killer Queen flies from its hand to
+      a letter, カチッ, the name explodes, and the tape rewinds for real:
+      the letters fly back and the whole CSS entrance plays backwards
+      (`entrance.ts`, negative playback rate) and then again. Déjà vu.
+    - **Gold Experience** (`gold.ts`): a golden wave turns the letters to
+      wood; branches draw themselves out of them with leaves and flowers,
+      a ladybug walks along CRISTIAN, the flowers shed hearts (the likes)
+      and everything withers back into text.
+    - **Star Finger** (`finger.ts`): the h1 isn't written yet. The finger
+      stretches to it and types it letter by letter, ending with a ドン
+      on the full stop. The typed text is an overlay; the real h1 stays
+      in place (transparent), so readers and crawlers are unaffected.
+    - **Echoes ACT 3** (`echoes.ts`): 3 FREEZE. CRISTIAN gets so heavy it
+      falls onto PÉREZ, which gets squashed (ズン, cracked floor), and the
+      Stand lifts it back up, sweating (ヨイショ).
+    - **To Be Continued** (`tbc.ts`): a big pose, sepia freeze frame with
+      the arrow, then the next episode's title card (第N話, N being your
+      visit number: name, "systems engineer and content creator") and
+      the page starts over as the new episode.
+    - **Heaven's Door** (`door.ts`): the Stand draws a line in the air
+      that opens into a book: Cris's profile on one page and, on the
+      other, the order it writes on you: you will remember that Cris is
+      a systems engineer and a content creator.
   - Either way, after the handover the mini Stand closes with a line
     about what just happened and, a few seconds later, greets you
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines
-    in `lines.ts` under `intro`).
+    in `lines.ts` under `intro`, `end` per entrance and `skipped`).
 
   With a mouse the layers move with the pointer; on scroll the two name
   lines split apart. The mini Stand greets by the visitor's hour in seven

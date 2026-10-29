@@ -415,16 +415,16 @@ async function crazyDiamond(ctx: PowerContext) {
 */
 const INK = `stroke="#161418" stroke-linejoin="round" stroke-linecap="round"`;
 
-const LEAF = `<svg viewBox="0 0 32 32" width="30" height="30"><path d="M4 28 C4 12 14 4 28 4 C28 18 20 28 4 28Z" fill="#6fbf5b" ${INK} stroke-width="2.5"/><path d="M4 28 C18 26 26 18 28 4 C24 18 16 24 4 28Z" fill="#4f9e44"/><path d="M5 27 C12 21 20 13 27 5" fill="none" stroke="#2f6b2a" stroke-width="2" stroke-linecap="round"/><path d="M11 21 l1 -6 M16 16 l1 -6 M12 21 l6 -1 M17 16 l6 -1" stroke="#2f6b2a" stroke-width="1.4" stroke-linecap="round"/><path d="M8 22 C9 15 14 10 20 8" fill="none" stroke="#b6eda0" stroke-width="2" stroke-linecap="round"/></svg>`;
+export const LEAF = `<svg viewBox="0 0 32 32" width="30" height="30"><path d="M4 28 C4 12 14 4 28 4 C28 18 20 28 4 28Z" fill="#6fbf5b" ${INK} stroke-width="2.5"/><path d="M4 28 C18 26 26 18 28 4 C24 18 16 24 4 28Z" fill="#4f9e44"/><path d="M5 27 C12 21 20 13 27 5" fill="none" stroke="#2f6b2a" stroke-width="2" stroke-linecap="round"/><path d="M11 21 l1 -6 M16 16 l1 -6 M12 21 l6 -1 M17 16 l6 -1" stroke="#2f6b2a" stroke-width="1.4" stroke-linecap="round"/><path d="M8 22 C9 15 14 10 20 8" fill="none" stroke="#b6eda0" stroke-width="2" stroke-linecap="round"/></svg>`;
 
-const FLOWER = (petal: string, shade: string) =>
+export const FLOWER = (petal: string, shade: string) =>
   `<svg viewBox="0 0 40 40" width="34" height="34"><g ${INK} stroke-width="2.2">${[0, 72, 144, 216, 288]
     .map((a) => `<ellipse cx="20" cy="9.5" rx="6.5" ry="9" fill="${petal}" transform="rotate(${a} 20 20)"/>`)
     .join("")}</g>${[0, 72, 144, 216, 288]
     .map((a) => `<ellipse cx="20" cy="12" rx="2.6" ry="5" fill="${shade}" transform="rotate(${a} 20 20)"/>`)
     .join("")}<circle cx="20" cy="20" r="6" fill="#e3b341" ${INK} stroke-width="2.2"/><circle cx="18" cy="18" r="1.6" fill="#fff3c4"/><circle cx="22" cy="21.5" r="1" fill="#a87a1f"/><circle cx="19" cy="22.5" r="1" fill="#a87a1f"/></svg>`;
 
-const LADYBUG = `<svg viewBox="0 0 36 32" width="32" height="28"><g ${INK} stroke-width="2"><path d="M7 21 l-4 3 M7 15 l-5 0 M29 21 l4 3 M29 15 l5 0" fill="none"/><path d="M13 7 Q10 2 7 3 M23 7 Q26 2 29 3" fill="none"/><circle cx="18" cy="9" r="6" fill="#161418"/><ellipse cx="18" cy="19" rx="12" ry="11" fill="#d8443c"/></g><path d="M18 9 V30" stroke="#161418" stroke-width="2"/><path d="M7 21 A12 11 0 0 0 29 21 A14 8 0 0 1 7 21Z" fill="#a8302a"/><circle cx="12" cy="16" r="2.6" fill="#161418"/><circle cx="24" cy="16" r="2.6" fill="#161418"/><circle cx="13" cy="24" r="2.2" fill="#161418"/><circle cx="23" cy="24" r="2.2" fill="#161418"/><path d="M10 13 Q12 10 15 10" stroke="#ffb3a8" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="7" r="1.3" fill="#ece6d8"/><circle cx="20" cy="7" r="1.3" fill="#ece6d8"/></svg>`;
+export const LADYBUG = `<svg viewBox="0 0 36 32" width="32" height="28"><g ${INK} stroke-width="2"><path d="M7 21 l-4 3 M7 15 l-5 0 M29 21 l4 3 M29 15 l5 0" fill="none"/><path d="M13 7 Q10 2 7 3 M23 7 Q26 2 29 3" fill="none"/><circle cx="18" cy="9" r="6" fill="#161418"/><ellipse cx="18" cy="19" rx="12" ry="11" fill="#d8443c"/></g><path d="M18 9 V30" stroke="#161418" stroke-width="2"/><path d="M7 21 A12 11 0 0 0 29 21 A14 8 0 0 1 7 21Z" fill="#a8302a"/><circle cx="12" cy="16" r="2.6" fill="#161418"/><circle cx="24" cy="16" r="2.6" fill="#161418"/><circle cx="13" cy="24" r="2.2" fill="#161418"/><circle cx="23" cy="24" r="2.2" fill="#161418"/><path d="M10 13 Q12 10 15 10" stroke="#ffb3a8" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="16" cy="7" r="1.3" fill="#ece6d8"/><circle cx="20" cy="7" r="1.3" fill="#ece6d8"/></svg>`;
 
 const FROG = `<svg viewBox="0 0 80 66" width="120" height="99"><g ${INK} stroke-width="3">
   <path d="M10 56 Q2 62 8 64 Q14 66 20 60Z" fill="#4f9e44"/><path d="M70 56 Q78 62 72 64 Q66 66 60 60Z" fill="#4f9e44"/>
@@ -1144,7 +1144,7 @@ async function madeInHeaven(ctx: PowerContext) {
 /* Bites the Dust                                                      */
 /* ------------------------------------------------------------------ */
 
-const KILLER_QUEEN = `<svg viewBox="0 0 48 48" width="48" height="48"><g stroke="#161418" stroke-width="3" stroke-linejoin="round"><path d="M8 20 L6 4 L18 12Z M40 20 L42 4 L30 12Z" fill="#e891c4"/><circle cx="24" cy="24" r="17" fill="#e891c4"/><path d="M12 30 Q24 44 36 30" fill="#ece6d8"/></g><path d="M15 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M25 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="#161418"/><path d="M22 27 l2 3 l2 -3Z" fill="#161418"/><path d="M17 33 v4 M21 34 v4 M25 34 v4 M29 33 v4" stroke="#161418" stroke-width="2"/></svg>`;
+export const KILLER_QUEEN = `<svg viewBox="0 0 48 48" width="48" height="48"><g stroke="#161418" stroke-width="3" stroke-linejoin="round"><path d="M8 20 L6 4 L18 12Z M40 20 L42 4 L30 12Z" fill="#e891c4"/><circle cx="24" cy="24" r="17" fill="#e891c4"/><path d="M12 30 Q24 44 36 30" fill="#ece6d8"/></g><path d="M15 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M25 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="#161418"/><path d="M22 27 l2 3 l2 -3Z" fill="#161418"/><path d="M17 33 v4 M21 34 v4 M25 34 v4 M29 33 v4" stroke="#161418" stroke-width="2"/></svg>`;
 
 /**
  * Bites the Dust, como en la Parte 4: Killer Queen (en chiquito) entra
