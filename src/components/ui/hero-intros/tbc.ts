@@ -4,18 +4,18 @@ import { POSES } from "@/components/mini-stand/sprite";
 import { pickLine } from "@/components/mini-stand/pick";
 import { pop } from "@/components/mini-stand/power-kit";
 import { soundEnabled } from "@/lib/sfx";
-import { ease, fill, type IntroDef, type IntroKit } from "./kit";
+import { fill, type IntroDef, type IntroKit } from "./kit";
 
 /*
   To Be Continued: el final de un episodio de JoJo. El Stand se lanza a
   su pose mas dramatica (ドドドド) y en el momento justo el cuadro se
   congela: todo quieto, en sepia, con grano y un temblor de pelicula
-  vieja, mientras la imagen se sigue acercando despacio. Entra la flecha.
-  Sobre el cuadro congelado corren los creditos del ending, y el chiste
-  es que casi todo lo hizo Cris (ingenieria, diseno, video, contenido...),
-  hasta el anuncio del proximo episodio: tu proxima visita. Para cerrar,
-  el color vuelve con un barrido que sigue a la flecha cuando se va, y la
-  pagina sigue andando desde donde se quedo, sin cortes.
+  vieja, mientras la imagen se sigue acercando despacio. Entra la flecha
+  del anime, de derecha a izquierda: marron, con su borde y el "To Be
+  Continued" rotulado en la letra de JoJo. Nada mas, como en la serie: el
+  cuadro congelado y la flecha. Para cerrar, el color vuelve con un
+  barrido que sigue a la flecha cuando se va, y la pagina sigue andando
+  desde donde se quedo, sin cortes.
 
   Roundabout: no viene con el sitio (no hay licencia para la grabacion).
   Si NEXT_PUBLIC_ROUNDABOUT_URL apunta a un audio, suena desde el
@@ -26,12 +26,10 @@ import { ease, fill, type IntroDef, type IntroKit } from "./kit";
 const T = {
   open: 1550,
   freeze: 2350,
-  arrow: 2560,
-  credits: 3150,
-  roll: 4300,
-  thaw: 7650,
-  talk: 8350,
-  relay: 9300,
+  arrow: 2520,
+  thaw: 5900,
+  talk: 6600,
+  relay: 7600,
 } as const;
 
 /** Tu numero de visita (lo cuenta el mini Stand). */
@@ -42,8 +40,6 @@ function visitNumber() {
     return 1;
   }
 }
-
-const esc = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
 /** Roundabout, si alguien puso el audio (ver arriba). */
 function roundabout(kit: IntroKit) {
@@ -71,7 +67,7 @@ function roundabout(kit: IntroKit) {
 
 export const tbc: IntroDef = {
   start: T.open,
-  condense: 10200,
+  condense: 8600,
   run(kit) {
     const pose = POSES[Math.floor(Math.random() * POSES.length)];
     const root = document.documentElement;
@@ -110,39 +106,13 @@ export const tbc: IntroDef = {
     });
     kit.onCleanup(() => root.classList.remove("tbc-frozen"));
 
-    // La flecha.
+    // La flecha del anime (la misma del pie de pagina, .tbc-arrow en globals.css).
     let arrow: HTMLElement | null = null;
     kit.at(T.arrow, () => {
       arrow = document.createElement("div");
       arrow.className = "tbc-intro-arrow";
       arrow.innerHTML = `<span class="tbc-arrow"><span class="tbc-arrow-text">${kit.jojo.toBeContinued}</span></span>`;
       frozen?.appendChild(arrow);
-    });
-
-    // Los creditos del ending sobre el cuadro congelado.
-    let roll: HTMLElement | null = null;
-    kit.at(T.credits, () => {
-      if (!frozen) return;
-      const credits = document.createElement("div");
-      credits.className = "tbc-credits";
-      credits.innerHTML =
-        `<div class="tbc-roll">` +
-        `<p class="tbc-show">${esc(lines.show)}</p>` +
-        `<p class="tbc-song">♪ Roundabout <span>— Yes</span></p>` +
-        lines.credits.map(([role, who]) => `<p class="tbc-row"><span>${esc(role)}</span><b>${esc(who)}</b></p>`).join("") +
-        `<p class="tbc-next"><span>${esc(lines.nextLabel)}</span><b>第${n + 1}話</b><i>${esc(fill(lines.next, n + 1))}</i></p>` +
-        `</div>`;
-      frozen.appendChild(credits);
-      roll = credits.querySelector<HTMLElement>(".tbc-roll");
-    });
-    // Suben despacio y se detienen en el proximo episodio.
-    kit.at(T.roll, () => {
-      if (!roll) return;
-      const box = roll.parentElement!.getBoundingClientRect();
-      const next = roll.querySelector<HTMLElement>(".tbc-next")!;
-      const stop = next.offsetTop + next.offsetHeight / 2 - box.height / 2;
-      const r = roll;
-      kit.tween(T.thaw - T.roll - 650, (t) => (r.style.translate = `0 ${(-stop * t).toFixed(1)}px`), ease.inOut);
     });
 
     // El color vuelve detras de la flecha, que se va; la pagina sigue.

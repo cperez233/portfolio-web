@@ -29,14 +29,14 @@ const T = {
   widen: 3070,
   widenMs: 520,
   talk: 3700,
-  rush: 5650,
+  rush: 6850,
   rushHits: 6,
   rushStep: 90,
-  close: 5700,
+  close: 6900,
   closeMs: 620,
-  bye: 6450,
-  last: 7350,
-  relay: 8400,
+  bye: 7650,
+  last: 8450,
+  relay: 9350,
 } as const;
 
 /** Un diente cada TOOTH px; el tirador abre del todo a RAMP px de el. */
@@ -58,7 +58,7 @@ function highlight(line: string) {
 
 export const zipper: IntroDef = {
   start: T.open,
-  condense: 9900,
+  condense: 10400,
   run(kit) {
     const letters = kit.letters();
     if (!letters.length) return kit.at(T.open + 900, kit.relay);

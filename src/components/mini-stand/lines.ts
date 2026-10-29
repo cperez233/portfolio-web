@@ -117,6 +117,10 @@ export interface StandLines {
       erased: string;
       done: string;
       result: string;
+      /** Los pasos de la carga (diseno, codigo, entrega) y como se marcan. */
+      steps: string[];
+      doing: string;
+      now: string;
       wait: string[];
       cut: string[];
     };
@@ -131,12 +135,8 @@ export interface StandLines {
     zipper: { code: string[]; talk: string[]; done: string[] };
     /** Echoes ACT 3: levantando el nombre (shout) y ya arriba. */
     echoes: { strain: string[]; done: string[] };
-    /**
-     * To Be Continued: los creditos del ending (show: el titulo de la
-     * serie; credits: [cargo, quien]), el proximo episodio ({n}: tu
-     * proxima visita) y lo que dice al volver el color.
-     */
-    tbc: { show: string; credits: [string, string][]; nextLabel: string; next: string; after: string[] };
+    /** To Be Continued: lo que dice al volver el color ({n}: tu proxima visita). */
+    tbc: { after: string[] };
     /**
      * Heaven's Door: los rotulos de las paginas, el sello, las ordenes que
      * te escribe (sale una al azar; 70 caracteres o menos) y el remate.
@@ -633,6 +633,9 @@ export const standLines: Record<Language, StandLines> = {
         erased: "Tiempo borrado",
         done: "Cris, cargado al 100%",
         result: "Ingeniero de sistemas · Creador de contenido",
+        steps: ["Diseño", "Código", "Entrega"],
+        doing: "en curso",
+        now: "Hora",
         wait: ["Cargando… esto va para largo.", "Ponte cómodo. Son tres horas.", "Ya casi. Bueno, no."],
         cut: [
           "¿La espera? La borré. Solo queda el resultado.",
@@ -675,18 +678,6 @@ export const standLines: Record<Language, StandLines> = {
         done: ["Listo. Ya pesa normal.", "Arriba. Ese nombre tiene peso.", "Ingeniería: levantar lo que se cae."],
       },
       tbc: {
-        show: "クリスの奇妙なポートフォリオ",
-        credits: [
-          ["Ingeniería de sistemas", "Cristian Pérez"],
-          ["Diseño y desarrollo web", "Cristian Pérez"],
-          ["Guion, cámara y edición", "Cristian Pérez"],
-          ["Creación de contenido", "Cristian Pérez"],
-          ["Soporte técnico familiar", "Cristian Pérez"],
-          ["Stand", "Paranoid Android"],
-          ["Café", "Demasiado"],
-        ],
-        nextLabel: "Próximo episodio",
-        next: "Vuelves y hay más. Episodio {n}.",
         after: ["Continuará… en el episodio {n}.", "Fin del episodio. Empieza el portafolio.", "To be continued. Tú sigue bajando."],
       },
       door: {
@@ -1457,6 +1448,9 @@ export const standLines: Record<Language, StandLines> = {
         erased: "Time erased",
         done: "Cris, 100% loaded",
         result: "Systems engineer · Content creator",
+        steps: ["Design", "Code", "Delivery"],
+        doing: "in progress",
+        now: "Time",
         wait: ["Loading… this will take a while.", "Get comfy. Three hours to go.", "Almost there. Well, no."],
         cut: [
           "The wait? Erased. Only the result remains.",
@@ -1499,18 +1493,6 @@ export const standLines: Record<Language, StandLines> = {
         done: ["There. Normal weight again.", "Up it goes. That name has weight.", "Engineering: lifting what falls."],
       },
       tbc: {
-        show: "クリスの奇妙なポートフォリオ",
-        credits: [
-          ["Systems engineering", "Cristian Pérez"],
-          ["Web design & development", "Cristian Pérez"],
-          ["Script, camera & editing", "Cristian Pérez"],
-          ["Content creation", "Cristian Pérez"],
-          ["Family tech support", "Cristian Pérez"],
-          ["Stand", "Paranoid Android"],
-          ["Coffee", "Way too much"],
-        ],
-        nextLabel: "Next episode",
-        next: "Come back for more. Episode {n}.",
         after: ["To be continued… in episode {n}.", "End of episode. The portfolio begins.", "To be continued. Keep scrolling."],
       },
       door: {

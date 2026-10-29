@@ -1242,47 +1242,52 @@ html.lenis body {
   }
 
   /*
-    Flecha "To Be Continued". La forma es ::before con clip-path; el
-    contorno crema sale de cuatro drop-shadow en el contenedor, que si
-    siguen la silueta recortada (un border no podria).
+    Flecha "To Be Continued", la del anime: apunta a la izquierda, marron
+    oliva con luz arriba y sombra abajo, contorno de tinta y el rotulo en
+    crema, en la letra de JoJo (Anton), inclinado y con su contorno. La
+    forma es ::before con clip-path; el contorno sale de cuatro
+    drop-shadow en el contenedor, que si siguen la silueta recortada (un
+    border no podria). ::after es el filo claro de arriba.
   */
   .tbc-arrow {
     position: relative;
     display: inline-flex;
     align-items: center;
-    min-height: 3.5rem;
-    padding: 0.4rem 2rem 0.4rem 3.4rem;
-    filter: drop-shadow(2.5px 0 0 var(--color-ink))
-      drop-shadow(-2.5px 0 0 var(--color-ink))
-      drop-shadow(0 2.5px 0 var(--color-ink))
-      drop-shadow(0 -2.5px 0 var(--color-ink));
+    min-height: 3.6rem;
+    padding: 0.45rem 2.1rem 0.5rem 3.6rem;
+    filter: drop-shadow(2.5px 0 0 #241a0b) drop-shadow(-2.5px 0 0 #241a0b) drop-shadow(0 2.5px 0 #241a0b)
+      drop-shadow(0 -2.5px 0 #241a0b) drop-shadow(4px 4px 0 rgba(22, 20, 24, 0.55));
   }
 
-  .tbc-arrow::before {
+  .tbc-arrow::before,
+  .tbc-arrow::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-color: var(--color-accent);
-    clip-path: polygon(
-      0 50%,
-      2.2rem 0,
-      2.2rem 16%,
-      100% 16%,
-      100% 84%,
-      2.2rem 84%,
-      2.2rem 100%
-    );
+    clip-path: polygon(0 50%, 2.4rem 0, 2.4rem 18%, 100% 18%, 100% 82%, 2.4rem 82%, 2.4rem 100%);
+  }
+
+  .tbc-arrow::before {
+    background-image: linear-gradient(180deg, #b49c5f 0%, #8c7541 42%, #6a5528 70%, #4e3d1b 100%);
+  }
+
+  /* El filo claro: una franja fina arriba del cuerpo y de la punta. */
+  .tbc-arrow::after {
+    background-image: linear-gradient(180deg, rgba(246, 233, 196, 0.55) 0 22%, transparent 34%);
   }
 
   .tbc-arrow-text {
     display: inline-block;
     font-family: var(--font-display);
-    font-size: clamp(1.1rem, 0.8rem + 1.4vw, 1.9rem);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #161418;
-    transform: skewX(-12deg);
+    font-size: clamp(1.25rem, 0.85rem + 1.6vw, 2.15rem);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: #fbf1d6;
+    -webkit-text-stroke: 4px #241a0b;
+    paint-order: stroke fill;
+    text-shadow: 2px 3px 0 #241a0b;
+    transform: skewX(-10deg);
   }
 
   /* Corte diagonal entre dos viñetas apiladas (una encima de otra). */
@@ -5070,23 +5075,64 @@ html.intro-banner-low .power-zw-text {
   color: #d4434f;
   animation: power-flicker 1s steps(2) infinite;
 }
-/* Tiempo borrado: el medidor en carmesi, los cuadros que caen, la cuenta loca. */
+/* Los pasos de la carga y la hora de verdad. */
+.kc-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(0.78rem, 1.5vw, 0.98rem);
+  color: #8f897e;
+}
+.kc-steps li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.kc-steps b {
+  width: 1.1em;
+  font-weight: 700;
+  text-align: center;
+}
+.kc-steps span {
+  font-weight: 600;
+}
+.kc-steps em {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  font-style: normal;
+}
+.kc-steps li.is-doing {
+  color: #ece6d8;
+}
+.kc-steps li.is-doing b {
+  color: #e3b341;
+}
+.kc-steps li.is-done {
+  color: #ece6d8;
+}
+.kc-steps li.is-done b {
+  color: #161418;
+  background-color: #e3b341;
+}
+.kc-meter-foot {
+  flex-wrap: wrap;
+  row-gap: 0.3rem;
+}
+.kc-wall {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: clamp(0.72rem, 1.4vw, 0.95rem);
+  color: #8f897e;
+}
+.kc-wall b {
+  color: #ece6d8;
+}
+/* Tiempo borrado: la pagina no esta. Tampoco el medidor. */
 .kc-deck.is-erased .kc-meter {
-  border-color: #d4434f;
-  box-shadow: 7px 7px 0 0 #ece6d8;
-  animation: kc-jitter 0.24s steps(2, end) infinite;
-}
-.kc-deck.is-erased .kc-title,
-.kc-deck.is-erased .kc-pct {
-  color: #d4434f;
-}
-.kc-deck.is-erased .kc-bar {
-  border-color: #d4434f;
-}
-@keyframes kc-jitter {
-  50% {
-    translate: 3px -2px;
-  }
+  visibility: hidden;
 }
 .kc-deck.is-done .kc-meter {
   box-shadow: 7px 7px 0 0 #e3b341;
@@ -5154,20 +5200,6 @@ html.intro-banner-low .power-zw-text {
   font-weight: 400;
   line-height: 1;
 }
-/* El corte: dos cuadros, carmesi y tinta. */
-.kc-cut {
-  z-index: 72;
-  background-color: #8c1d2c;
-  animation: kc-cut 0.2s steps(1, end) both;
-}
-@keyframes kc-cut {
-  50% {
-    background-color: #160406;
-  }
-}
-.kc-cut.is-back {
-  background-color: #ece6d8;
-}
 /* El vacio: lo que se ve en el tiempo borrado. */
 .kc-void {
   background-color: #14040a;
@@ -5216,34 +5248,48 @@ html.intro-banner-low .power-zw-text {
     background-position: 0 120px;
   }
 }
-.kc-ghosts {
-  position: absolute;
-  inset: 0;
-  opacity: calc(0.62 - var(--k) * 0.13);
+/* King Crimson, el unico en el tiempo borrado: con su borde rojo. */
+html.kc-erased .hero-stand svg {
+  filter: drop-shadow(3px 0 0 #d4434f) drop-shadow(-3px 0 0 #d4434f) drop-shadow(0 3px 0 #8c1d2c);
 }
-.kc-ghost-letter {
-  position: absolute;
-  font-family: var(--font-display);
-  text-align: center;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 2px #d4434f;
+/*
+  El salto: la imagen se corrompe unos cuadros, como en el anime, cuando la
+  animacion "se salta" un trozo. Franjas recortadas y corridas y el color
+  partido; en pasos, sin suavizar.
+*/
+html.kc-skip [data-stand-hero] > div,
+html.kc-skip .kc-deck,
+html.kc-skip nav[aria-label] {
+  animation: kc-skip 0.23s steps(1, end) both !important;
 }
-.kc-ghosts.is-base .kc-ghost-letter {
-  color: rgba(212, 67, 79, 0.18);
+@keyframes kc-skip {
+  0% {
+    translate: -18px 0;
+    clip-path: inset(0 0 58% 0);
+    filter: drop-shadow(6px 0 0 #d4434f) drop-shadow(-6px 0 0 #3fb6c9);
+  }
+  25% {
+    translate: 14px 4px;
+    clip-path: inset(34% 0 18% 0);
+    filter: invert(1) drop-shadow(-8px 0 0 #d4434f);
+  }
+  50% {
+    translate: -6px -3px;
+    clip-path: inset(60% 0 0 0);
+    filter: drop-shadow(10px 0 0 #3fb6c9);
+  }
+  75% {
+    translate: 9px 0;
+    clip-path: inset(12% 0 46% 0);
+    filter: drop-shadow(-5px 0 0 #d4434f) contrast(1.6);
+  }
+  100% {
+    translate: 0 0;
+    clip-path: none;
+    filter: none;
+  }
 }
-.kc-ghost-photo {
-  position: absolute;
-  object-fit: cover;
-  filter: grayscale(1) contrast(1.3) brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(3);
-  opacity: 0.7;
-}
-.kc-ghost-text {
-  position: absolute;
-  text-align: center;
-  color: rgba(236, 230, 216, 0.5);
-}
-/* Lo de fuera del hero no esta en el tiempo borrado: lo reemplazan sus fantasmas. */
+/* Lo de fuera del hero no esta en el tiempo borrado. */
 html.kc-erased :is(nav[aria-label], [data-stand-hero] .hero-rise, [data-stand-hero] .hero-paste, [data-stand-hero] .hero-pop, [data-stand-hero] .hero-don) {
   visibility: hidden;
 }
@@ -5251,69 +5297,52 @@ html.kc-erased .stand-speech.hero-say {
   visibility: hidden;
 }
 
-/* --- Bites the Dust: Killer Queen, la explosion y la cinta que se rebobina. --- */
-.dust-kq,
-.dust-boom {
+/* --- Bites the Dust: la explosion (canvas, boom.ts) y la cinta que se rebobina. --- */
+.dust-canvas {
   position: absolute;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  pointer-events: none;
 }
-.dust-kq svg,
-.dust-boom svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+/* El hueco de cada pieza en el rebobinado: su silueta punteada, que destella al llenarse. */
+.btd-slot {
+  position: absolute;
+  border: 2px dashed #e891c4;
+  border-radius: 6px;
+  background-color: rgba(232, 145, 196, 0.08);
+  box-shadow: 0 0 0 2px rgba(22, 20, 24, 0.55);
+  animation: btd-slot-in 0.25s steps(2, end) both;
 }
-.dust-kq {
-  filter: drop-shadow(4px 4px 0 #161418);
+.btd-slot.is-letter {
+  border-radius: 2px;
 }
-.dust-kq.is-gone {
+@keyframes btd-slot-in {
+  from {
+    opacity: 0;
+  }
+}
+.btd-slot.is-filled {
+  border-style: solid;
+  border-color: #fbf3df;
+  background-color: rgba(251, 243, 223, 0.35);
+  transition:
+    opacity 0.3s ease-out,
+    scale 0.3s ease-out;
   opacity: 0;
+  scale: 1.12;
 }
-.dust-boom svg {
-  width: auto;
-  height: auto;
-}
-.dust-ring {
+/* El rastro de lo que vuelve: siluetas que se apagan. */
+.btd-trail {
   position: absolute;
-  width: 80px;
-  height: 80px;
-  margin: -40px 0 0 -40px;
-  border: 6px solid #fbf3df;
-  border-radius: 9999px;
-  box-shadow:
-    0 0 0 3px #161418,
-    inset 0 0 0 3px #161418;
+  border: 2px solid rgba(232, 145, 196, 0.85);
+  border-radius: 4px;
+  animation: btd-trail 0.38s linear forwards;
 }
-/* La nube: bocanadas sin borde, y el contorno de tinta va alrededor de todas juntas. */
-.dust-smoke {
-  position: absolute;
-  inset: 0;
-  filter: drop-shadow(3px 0 0 #161418) drop-shadow(-3px 0 0 #161418) drop-shadow(0 3px 0 #161418) drop-shadow(0 -3px 0 #161418);
-}
-.dust-puff {
-  position: absolute;
-  translate: -50% -50%;
-  border-radius: 9999px;
-  background-color: #d9cfbd;
-  box-shadow: inset -14px -12px 0 0 #b3a891;
-}
-.dust-puff.is-dark {
-  background-color: #8f897e;
-  box-shadow: inset -12px -10px 0 0 #6b655c;
-}
-.dust-bit {
-  position: absolute;
-  width: 14px;
-  height: 9px;
-  margin: -5px 0 0 -7px;
-  background-color: #161418;
-  clip-path: polygon(0 30%, 100% 0, 80% 100%);
-}
-.dust-bit.is-pink {
-  width: 18px;
-  height: 12px;
-  background-color: #e891c4;
-  border: 2px solid #161418;
+@keyframes btd-trail {
+  to {
+    opacity: 0;
+    scale: 0.9;
+  }
 }
 /* Cuadro de impacto: un destello blanco y un negativo, dos cuadros. */
 .dust-flash {
@@ -5401,56 +5430,13 @@ html.kc-erased .stand-speech.hero-say {
   font-style: normal;
   font-size: 0.7em;
 }
-.btd-clock {
-  position: absolute;
-  left: 50%;
-  top: 44%;
-  width: clamp(130px, 22vmin, 220px);
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border: 6px solid #161418;
-  border-radius: 9999px;
-  background-color: #fbf3df;
-  /* Las marcas de las horas: rayos, tapados en el centro por la esfera. */
-  background-image:
-    radial-gradient(circle, #fbf3df 0 64%, transparent 64.5%),
-    repeating-conic-gradient(from -1.5deg, #161418 0 3deg, transparent 3deg 30deg);
-  box-shadow:
-    inset 0 0 0 10px #fbf3df,
-    7px 7px 0 0 #161418;
-  animation: btd-clock-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-@keyframes btd-clock-in {
-  from {
-    scale: 0.3;
-  }
-}
-.btd-clock i {
-  position: absolute;
-  left: calc(50% - 3px);
-  bottom: 50%;
-  width: 6px;
-  height: 40%;
-  border-radius: 3px;
-  background-color: #161418;
-  transform-origin: 50% 100%;
-  animation: power-spin 0.3s linear infinite reverse;
-}
-.btd-clock i + i {
-  left: calc(50% - 4px);
-  width: 8px;
-  height: 28%;
-  background-color: #e891c4;
-  border: 2px solid #161418;
-  animation-duration: 1.6s;
-}
 .btd-title {
   position: absolute;
   left: 50%;
-  top: calc(44% + clamp(85px, 14vmin, 140px));
+  bottom: max(70px, 9vh);
   translate: -50% 0;
   font-family: var(--font-display);
-  font-size: clamp(2.4rem, 9vw, 7rem);
+  font-size: clamp(2rem, 6vw, 4.6rem);
   font-style: italic;
   line-height: 1;
   white-space: nowrap;
@@ -5954,12 +5940,18 @@ html.tbc-frozen main *::after {
   animation: tbc-arrow-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   transition: translate 0.8s cubic-bezier(0.6, 0, 0.3, 1);
 }
+/* En el congelado, mas grande: es el cierre del episodio. */
 .tbc-intro-arrow .tbc-arrow {
-  filter: drop-shadow(3px 0 0 #161418) drop-shadow(-3px 0 0 #161418) drop-shadow(0 3px 0 #161418) drop-shadow(0 -3px 0 #161418)
-    drop-shadow(5px 5px 0 #161418);
+  min-height: clamp(3.8rem, 8vw, 5.6rem);
+  padding: 0.5rem clamp(1.6rem, 4vw, 3rem) 0.6rem clamp(3.4rem, 7vw, 5.2rem);
 }
-.tbc-intro-arrow .tbc-arrow::before {
-  background-color: #e3b341;
+.tbc-intro-arrow .tbc-arrow::before,
+.tbc-intro-arrow .tbc-arrow::after {
+  clip-path: polygon(0 50%, clamp(2.4rem, 5vw, 3.8rem) 0, clamp(2.4rem, 5vw, 3.8rem) 18%, 100% 18%, 100% 82%, clamp(2.4rem, 5vw, 3.8rem) 82%, clamp(2.4rem, 5vw, 3.8rem) 100%);
+}
+.tbc-intro-arrow .tbc-arrow-text {
+  font-size: clamp(1.6rem, 1rem + 2.6vw, 3.1rem);
+  -webkit-text-stroke-width: 5px;
 }
 .tbc-intro-arrow.is-leaving {
   translate: -110vw 0;
@@ -5969,118 +5961,6 @@ html.tbc-frozen main *::after {
     translate: 110vw 0;
   }
 }
-/* Los creditos: una columna que sube a la derecha, como en el ending. */
-.tbc-credits {
-  position: absolute;
-  right: max(16px, 5vw);
-  top: 13vh;
-  bottom: 22vh;
-  width: min(440px, calc(100% - 32px));
-  overflow: hidden;
-  background-color: rgba(22, 20, 24, 0.5);
-  -webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
-  mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
-  animation: tbc-credits-in 0.5s ease-out both;
-}
-@keyframes tbc-credits-in {
-  from {
-    opacity: 0;
-  }
-}
-.tbc-roll {
-  display: grid;
-  gap: 1.05rem;
-  padding: 34vh 0 30vh;
-  text-align: center;
-  color: #fbf3df;
-  text-shadow:
-    2px 2px 0 #161418,
-    -1px -1px 0 #161418,
-    1px -1px 0 #161418,
-    -1px 1px 0 #161418;
-}
-.tbc-roll p {
-  margin: 0;
-}
-.tbc-show {
-  font-family: var(--font-jp);
-  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
-  line-height: 1.2;
-  color: #e3b341;
-}
-.tbc-song {
-  font-family: var(--font-display);
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.tbc-song span {
-  color: #e3b341;
-}
-.tbc-row {
-  display: grid;
-  gap: 0.1rem;
-}
-.tbc-row span {
-  font-size: clamp(0.72rem, 1.2vw, 0.85rem);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #e9d9b4;
-}
-.tbc-row b {
-  font-family: var(--font-display);
-  font-size: clamp(1.25rem, 2.6vw, 1.85rem);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-.tbc-next {
-  display: grid;
-  gap: 0.25rem;
-  justify-items: center;
-  margin-top: 1rem !important;
-  padding: 0.9rem 1rem 1rem;
-  border: 3px solid #161418;
-  background-color: rgba(22, 20, 24, 0.82);
-  box-shadow: 5px 5px 0 0 #e3b341;
-  text-shadow: none;
-}
-.tbc-next span {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #e3b341;
-}
-.tbc-next b {
-  font-family: var(--font-jp);
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 400;
-  line-height: 1.1;
-  color: #fbf3df;
-}
-.tbc-next i {
-  font-style: normal;
-  font-size: clamp(0.85rem, 1.5vw, 1rem);
-  color: #e9d9b4;
-}
-@media (width < 40rem) {
-  .tbc-credits {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: calc(max(36px, 9vh) + 70px);
-    width: auto;
-    height: 40vh;
-    background-color: rgba(22, 20, 24, 0.78);
-  }
-  .tbc-roll {
-    gap: 0.75rem;
-  }
-}
-
 /* --- Heaven's Door: el garabato, el libro y la orden en una pagina de manga. --- */
 .hd-fx {
   transition:
