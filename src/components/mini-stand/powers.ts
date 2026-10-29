@@ -6,6 +6,7 @@ import { playSfx } from "@/lib/sfx";
 import { createGlass } from "@/components/ui/hero-crack";
 import { grow, paint, svgEl, type Limb, type Painted } from "@/components/ui/hero-intros/gold-art";
 import { BOOM_MS, PRIME_MS, createBoom } from "@/components/ui/hero-intros/boom";
+import { CUT_MS, btdCut } from "@/components/ui/hero-intros/btd-cut";
 import {
   centerTarget,
   layer,
@@ -1193,6 +1194,17 @@ function btdFlash() {
   window.setTimeout(() => flash.remove(), 170);
 }
 
+/**
+ * La activacion, como la ultima de Kira en el anime (btd-cut.ts): el
+ * tiempo se lo traga todo antes de que empiece la cinta.
+ */
+async function btdActivate(parent: HTMLElement) {
+  btdCut(parent);
+  playSfx("warudo");
+  quake(300, false, true);
+  await wait(CUT_MS);
+}
+
 /** Bites the Dust: dos formas, al azar (POWER_VARIANTS). */
 async function bitesTheDust(ctx: PowerContext) {
   if (ctx.variant === "bomb") return btdBomb(ctx);
@@ -1202,10 +1214,11 @@ async function bitesTheDust(ctx: PowerContext) {
 /**
  * La bomba, como la entrada del hero (hero-intros/dust.ts): Killer Queen
  * ya toco algo de la pagina cerca del Stand (すでに触っている…), カチッ, y
- * eso explota (boom.ts): lo de alrededor sale volando. バイツァ・ダスト y
- * el rebobinado: donde estaba cada pieza queda su hueco punteado, las
- * piezas vuelven una tras otra por el mismo camino, con su rastro, y la
- * explosion se traga a si misma. Todo queda como estaba.
+ * eso explota (boom.ts): lo de alrededor sale volando. Despues, la
+ * activacion a pantalla completa (btd-cut.ts) y el rebobinado: donde
+ * estaba cada pieza queda su hueco punteado, las piezas vuelven una tras
+ * otra por el mismo camino, con su rastro, y la explosion se traga a si
+ * misma. Todo queda como estaba.
  */
 async function btdBomb(ctx: PowerContext) {
   const w = window.innerWidth;
@@ -1291,11 +1304,10 @@ async function btdBomb(ctx: PowerContext) {
       const anim = el.animate(frames, { duration: el === target ? 380 : 1100, easing: "cubic-bezier(0.1, 0.85, 0.3, 1)", fill: "both", composite: "add" });
       flung.push({ el, anim, slot: r });
     }
-    await wait(1900);
+    await wait(1700);
 
-    // 4. バイツァ・ダスト y la cinta al reves.
-    pop("バイツァ・ダスト!", w / 2, Math.max(120, h * 0.26), "power-pop-word is-pink is-big", 1300);
-    await wait(260);
+    // 4. バイツァ・ダスト: la activacion a pantalla completa, y la cinta al reves.
+    await btdActivate(node);
     playSfx("rewind");
     tape = btdTape(7);
     const counter = tape.querySelector<HTMLElement>(".btd-osd i");
@@ -1370,13 +1382,14 @@ async function btdBomb(ctx: PowerContext) {
 }
 
 /**
- * El atraso, como en la Parte 4: カチッ, un destello, y el tiempo se
- * rebobina: la pantalla va para atras a tirones, con la cinta de VHS y
+ * El atraso, como en la Parte 4: カチッ, un destello, la activacion a
+ * pantalla completa, y el tiempo se rebobina: la pantalla va para atras a tirones, con la cinta de VHS y
  * las animaciones de la pagina corriendo hacia atras, hasta donde estabas
  * hace un rato. Al volver, el Stand repite lo que habia dicho (deja vu).
  */
 async function btdRewind(ctx: PowerContext) {
   const h = window.innerHeight;
+  const stage = layer("power-btd-bomb", true);
   standInFront(true);
   let rewind: ReturnType<typeof retime> | null = null;
   let tape: HTMLElement | null = null;
@@ -1386,8 +1399,7 @@ async function btdRewind(ctx: PowerContext) {
       playSfx("crack");
       await wait(420);
       btdFlash();
-      pop("バイツァ・ダスト!", window.innerWidth / 2, Math.max(120, h * 0.26), "power-pop-word is-pink is-big", 1300);
-      await wait(300);
+      await btdActivate(stage);
       playSfx("rewind");
     }
     // Rebobinar: a tirones, como una cinta.
@@ -1422,6 +1434,7 @@ async function btdRewind(ctx: PowerContext) {
     rewind?.restore();
     standInFront(false);
     tape?.remove();
+    stage.remove();
   }
 }
 

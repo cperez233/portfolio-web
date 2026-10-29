@@ -6,6 +6,7 @@ import { playSfx } from "@/lib/sfx";
 import { ease, place, type IntroDef } from "./kit";
 import { center, movePiece, pieces, type Piece } from "./parts";
 import { BOOM_MS, PRIME_MS, createBoom } from "./boom";
+import { CUT_MS, btdCut } from "./btd-cut";
 
 /*
   Bites the Dust. Killer Queen, como Kira: el Stand estira la mano y toca
@@ -16,7 +17,9 @@ import { BOOM_MS, PRIME_MS, createBoom } from "./boom";
   lleva la pagina: el nombre, el retrato, el copy, los botones y el menu
   salen volando.
 
-  Entonces バイツァ・ダスト y el rebobinado, hecho para que se vea que cada
+  Entonces la activacion a pantalla completa, como la ultima de Kira en
+  el anime (btd-cut.ts: el espacio, la luz, las burbujas, el tunel) y el
+  rebobinado, hecho para que se vea que cada
   cosa vuelve a SU sitio: donde estaba cada pieza queda su hueco marcado
   (una silueta punteada), y las piezas regresan una tras otra por el
   mismo camino por el que salieron, dejando un rastro, hasta encajar en su
@@ -30,13 +33,14 @@ const T = {
   back: 2420,
   click: 2780,
   boom: 3100,
-  // La explosion se ve entera (boom.ts) antes de rebobinar.
-  btd: 5650,
-  rewind: 5850,
-  rewindMs: 2300,
-  first: 8400,
-  second: 9300,
-  relay: 10400,
+  // La explosion se ve entera (boom.ts); despues, la activacion (btd-cut.ts).
+  btd: 4850,
+  rewind: 4850 + CUT_MS,
+  rewindMs: 1750,
+  // El primer globo, al final del rebobinado; el segundo, ya con todo en su sitio.
+  first: 8900,
+  second: 9600,
+  relay: 10450,
 } as const;
 
 /** Lo que tarda cada pieza en volver a su hueco. */
@@ -158,12 +162,13 @@ export const dust: IntroDef = {
       for (const piece of pieces(kit.stage)) throwIt(piece, piece.nav ? 0.4 : 0.8);
     });
 
-    // バイツァ・ダスト.
+    // バイツァ・ダスト: la activacion, a pantalla completa (btd-cut.ts).
     kit.at(T.btd, () => {
       kit.frame("stand", { body: "point", face: "smug" });
       kit.lunge(0.06, 260);
-      const at = kit.heart();
-      kit.shout("バイツァ・ダスト!", vw / 2, Math.max(150, (at?.y ?? vh * 0.3) - kit.tall() * 0.5), "power-pop-word is-pink is-big", 1300);
+      btdCut(fx);
+      playSfx("warudo");
+      kit.shake(small ? 5 : 9, 300);
     });
 
     // El rebobinado: cada pieza vuelve a su hueco, una tras otra.

@@ -291,7 +291,14 @@ The render loop stops off-screen.
       shows as a dashed outline and the pieces fly back one by one along
       the path they left by, with a trail, snapping into their slot; the
       explosion swallows itself. It ends there: the page is back as it
-      was, without replaying the entrance.
+      was, without replaying the entrance. Between the explosion and the
+      rewind comes the activation, modelled on Kira's last Bites the Dust
+      in the anime (`btd-cut.ts`, one full-screen canvas): a flash, space
+      with a nebula and stars falling inwards under バイツァ・ダスト, beams of
+      light converging on a white star, a field of pink and violet
+      bubbles until one fills the screen, a ring tunnel whitening at the
+      centre and lavender clouds that open on the page. The mini Stand's
+      power plays it too, before its own rewind.
     - **Gold Experience** (`gold.ts`): a 無駄無駄 rush on the name and a
       無駄ァ! finisher; a golden wave turns the letters into real wood
       (stretched `feTurbulence` grain clipped to the glyphs), a tree

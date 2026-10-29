@@ -5228,6 +5228,15 @@ html.kc-erased .stand-speech.hero-say {
     background-color: #fff;
   }
 }
+/* La activacion de Bites the Dust (btd-cut.ts): un canvas a pantalla completa. */
+.btd-cut {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
 /* La cinta: VHS rebobinando. */
 .btd-tape {
   z-index: 71;
