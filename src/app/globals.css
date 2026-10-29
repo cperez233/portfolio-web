@@ -4942,10 +4942,10 @@ html.intro-banner-low .power-zw-text {
     font-size: 0.9rem;
   }
   /* En celular la linea de tiempo de King Crimson va encima del boton. */
-  .kc-timeline {
+  .kc-deck .kc-timeline {
     bottom: calc(max(16px, env(safe-area-inset-bottom)) + 52px);
   }
-  .kc-slide {
+  .kc-deck .kc-slide {
     bottom: calc(max(16px, env(safe-area-inset-bottom)) + 120px);
   }
 }
