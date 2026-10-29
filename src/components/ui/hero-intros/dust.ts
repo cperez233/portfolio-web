@@ -4,7 +4,6 @@ import { pickLine } from "@/components/mini-stand/pick";
 import { pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
 import { ease, place, type IntroDef } from "./kit";
-import { replayEntrance, rewindEntrance } from "./entrance";
 import { center, movePiece, pieces, type Piece } from "./parts";
 import { BOOM_MS, PRIME_MS, createBoom } from "./boom";
 
@@ -21,9 +20,8 @@ import { BOOM_MS, PRIME_MS, createBoom } from "./boom";
   cosa vuelve a SU sitio: donde estaba cada pieza queda su hueco marcado
   (una silueta punteada), y las piezas regresan una tras otra por el
   mismo camino por el que salieron, dejando un rastro, hasta encajar en su
-  hueco con un destello. La explosion se traga a si misma. Despues la
-  entrada entera corre al reves hasta el primer cuadro y se vuelve a
-  reproducir: lo que viste, lo ves otra vez. Deja vu.
+  hueco con un destello. La explosion se traga a si misma. Y ahi acaba: la
+  pagina queda como estaba antes de la explosion, sin volver a cargarse.
 */
 const T = {
   open: 1600,
@@ -32,13 +30,13 @@ const T = {
   back: 2420,
   click: 2780,
   boom: 3100,
-  btd: 3950,
-  rewind: 4150,
-  rewindMs: 2000,
-  replay: 6900,
-  first: 7450,
-  second: 8350,
-  relay: 9450,
+  // La explosion se ve entera (boom.ts) antes de rebobinar.
+  btd: 5650,
+  rewind: 5850,
+  rewindMs: 2300,
+  first: 8400,
+  second: 9300,
+  relay: 10400,
 } as const;
 
 /** Lo que tarda cada pieza en volver a su hueco. */
@@ -47,7 +45,7 @@ const BACK_MS = 620;
 export const dust: IntroDef = {
   name: "Killer Queen",
   start: T.open,
-  condense: 10400,
+  condense: 11300,
   run(kit) {
     const first = pickLine(kit.lines.dust.map(([a]) => a));
     const second = kit.lines.dust.find(([a]) => a === first)?.[1] ?? "";
@@ -224,21 +222,15 @@ export const dust: IntroDef = {
         });
       });
 
-      // Y la entrada entera, hasta el primer cuadro.
+      // Todo en su sitio: la cinta se corta y la pagina queda como antes.
       kit.later(T.rewindMs + 80, () => {
         flung.forEach(({ anim }) => anim.cancel());
         slots.forEach((el) => el.remove());
         boom?.remove();
-        rewindEntrance(kit.stage, 3.2);
+        tape.classList.add("is-flash");
+        kit.frame("stand", { body: "idle", face: "smug" });
       });
-      kit.later(T.replay - T.rewind - 220, () => tape.classList.add("is-flash"));
-      kit.later(T.replay - T.rewind + 60, () => tape.remove());
-    });
-
-    // Y otra vez, desde el principio: el mismo episodio.
-    kit.at(T.replay, () => {
-      kit.frame("stand", { body: "idle", face: "smug" });
-      replayEntrance(kit.stage);
+      kit.later(T.rewindMs + 360, () => tape.remove());
     });
     kit.at(T.first, () => {
       kit.frame("stand", { face: "open" });

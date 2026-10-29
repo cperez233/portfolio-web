@@ -247,18 +247,34 @@ export const gold: IntroDef = {
           );
           const [a, b] = colors[i % colors.length];
           const fly = place(fx, "ge-fly", c.x, c.y, BUTTERFLY(`gef${i}`, a, b));
-          fly.style.scale = small ? "1.3" : "1.9";
+          // Unas mas cerca (grandes) y otras mas lejos: profundidad.
+          fly.style.scale = ((small ? 1.3 : 1.9) * rand(0.75, 1.25)).toFixed(2);
+          fly.style.setProperty("--flap", `${rand(0.75, 1.05).toFixed(2)}s`);
+          /*
+            Vuelo de mariposa: no una recta sino un ir y venir, sube a
+            tirones con cada aletazo y se ladea hacia donde va.
+          */
           const dx = rand(-0.45, 0.45) * vw;
           const dy = -rand(0.35, 0.62) * vh;
+          const sway = rand(40, 90) * (Math.random() < 0.5 ? -1 : 1);
+          const path = [0, 0.18, 0.36, 0.55, 0.75, 1].map((t, k) => {
+            const x = dx * t + Math.sin(t * Math.PI * 3) * sway * (1 - t * 0.4);
+            const y = dy * t * t * 0.4 + dy * t * 0.6 + (k % 2 ? 14 : -6);
+            return { x, y };
+          });
           const anim = kit.keep(
             fly.animate(
-              [
-                { translate: "0 0", rotate: "0deg", opacity: 0 },
-                { translate: "0 -20px", opacity: 1, offset: 0.1 },
-                { translate: `${(dx * 0.4).toFixed(0)}px ${(dy * 0.5).toFixed(0)}px`, rotate: `${rand(-30, 30).toFixed(0)}deg`, offset: 0.45 },
-                { translate: `${dx.toFixed(0)}px ${dy.toFixed(0)}px`, rotate: `${rand(-20, 20).toFixed(0)}deg`, opacity: 1 },
-              ],
-              { duration: 2000, delay: 200 + i * 70, easing: "ease-in-out", fill: "both" },
+              path.map(({ x, y }, k) => {
+                const next = path[Math.min(path.length - 1, k + 1)];
+                const lean = Math.max(-28, Math.min(28, (next.x - x) * 0.18));
+                return {
+                  translate: `${x.toFixed(0)}px ${(k === 0 ? 0 : y).toFixed(0)}px`,
+                  rotate: `${lean.toFixed(0)}deg`,
+                  opacity: k === 0 ? 0 : 1,
+                  offset: k / (path.length - 1),
+                };
+              }),
+              { duration: 2300, delay: 200 + i * 90, easing: "ease-in-out", fill: "both" },
             ),
           );
           flies.push({ el: fly, anim });

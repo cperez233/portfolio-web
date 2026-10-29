@@ -229,9 +229,11 @@ The render loop stops off-screen.
   row across bags; `ui/hero-intros/bag.ts`). Force one with
   `?intro=diamond`, `world`, `crimson`, `dust`, `gold`, `zipper`,
   `echoes`, `tbc` or `door`. A "Skip intro" plate (bottom right, also
-  `Esc`, and it works while time is stopped) cuts everything, leaves the
-  CSS entrance on its last frame and hands over to the mini Stand, which
-  says it noticed. The two oldest live in `ui/portfolio-hero.tsx`:
+  `Esc`, and it works while time is stopped) slides in and out through
+  the right edge. Pressing it sends an ink and gold sweep across the
+  screen; behind it everything is cut, the CSS entrance lands on its
+  last frame and the mini Stand takes over (it says it noticed), so the
+  sweep reveals the page already loaded. The two oldest live in `ui/portfolio-hero.tsx`:
   - **Crazy Diamond** (`ui/hero-crack.ts`): the Stand breaks the fourth
     wall. A ドラララ rush at the screen itself: every fist (pixel art,
     seen from the front) leaves its chest and grows toward the viewer
@@ -274,14 +276,16 @@ The render loop stops off-screen.
       out and touches the portrait (すでに触っている…), steps back and
       presses the trigger with its thumb (カチッ). The portrait lights up
       from inside and explodes like in Diamond is Unbreakable, drawn on a
-      canvas as a function of time (`boom.ts`): white core, a manga
-      fireball with ink outline and two-tone shading, sparks, a shock
-      ring and purple smoke. The letters, the portrait, the copy, the
-      buttons and the nav are blown away. バイツァ・ダスト: each piece's
-      empty slot shows as a dashed outline and the pieces fly back one by
-      one along the path they left by, with a trail, snapping into their
-      slot; the explosion swallows itself. Then the whole CSS entrance
-      plays backwards (`entrance.ts`) and again. Déjà vu.
+      canvas as a function of time (`boom.ts`): a flash and a white core,
+      then a fireball of textured billows (pre-rendered per temperature)
+      that cools from white to orange to dark red and turns into a rising
+      column of smoke, with debris and embers falling under gravity and a
+      shock ring. The letters, the portrait, the copy, the buttons and
+      the nav are blown away. バイツァ・ダスト: each piece's empty slot
+      shows as a dashed outline and the pieces fly back one by one along
+      the path they left by, with a trail, snapping into their slot; the
+      explosion swallows itself. It ends there: the page is back as it
+      was, without replaying the entrance.
     - **Gold Experience** (`gold.ts`): a 無駄無駄 rush on the name and a
       無駄ァ! finisher; a golden wave turns the letters into real wood
       (stretched `feTurbulence` grain clipped to the glyphs), a tree

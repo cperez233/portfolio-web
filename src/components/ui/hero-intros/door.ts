@@ -147,14 +147,27 @@ export const door: IntroDef = {
       left.style.transform = `rotateY(${(-open * t).toFixed(1)}deg)`;
       right.style.transform = `rotateY(${(open * t).toFixed(1)}deg)`;
     };
-    /** La transformacion que lleva la cara cerrada a tapar el retrato. */
+    /*
+      La transformacion que lleva la cara cerrada a tapar el retrato, tal
+      como esta: del tamano del retrato, inclinado como el (.manga-portrait
+      va a -3 grados) y ladeado hacia el puntero como su capa (rotateX/Y con
+      perspectiva). Si la cara volviera recta, al cambiarla por el retrato
+      se le veria "doblarse" de golpe.
+    */
+    const tilt = photo?.closest(".hero-paste")?.parentElement ?? null;
+    const frame = photo?.querySelector<HTMLElement>(".manga-portrait") ?? photo;
     const toPortrait = () => {
       const r = photo?.getBoundingClientRect();
-      if (!r?.width) return "none";
-      const s = r.height / H;
+      if (!r?.width || !frame) return "none";
+      const s = frame.offsetHeight / H;
       const dx = r.left + r.width / 2 - (box.left + box.width / 2);
       const dy = r.top + r.height / 2 - (box.top + H / 2);
-      return `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${s.toFixed(4)})`;
+      const spin = Number.parseFloat(getComputedStyle(frame).rotate) || 0;
+      const lean = tilt?.style.transform ?? "";
+      const rx = Number.parseFloat(/rotateX\((-?[\d.]+)/.exec(lean)?.[1] ?? "0");
+      const ry = Number.parseFloat(/rotateY\((-?[\d.]+)/.exec(lean)?.[1] ?? "0");
+      face?.style.setProperty("--k", (1 / s).toFixed(3));
+      return `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) perspective(800px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotate(${spin}deg) scale(${s.toFixed(4)})`;
     };
 
     // La costura: la foto se parte por el medio.
@@ -193,13 +206,17 @@ export const door: IntroDef = {
         `<span class="hd-skin" style="${skin(side === "left" ? 0 : -half)}"></span>` +
         `<span class="hd-flip"><span class="hd-lines">${scribble(12)}</span></span>` +
         `</div>`;
+      const rim = `left:${((box.width - cw) / 2).toFixed(1)}px;width:${cw.toFixed(1)}px`;
       face = document.createElement("div");
       face.className = "hd-face";
       Object.assign(face.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${H}px` });
       face.innerHTML =
         `<div class="${box.spread ? "hd-book is-spread" : "hd-book"}">${(box.spread ? life : "") + orderPage}<div class="hd-leaves"></div></div>` +
+        // El marco del retrato (tinta y sombra dorada), solo con la cara cerrada.
+        `<span class="hd-frame is-back" style="${rim}"></span>` +
         flap("left") +
         flap("right") +
+        `<span class="hd-frame" style="${rim}"></span>` +
         `<span class="hd-seam" style="height:${H}px"></span>`;
       fx.appendChild(face);
       book = face.querySelector<HTMLElement>(".hd-book");

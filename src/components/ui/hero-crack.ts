@@ -27,66 +27,137 @@ const GROW_MS = 380;
 
 const pts = (list: [number, number][]) => list.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join(" L");
 
+/*
+  Una grieta de vidrio de verdad no es una raya recta: avanza a saltos
+  cortos que cambian un poco de direccion (un paseo al azar alrededor del
+  angulo de salida). Devuelve los puntos, del centro hacia afuera.
+*/
+function ray(x: number, y: number, angle: number, len: number, steps: number): [number, number][] {
+  const out: [number, number][] = [[x, y]];
+  let a = angle;
+  let px = x;
+  let py = y;
+  for (let i = 0; i < steps; i++) {
+    a += rand(-0.22, 0.22);
+    // Sin alejarse demasiado de su direccion: la grieta corre hacia afuera.
+    a = angle + Math.max(-0.35, Math.min(0.35, a - angle));
+    const step = (len / steps) * rand(0.6, 1.4);
+    px += Math.cos(a) * step;
+    py += Math.sin(a) * step;
+    out.push([px, py]);
+  }
+  return out;
+}
+
+/** El punto de la grieta a una fraccion de su largo (por indice). */
+const at = (points: [number, number][], f: number) => points[Math.min(points.length - 1, Math.max(1, Math.round(f * (points.length - 1))))];
+
+/*
+  Un anillo entre dos rayos vecinos: la grieta concentrica que une los
+  radiales y hace que se lea como vidrio roto. Curvada (hacia afuera o
+  hacia adentro) y con un quiebre en el medio, no una cuerda recta.
+*/
+function ring(a: [number, number], b: [number, number], cx: number, cy: number) {
+  const mx = (a[0] + b[0]) / 2;
+  const my = (a[1] + b[1]) / 2;
+  const k = rand(0.04, 0.14) * (Math.random() < 0.7 ? 1 : -1);
+  const kink: [number, number] = [mx + (mx - cx) * k + rand(-3, 3), my + (my - cy) * k + rand(-3, 3)];
+  return `M${pts([a, kink, b])}`;
+}
+
+/*
+  Tres grosores por grieta: halo (el color del fondo, para que se lea en
+  los dos temas), tinta y un filo de luz corrido un pixel, el brillo del
+  canto del vidrio. Los radiales son gruesos cerca del golpe y finos hacia
+  la punta: el tramo de adentro va otra vez, mas grueso.
+*/
+function paths(thick: string[], thin: string[], glint: string[]) {
+  const t = thick.join(" ");
+  const f = thin.join(" ");
+  return (
+    `<path class="hero-crack-halo is-fine" d="${f}"/><path class="hero-crack-halo" d="${t}"/>` +
+    `<path class="hero-crack-line is-fine" d="${f}"/><path class="hero-crack-line" d="${t}"/>` +
+    `<path class="hero-crack-glint" d="${glint.join(" ")}"/>`
+  );
+}
+
+/** Los radiales de un golpe, con sus ramas y sus anillos. */
+function shatterPattern(x: number, y: number, reach: number, count: number, rings: number[], crush: number) {
+  const thick: string[] = [];
+  const thin: string[] = [];
+  const glint: string[] = [];
+  const rays: [number, number][][] = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + rand(-0.25, 0.25);
+    // Unos pocos radiales llegan mucho mas lejos que el resto.
+    const len = reach * (Math.random() < 0.3 ? rand(0.9, 1.15) : rand(0.45, 0.85));
+    const points = ray(x, y, angle, len, Math.max(4, Math.round(len / 22)));
+    rays.push(points);
+    thin.push(`M${pts(points)}`);
+    thick.push(`M${pts(points.slice(0, Math.ceil(points.length * 0.4)))}`);
+    if (i % 3 === 0) glint.push(`M${pts(points.slice(1, Math.ceil(points.length * 0.6)).map(([px, py]) => [px + 1.2, py - 1.2]))}`);
+    // Una rama que se abre del radial.
+    if (Math.random() < 0.55) {
+      const from = at(points, rand(0.35, 0.7));
+      const side = Math.random() < 0.5 ? -1 : 1;
+      thin.push(`M${pts(ray(from[0], from[1], angle + side * rand(0.4, 0.8), len * rand(0.18, 0.35), 3))}`);
+    }
+  }
+  for (const [n, f] of rings.entries()) {
+    for (let i = 0; i < count; i++) {
+      if (Math.random() > 0.8 - n * 0.18) continue;
+      const a = at(rays[i], f * rand(0.85, 1.15));
+      const b = at(rays[(i + 1) % count], f * rand(0.85, 1.15));
+      (n === 0 ? thick : thin).push(ring(a, b, x, y));
+    }
+  }
+  // El centro, molido: astillas diminutas alrededor del golpe.
+  const chips: string[] = [];
+  for (let i = 0; i < 9; i++) {
+    const a = rand(0, Math.PI * 2);
+    const d = crush * rand(0.25, 1);
+    const cx = x + Math.cos(a) * d;
+    const cy = y + Math.sin(a) * d;
+    const s = crush * rand(0.25, 0.5);
+    const tri: [number, number][] = [0, 1, 2].map((k) => {
+      const b = a + (k * Math.PI * 2) / 3 + rand(-0.4, 0.4);
+      return [cx + Math.cos(b) * s, cy + Math.sin(b) * s];
+    });
+    chips.push(`M${pts(tri)} Z`);
+  }
+  return { thick, thin, glint, chips: chips.join(" ") };
+}
+
 function web(x: number, y: number, w: number, h: number, letters: DOMRect[]) {
   const reach = Math.hypot(w, h);
-  const branches = 11;
-  const rays: [number, number][][] = [];
-  const lines: string[] = [];
-  for (let i = 0; i < branches; i++) {
-    const angle = (i / branches) * Math.PI * 2 + rand(-0.2, 0.2);
-    const points: [number, number][] = [[x, y]];
-    let r = 0;
-    while (r < reach) {
-      r += rand(45, 120);
-      const jitter = rand(-0.14, 0.14);
-      points.push([x + Math.cos(angle + jitter) * r, y + Math.sin(angle + jitter) * r]);
-    }
-    rays.push(points);
-    lines.push(`M${pts(points)}`);
-  }
-  // Anillos entre ramas vecinas: lo que hace que parezca vidrio roto.
-  for (const ring of [1, 2, 4]) {
-    for (let i = 0; i < branches; i++) {
-      const a = rays[i][ring];
-      const b = rays[(i + 1) % branches][ring];
-      if (a && b && Math.random() < 0.8) lines.push(`M${pts([a, b])}`);
-    }
-  }
+  const { thick, thin, glint, chips } = shatterPattern(x, y, reach, 13, [0.05, 0.12, 0.22, 0.38], 26);
   // Una grieta cruza cada letra del nombre, de arriba abajo, en zigzag: la
   // pantalla se rompe por donde mas se ve.
   for (const box of letters) {
     const top = box.top - 4;
     const bottom = box.bottom + 4;
     const zig: [number, number][] = [[box.left + box.width * rand(0.15, 0.4), top]];
-    for (const t of [0.33, 0.66]) zig.push([box.left + box.width * rand(0.2, 0.8), top + (bottom - top) * t]);
+    for (const t of [0.25, 0.5, 0.75]) zig.push([box.left + box.width * rand(0.2, 0.8), top + (bottom - top) * t]);
     zig.push([box.left + box.width * rand(0.6, 0.85), bottom]);
-    lines.push(`M${pts(zig)}`);
+    thin.push(`M${pts(zig)}`);
   }
-  const d = lines.join(" ");
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path class="hero-crack-halo" d="${d}"/><path class="hero-crack-line" d="${d}"/></svg>`;
+  return (
+    `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+    `<path class="hero-crack-chips" d="${chips}"/>` +
+    paths(thick, thin, glint) +
+    `<circle class="hero-crack-dot" cx="${x}" cy="${y}" r="9"/></svg>`
+  );
 }
 
-/* Estrella de grietas de un golpe: rayos cortos, un anillo y el punto blanco del impacto. */
+/* Estrella de grietas de un golpe: radiales quebrados, ramas, anillos y el centro molido. */
 function star(r: number) {
-  const rays = Math.round(rand(6, 9));
-  const lines: string[] = [];
-  const ends: [number, number][] = [];
-  for (let i = 0; i < rays; i++) {
-    const angle = (i / rays) * Math.PI * 2 + rand(-0.3, 0.3);
-    const len = r * rand(0.55, 1);
-    const bend = rand(-0.25, 0.25);
-    const mid: [number, number] = [r + Math.cos(angle) * len * 0.5, r + Math.sin(angle) * len * 0.5];
-    const end: [number, number] = [r + Math.cos(angle + bend) * len, r + Math.sin(angle + bend) * len];
-    ends.push([r + Math.cos(angle) * len * 0.38, r + Math.sin(angle) * len * 0.38]);
-    lines.push(`M${pts([[r, r], mid, end])}`);
-  }
-  lines.push(`M${pts(ends)} Z`);
-  const d = lines.join(" ");
+  const { thick, thin, glint, chips } = shatterPattern(r, r, r, Math.round(rand(9, 13)), [0.16, 0.34, 0.58], r * 0.13);
   const size = r * 2;
   return (
     `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
-    `<circle class="hero-crack-dot" cx="${r}" cy="${r}" r="${(r * 0.16).toFixed(1)}"/>` +
-    `<path class="hero-crack-halo" d="${d}"/><path class="hero-crack-line" d="${d}"/></svg>`
+    `<path class="hero-crack-chips" d="${chips}"/>` +
+    paths(thick, thin, glint) +
+    `<circle class="hero-crack-dot" cx="${r}" cy="${r}" r="${(r * 0.07).toFixed(1)}"/></svg>`
   );
 }
 
@@ -144,10 +215,11 @@ export function createGlass(): HeroGlass {
       crack.style.top = `${(y - r).toFixed(0)}px`;
       crack.innerHTML = star(r);
       node.appendChild(crack);
+      // La grieta corre desde el golpe hacia afuera, en un parpadeo.
       animations.push(
-        crack.animate([{ scale: "0.4", opacity: 0.4 }, { scale: "1", opacity: 1 }], {
-          duration: 90,
-          easing: "cubic-bezier(0.2, 0.9, 0.3, 1)",
+        crack.animate([{ clipPath: "circle(4% at 50% 50%)" }, { clipPath: "circle(72% at 50% 50%)" }], {
+          duration: 120,
+          easing: "cubic-bezier(0.1, 0.8, 0.3, 1)",
           fill: "both",
         }),
       );

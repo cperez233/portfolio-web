@@ -354,7 +354,7 @@ async function crazyDiamond(ctx: PowerContext) {
         const hy = iy + Math.sin(angle) * dist * 0.4;
         pop("ドラ", ix + Math.cos(angle) * dist, iy + Math.sin(angle) * dist * 0.6, "power-pop-word is-pink", 700);
         impact(hx, hy);
-        glass?.hit(hx, hy, rand(46, 80));
+        glass?.hit(hx, hy, rand(70, 110));
       }, i * 80);
     }
   }
@@ -453,13 +453,56 @@ const FROG = `<svg viewBox="0 0 80 66" width="120" height="99"><g ${INK} stroke-
   <path d="M27 12 Q31 11 33 14" stroke="#b6eda0" stroke-width="2" fill="none" stroke-linecap="round"/>
 </svg>`;
 
-export const BUTTERFLY = (id: string, a: string, b: string) =>
-  `<svg viewBox="0 0 60 48" width="62" height="50"><defs><radialGradient id="${id}" cx="0.5" cy="0.5" r="0.6"><stop offset="0.25" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></radialGradient></defs>
-  <g class="wing-l"><path d="M30 22 Q20 2 6 4 Q-2 8 6 20 Q12 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q14 28 10 38 Q12 46 22 40 Q28 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="13" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="18" cy="36" r="2" fill="#161418"/><path d="M29 22 L12 9 M29 23 L8 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>
-  <g class="wing-r"><path d="M30 22 Q40 2 54 4 Q62 8 54 20 Q48 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q46 28 50 38 Q48 46 38 40 Q32 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="47" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="42" cy="36" r="2" fill="#161418"/><path d="M31 22 L48 9 M31 23 L52 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>
-  <path d="M28 10 Q24 2 20 4 M32 10 Q36 2 40 4" fill="none" stroke="#161418" stroke-width="1.8" stroke-linecap="round"/><circle cx="20" cy="4" r="1.6" fill="#161418"/><circle cx="40" cy="4" r="1.6" fill="#161418"/>
-  <rect x="27.5" y="10" width="5" height="26" rx="2.5" fill="#2a2530" stroke="#161418" stroke-width="1.6"/><path d="M28 17 h4 M28 22 h4 M28 27 h4" stroke="#6b6070" stroke-width="1"/>
-</svg>`;
+/** Un color hex mas oscuro (k < 1) o mas claro hacia blanco (k > 1). */
+function shade(hex: string, k: number) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => Math.round(k < 1 ? c * k : c + (255 - c) * (k - 1)));
+  return `#${ch.map((c) => Math.min(255, c).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/*
+  Una mariposa de verdad y no una pegatina: sin contorno de tinta. Cada
+  ala tiene volumen (oscura junto al cuerpo, el color en el medio, clara
+  hacia la punta), el borde oscuro por DENTRO del ala (un trazo grueso
+  recortado a su forma), venas, puntos claros en el margen y un ocelo en
+  el ala de atras. El ala izquierda es la derecha en espejo. .wing-l y
+  .wing-r son las que aletean (CSS); el espejo va en un grupo de dentro
+  para que la animacion no lo pise.
+*/
+const WING_FORE = "M31 21 C35 12 43 3.5 55 3.5 C58.5 5.5 57.5 13 53 20 C47 23.5 38 24.5 31 24Z";
+const WING_HIND = "M31 25 C38 24 46.5 26.5 49.5 33 C51 39.5 46 44.5 40 42.5 C36 41 33 34.5 31 28Z";
+export const BUTTERFLY = (id: string, a: string, b: string) => {
+  const deep = shade(a, 0.45);
+  const rim = shade(a, 0.22);
+  const wing =
+    `<path d="${WING_HIND}" fill="url(#${id}h)"/><path d="${WING_FORE}" fill="url(#${id}f)"/>` +
+    // El margen oscuro, solo por dentro de cada ala.
+    `<path d="${WING_FORE}" fill="none" stroke="${rim}" stroke-width="5" clip-path="url(#${id}cf)"/>` +
+    `<path d="${WING_HIND}" fill="none" stroke="${rim}" stroke-width="4.4" clip-path="url(#${id}ch)"/>` +
+    `<path d="M31.5 21.5 L52 6.5 M31.5 22.5 L55 11 M31.5 23.5 L52 18.5 M31.5 26 L47 31 M31.5 27 L42 40" stroke="${rim}" stroke-width="0.6" opacity="0.45" fill="none"/>` +
+    `<circle cx="54" cy="7.5" r="0.9" fill="#fbf7ec"/><circle cx="55" cy="11.5" r="0.75" fill="#fbf7ec"/><circle cx="53.4" cy="15.6" r="0.65" fill="#fbf7ec"/>` +
+    `<circle cx="48.5" cy="36" r="0.7" fill="#fbf7ec"/><circle cx="45.5" cy="40.6" r="0.6" fill="#fbf7ec"/>` +
+    `<circle cx="43" cy="34" r="2.6" fill="${rim}"/><circle cx="43" cy="34" r="1.5" fill="${b}"/><circle cx="42.5" cy="33.5" r="0.5" fill="#fff"/>` +
+    // Brillo de escamas: un velo claro en la mitad de arriba.
+    `<path d="M33 20.5 C38 13 45 7 53 6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.22" fill="none"/>`;
+  return (
+    `<svg viewBox="0 0 60 48" width="62" height="50"><defs>` +
+    `<linearGradient id="${id}f" gradientUnits="userSpaceOnUse" x1="31" y1="24" x2="55" y2="4"><stop offset="0" stop-color="${deep}"/><stop offset="0.45" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>` +
+    `<linearGradient id="${id}h" gradientUnits="userSpaceOnUse" x1="31" y1="26" x2="48" y2="42"><stop offset="0" stop-color="${deep}"/><stop offset="0.55" stop-color="${a}"/><stop offset="1" stop-color="${shade(a, 0.8)}"/></linearGradient>` +
+    `<linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a1e18"/><stop offset="0.5" stop-color="#6b5444"/><stop offset="1" stop-color="#2a1e18"/></linearGradient>` +
+    `<clipPath id="${id}cf"><path d="${WING_FORE}"/></clipPath><clipPath id="${id}ch"><path d="${WING_HIND}"/></clipPath>` +
+    `</defs>` +
+    `<g class="wing-l"><g transform="translate(60 0) scale(-1 1)">${wing}</g></g>` +
+    `<g class="wing-r">${wing}</g>` +
+    `<path d="M29.4 12 Q26.5 5 23 2.6 M30.6 12 Q33.5 5 37 2.6" fill="none" stroke="#3a2a22" stroke-width="0.8" stroke-linecap="round"/>` +
+    `<circle cx="23" cy="2.6" r="1.1" fill="#3a2a22"/><circle cx="37" cy="2.6" r="1.1" fill="#3a2a22"/>` +
+    `<circle cx="30" cy="13.2" r="2" fill="#3a2a22"/>` +
+    `<ellipse cx="30" cy="18.5" rx="2.3" ry="4" fill="url(#${id}b)"/>` +
+    `<path d="M28.4 22 Q30 21 31.6 22 L31 35 Q30 37 29 35Z" fill="url(#${id}b)"/>` +
+    `<path d="M28.7 25 h2.6 M28.9 28.5 h2.2 M29.1 32 h1.8" stroke="#1d1410" stroke-width="0.5" opacity="0.6"/>` +
+    `</svg>`
+  );
+};
 
 /** Destello de vida dorado: lo que hace Giorno antes de que algo brote. */
 function lifeBurst(x: number, y: number, size = 1) {

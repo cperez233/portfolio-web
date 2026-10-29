@@ -123,7 +123,7 @@ export interface StandLines {
       wait: string[];
       cut: string[];
     };
-    /** Bites the Dust: despues de rebobinar y repetir la entrada. */
+    /** Bites the Dust: despues de rebobinar la explosion. */
     dust: [string, string][];
     /** Gold Experience: mientras florece el nombre. */
     gold: string[];
@@ -644,8 +644,8 @@ export const standLines: Record<Language, StandLines> = {
       },
       dust: [
         ["¿Déjà vu?", "Le hice rollback a la página entera."],
-        ["Esto ya lo viste.", "Bites the Dust: Ctrl+Z, versión Stand."],
-        ["¿La misma intro otra vez?", "Sí. Deshacer con explosión incluida."],
+        ["Esto nunca pasó.", "Bites the Dust: Ctrl+Z, versión Stand."],
+        ["¿Explosión? ¿Cuál?", "Deshacer, con explosión incluida."],
         ["Tranquilo, no explotó nada.", "Bueno, sí. Pero ya no."],
       ],
       gold: [
@@ -1456,8 +1456,8 @@ export const standLines: Record<Language, StandLines> = {
       },
       dust: [
         ["Déjà vu?", "I rolled the whole page back."],
-        ["You've seen this already.", "Bites the Dust: Ctrl+Z, Stand edition."],
-        ["Same intro again?", "Yep. Undo, explosion included."],
+        ["This never happened.", "Bites the Dust: Ctrl+Z, Stand edition."],
+        ["Explosion? What explosion?", "Undo, explosion included."],
         ["Relax, nothing blew up.", "Well, it did. Not anymore."],
       ],
       gold: [

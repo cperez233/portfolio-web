@@ -681,7 +681,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
           const point = points[i];
           const size = fistSize * rand(0.8, 1.15);
           throwFist(fx, point.x, point.y, size, 150, () => {
-            glass?.hit(point.x, point.y, size * rand(0.42, 0.6));
+            // Mas grande que el puno: la grieta se ve correr por fuera mientras pega.
+            glass?.hit(point.x, point.y, size * rand(0.75, 0.95));
             impact(point.x, point.y);
             dent(point.x, point.y, 0.006, 160);
             // La letra que quede bajo el golpe tiembla.
@@ -901,10 +902,16 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const onSkipKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") skipIntro();
     };
+    // Se va como llego: deslizandose por el borde derecho, al que va pegado.
     const removeSkip = () => {
-      skipButton?.remove();
+      const button = skipButton;
       skipButton = null;
       window.removeEventListener("keydown", onSkipKey);
+      if (!button) return;
+      button.disabled = true;
+      button.style.animationDelay = "0ms";
+      button.classList.add("is-leaving");
+      window.setTimeout(() => button.remove(), 420);
     };
 
     /*
@@ -1024,10 +1031,45 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     function skipIntro() {
       if (relayed) return;
       relayed = true;
-      teardown();
-      endTimeStop();
-      finishEntrance(stage!);
-      finish("skip");
+      removeSkip();
+      const cut = () => {
+        teardown();
+        endTimeStop();
+        finishEntrance(stage!);
+        finish("skip");
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return cut();
+      /*
+        Un barrido de tinta y oro, como el cambio de capitulo de Proyectos:
+        entra desde la derecha (de donde estaba el boton), tapa la pantalla,
+        detras se corta la entrada y, al seguir hacia la izquierda, deja
+        ver la pagina ya cargada.
+      */
+      const sweep = document.createElement("div");
+      sweep.className = "intro-sweep";
+      sweep.setAttribute("aria-hidden", "true");
+      sweep.innerHTML =
+        `<span class="intro-sweep-gold"></span>` +
+        `<span class="intro-sweep-ink"><b class="intro-sweep-label">▶▶<small class="font-jp">早送り</small></b></span>` +
+        `<span class="intro-sweep-gold"></span>`;
+      document.body.appendChild(sweep);
+      const drop = window.setTimeout(() => sweep.remove(), 2000);
+      sweep.animate([{ translate: "100% 0" }, { translate: "0 0" }], {
+        duration: 340,
+        easing: "cubic-bezier(0.7, 0, 0.84, 0)",
+        fill: "forwards",
+      }).onfinish = () => {
+        cut();
+        sweep.animate([{ translate: "0 0" }, { translate: "-100% 0" }], {
+          duration: 520,
+          delay: 90,
+          easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+          fill: "forwards",
+        }).onfinish = () => {
+          window.clearTimeout(drop);
+          sweep.remove();
+        };
+      };
     }
 
     const kit: IntroKit = {

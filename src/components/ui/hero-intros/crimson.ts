@@ -29,15 +29,17 @@ import { fill, type IntroDef } from "./kit";
 */
 const T = {
   open: 1600,
-  yawn: 2350,
-  epitaph: 2650,
-  call: 3250,
-  erase: 3500,
-  resume: 4950,
-  result: 5250,
-  talk: 5900,
-  leave: 7300,
-  relay: 8000,
+  // El medidor se queda un buen rato a paso de tortuga: que se lea el
+  // globo y se vea lo lento que va antes de borrar el tiempo.
+  yawn: 3400,
+  epitaph: 3900,
+  call: 4750,
+  erase: 5000,
+  resume: 6450,
+  result: 6750,
+  talk: 7400,
+  leave: 8800,
+  relay: 9500,
 } as const;
 
 /** Cuadros del medidor. */
@@ -64,7 +66,7 @@ export const crimson: IntroDef = {
   name: "King Crimson",
   nameAt: T.call,
   start: T.open,
-  condense: 9500,
+  condense: 11000,
   run(kit) {
     const lines = kit.lines.crimson;
     const root = document.documentElement;
@@ -113,7 +115,7 @@ export const crimson: IntroDef = {
     kit.onCleanup(() => window.clearInterval(crawl));
 
     kit.frame("stand", { body: "idle", face: "happy" });
-    kit.at(T.open + 250, () => kit.talk(pickLine(lines.wait), 900));
+    kit.at(T.open + 150, () => kit.talk(pickLine(lines.wait), 2600));
     kit.at(T.yawn, () => kit.frame("stand", { body: "idle", face: "blink" }));
 
     // Epitaph: un cuadro del futuro, el medidor lleno.

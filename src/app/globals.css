@@ -3713,16 +3713,40 @@ html.intro-banner-low .power-zw-text {
   rotate: var(--tilt, 0deg);
   animation: power-flutter-path 3.6s ease-in-out both;
 }
+/*
+  El aleteo: las alas se pliegan hacia arriba en perspectiva (se angostan
+  y se acortan un poco) y se oscurecen al quedar de canto. Tres aletazos y
+  un planeo, no un zumbido constante. --flap varia por mariposa.
+*/
 .power-butterfly .wing-l,
-.power-butterfly .wing-r {
+.power-butterfly .wing-r,
+.ge-fly .wing-l,
+.ge-fly .wing-r {
   transform-box: view-box;
   transform-origin: 30px 24px;
-  animation: power-flap 0.16s ease-in-out infinite alternate;
+  animation: power-flap var(--flap, 0.9s) ease-in-out infinite;
 }
 @keyframes power-flap {
-  to {
-    transform: scaleX(0.3);
+  0%,
+  32%,
+  64%,
+  100% {
+    transform: scale(1, 1);
+    opacity: 1;
   }
+  16%,
+  48% {
+    transform: scale(0.16, 0.93);
+    opacity: 0.8;
+  }
+  80% {
+    transform: scale(0.72, 0.98);
+  }
+}
+.power-butterfly svg,
+.ge-fly svg {
+  overflow: visible;
+  filter: drop-shadow(0 10px 6px rgba(20, 14, 10, 0.28));
 }
 @keyframes power-flutter-path {
   0% {
@@ -3782,16 +3806,26 @@ html.intro-banner-low .power-zw-text {
     translate: 0 4px;
   }
 }
+/*
+  La serpiente pasa por debajo del titulo y el titulo la siente una vez:
+  una ola suave que lo cruza, no un temblor en bucle (deformado durante
+  tres segundos parecia un fallo de la pagina).
+*/
 .power-ge-wave {
-  animation: power-ge-wave 0.5s ease-in-out infinite alternate !important;
+  animation: power-ge-wave 1.4s ease-in-out 0.3s 2 !important;
 }
 @keyframes power-ge-wave {
-  from {
-    transform: skewX(-6deg);
-    filter: hue-rotate(60deg) saturate(1.4);
+  0%,
+  100% {
+    translate: 0 0;
+    color: inherit;
   }
-  to {
-    transform: skewX(6deg);
+  35% {
+    translate: 0 -3px;
+    color: #4f9a3f;
+  }
+  70% {
+    translate: 0 1px;
   }
 }
 
@@ -4732,7 +4766,28 @@ html.intro-banner-low .power-zw-text {
 }
 .hero-crack-line {
   stroke: var(--color-ink);
-  stroke-width: 2.4;
+  stroke-width: 2.6;
+}
+.hero-crack-halo.is-fine {
+  stroke-width: 3;
+}
+.hero-crack-line.is-fine {
+  stroke-width: 1.2;
+}
+/* El canto del vidrio: un filo de luz pegado a la grieta. */
+.hero-crack-glint {
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1;
+}
+/* El centro molido: astillas escarchadas. */
+.hero-crack .hero-crack-chips {
+  fill: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  stroke: var(--color-ink);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.hero-crack.is-healing .hero-crack-chips {
+  stroke: #e891c4;
 }
 .hero-crack.is-healing .hero-crack-line {
   stroke: #e891c4;
@@ -4966,11 +5021,78 @@ html.intro-banner-low .power-zw-text {
   font-size: 0.7rem;
   letter-spacing: -0.12em;
 }
+/* Entra y sale por el borde derecho, al que va pegado. */
 @keyframes intro-skip-in {
   from {
-    opacity: 0;
-    translate: 0 12px;
+    translate: calc(100% + 24px) 0;
   }
+}
+.intro-skip.is-leaving {
+  pointer-events: none;
+  animation: intro-skip-out 0.38s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+@keyframes intro-skip-out {
+  to {
+    translate: calc(100% + 24px) 0;
+  }
+}
+
+/*
+  Saltar la entrada: el barrido de tinta y oro que tapa la pantalla y,
+  al irse, deja la pagina ya cargada. Mismo dibujo que el cambio de
+  capitulo de Proyectos (.chapter-wipe), a pantalla completa. Mas ancho
+  que la pantalla por la inclinacion de las franjas.
+*/
+.intro-sweep {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: calc(-14vh - 40px);
+  width: calc(100vw + 28vh + 80px);
+  z-index: 95;
+  display: flex;
+  pointer-events: none;
+  translate: 100% 0;
+  will-change: translate;
+}
+.intro-sweep-gold,
+.intro-sweep-ink {
+  display: block;
+  height: 100%;
+  transform: skewX(-12deg);
+}
+.intro-sweep-gold {
+  flex: none;
+  width: 28px;
+  background-color: var(--color-accent);
+  box-shadow: 0 0 0 3px #161418;
+}
+.intro-sweep-ink {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  background-color: #111013;
+  background-image: radial-gradient(rgba(236, 230, 216, 0.08) 1.2px, transparent 1.6px);
+  background-size: 9px 9px;
+}
+.intro-sweep-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 11vw, 8rem);
+  letter-spacing: -0.12em;
+  line-height: 1;
+  color: #ece6d8;
+  text-shadow: 5px 5px 0 #e3b341;
+  transform: skewX(12deg);
+}
+.intro-sweep-label small {
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
+  letter-spacing: 0.3em;
+  text-shadow: none;
+  color: #e3b341;
 }
 
 .power-pop-word.is-crimson {
@@ -5561,12 +5683,6 @@ html.kc-erased .stand-speech.hero-say {
   display: block;
   overflow: visible;
 }
-.ge-fly .wing-l,
-.ge-fly .wing-r {
-  transform-box: view-box;
-  transform-origin: 30px 24px;
-  animation: power-flap 0.16s ease-in-out infinite alternate;
-}
 .ge-heart {
   position: absolute;
   translate: -50% -50%;
@@ -6047,6 +6163,24 @@ html.tbc-frozen main *::after {
 .hd-skin {
   background-repeat: no-repeat;
   background-color: #2a2630;
+}
+/*
+  El marco del retrato en la cara cerrada: el mismo borde de tinta y la
+  misma sombra dorada que .manga-portrait. --k deshace la escala con la que
+  la cara tapa el retrato, para que el borde mida lo mismo que el de verdad.
+*/
+.hd-frame {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 calc(3px * var(--k, 1)) var(--color-ink);
+}
+.hd-frame.is-back {
+  box-shadow: calc(6px * var(--k, 1)) calc(6px * var(--k, 1)) 0 0 var(--color-accent);
+}
+.hd-face.is-open .hd-frame {
+  visibility: hidden;
 }
 /* Al abrirse, el borde de la piel que queda al aire: un filo claro. */
 .hd-face.is-open .hd-flap.is-left .hd-skin {
