@@ -497,7 +497,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       if (!bubble) {
         bubble = document.createElement("p");
         bubble.className = "stand-speech hero-say";
-        fxLayer().appendChild(bubble);
+        const holder = fxLayer();
+        // El globo nace con el primer nombre (al empezar): sin esto, las capas que
+        // llegan despues (la explosion) lo tapan.
+        holder.classList.add("hero-say-layer");
+        holder.appendChild(bubble);
       }
       const node = bubble;
       window.clearInterval(typing);

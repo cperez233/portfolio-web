@@ -4598,6 +4598,10 @@ html.intro-banner-low .power-zw-text {
   left: 0;
   top: 0;
 }
+/* La capa del globo va sobre las demas capas de efectos (la explosion, por ejemplo). */
+.hero-say-layer {
+  z-index: 71;
+}
 
 /* Las estrellas de grietas de cada golpe, la telarana del final y el vidrio que cae. */
 .hero-crack-star,

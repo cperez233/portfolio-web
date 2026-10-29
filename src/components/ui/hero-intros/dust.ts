@@ -113,6 +113,16 @@ export const dust: IntroDef = {
       spot = spotOf();
       boom = createBoom(fx, spot.x, spot.y, small);
       const b = boom;
+      // El Stand sigue a la vista: la explosion casi no pinta sobre el, para que
+      // se le vea gritar el nombre. Un hueco suave alrededor de su cuerpo.
+      const chest = kit.heart();
+      if (chest) {
+        const rx = Math.round(kit.tall() * 0.3);
+        const ry = Math.round(kit.tall() * 0.5);
+        const hole = `radial-gradient(ellipse ${rx}px ${ry}px at ${Math.round(chest.x)}px ${Math.round(chest.y)}px, rgba(0, 0, 0, 0.1) 55%, #000 100%)`;
+        b.canvas.style.maskImage = hole;
+        b.canvas.style.setProperty("-webkit-mask-image", hole);
+      }
       kit.tween(PRIME_MS + BOOM_MS, (t) => {
         shown = t * (PRIME_MS + BOOM_MS) - PRIME_MS;
         b.draw(shown);
