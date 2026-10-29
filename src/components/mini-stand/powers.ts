@@ -54,6 +54,8 @@ export interface PowerContext {
   onStop?: () => void;
   /** ZA WARUDO: cuanto dura el tiempo detenido (por defecto 3.6s). */
   ms?: number;
+  /** El Stand grita el nombre del ataque (Bites the Dust, antes de activarse). */
+  call?: () => void;
 }
 
 export const POWER_VARIANTS: Partial<Record<PowerId, string[]>> = {
@@ -1195,10 +1197,14 @@ function btdFlash() {
 }
 
 /**
- * La activacion, como la ultima de Kira en el anime (btd-cut.ts): el
- * tiempo se lo traga todo antes de que empiece la cinta.
+ * La activacion, como la ultima de Kira en el anime (btd-cut.ts): el Stand
+ * grita "¡Bites the Dust!" y el tiempo se lo traga todo antes de que
+ * empiece la cinta.
  */
-async function btdActivate(parent: HTMLElement) {
+async function btdActivate(parent: HTMLElement, ctx: PowerContext) {
+  // Primero lo dice; despues se activa.
+  ctx.call?.();
+  await wait(1100);
   btdCut(parent);
   playSfx("warudo");
   quake(300, false, true);
@@ -1307,7 +1313,7 @@ async function btdBomb(ctx: PowerContext) {
     await wait(1700);
 
     // 4. バイツァ・ダスト: la activacion a pantalla completa, y la cinta al reves.
-    await btdActivate(node);
+    await btdActivate(node, ctx);
     playSfx("rewind");
     tape = btdTape(7);
     const counter = tape.querySelector<HTMLElement>(".btd-osd i");
@@ -1399,7 +1405,7 @@ async function btdRewind(ctx: PowerContext) {
       playSfx("crack");
       await wait(420);
       btdFlash();
-      await btdActivate(stage);
+      await btdActivate(stage, ctx);
       playSfx("rewind");
     }
     // Rebobinar: a tirones, como una cinta.

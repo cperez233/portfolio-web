@@ -6,36 +6,55 @@
   despues de la explosion el tiempo se lo traga todo y la pantalla entera
   hace un viaje hacia atras, en este orden:
 
-  1. un destello blanco, y la oscuridad se cierra sobre la pagina;
+  1. una luz que sale del centro y la oscuridad que se cierra desde los
+     bordes, suave, como una vineta;
   2. el espacio: una nebulosa verde, amarilla y violeta que gira, y las
-     estrellas cayendo hacia el centro, cada vez mas rapido;
+     estrellas cayendo hacia el centro, cada vez mas rapido, con
+     バイツァ・ダスト encima;
   3. haces de luz que convergen en una estrella blanca;
-  4. un campo de burbujas rosas y violetas sobre una trama de puntos, que
-     se multiplican hasta que una enorme llena la pantalla;
-  5. un tunel de anillos violetas, con el centro cada vez mas blanco;
+  4. un campo de burbujas rosas y violetas sobre una trama de puntos, en
+     tres planos (las lejanas desenfocadas, las cercanas grandes y
+     borrosas), hasta que una enorme llena la pantalla;
+  5. un tunel de anillos de luz, con el centro cada vez mas blanco;
   6. nubes lavanda que se abren: el tiempo volvio y empieza la cinta.
 
-  Encima, al principio, バイツァ・ダスト. Todo en un canvas, como funcion del
-  tiempo; lo pesado (la nebulosa, las burbujas, la trama, las nubes) se
-  pinta una vez y despues solo se estampa. Lo usan la entrada del hero
-  (dust.ts) y el poder del mini Stand (powers.ts). Se quita solo al acabar.
+  Nada corta en seco: cada fase entra mientras la anterior se va, y en
+  cada cambio un destello suave tapa la costura. Sin bordes duros: los
+  puntos, las burbujas y los anillos se desvanecen en sus orillas.
+
+  Todo en un canvas, como funcion del tiempo; lo pesado (la nebulosa, las
+  burbujas, la trama, los anillos, las nubes) se pinta una vez y despues
+  solo se estampa. Lo usan la entrada del hero (dust.ts) y el poder del
+  mini Stand (powers.ts). Se quita solo al acabar.
 */
 
 /** Lo que dura la activacion, hasta que arranca la cinta. */
-export const CUT_MS = 2600;
+export const CUT_MS = 3400;
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
-/** De 0 a 1 entre a y b. */
-const seg = (u: number, a: number, b: number) => clamp((u - a) / (b - a));
+/** Suave al entrar y al salir. */
+const smooth = (v: number) => v * v * (3 - 2 * v);
+/** De 0 a 1 entre a y b, suave. */
+const seg = (u: number, a: number, b: number) => smooth(clamp((u - a) / (b - a)));
 /** Sube entre a y b, se queda, y baja entre c y d. */
 const span = (u: number, a: number, b: number, c: number, d: number) => Math.min(seg(u, a, b), 1 - seg(u, c, d));
+/** Un pico suave centrado en `at`, de ancho `w`. */
+const peak = (u: number, at: number, w: number) => Math.max(0, 1 - Math.abs(u - at) / w) ** 2;
 
 function sprite(size: number, paint: (g: CanvasRenderingContext2D, s: number) => void) {
   const c = document.createElement("canvas");
   c.width = c.height = size;
   paint(c.getContext("2d")!, size);
   return c;
+}
+
+/** Una copia desenfocada (para lo que esta fuera de foco). */
+function blurred(src: HTMLCanvasElement, px: number) {
+  return sprite(src.width, (g) => {
+    g.filter = `blur(${px}px)`;
+    g.drawImage(src, 0, 0);
+  });
 }
 
 /** La nebulosa: nubes de color que se pisan, vetas oscuras y polvo de estrellas. */
@@ -45,7 +64,7 @@ function nebula(size: number) {
     g.fillRect(0, 0, s, s);
     const colors = ["#3f8a2a", "#c9b23a", "#e3a32f", "#9a2f8f", "#2f3f9e", "#6b3fa0", "#55a83a"];
     g.globalCompositeOperation = "screen";
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 18; i++) {
       const x = rand(0.1, 0.9) * s;
       const y = rand(0.1, 0.9) * s;
       const r = rand(0.12, 0.34) * s;
@@ -69,56 +88,100 @@ function nebula(size: number) {
       g.fillStyle = grad;
       g.fillRect(0, 0, s, s);
     }
+    // Polvo de estrellas, con un halo las mas grandes.
     for (let i = 0; i < 1100; i++) {
+      const x = rand(0, s);
+      const y = rand(0, s);
+      const r = rand(0.4, 1.3);
       g.fillStyle = `rgba(255, ${Math.round(rand(220, 255))}, ${Math.round(rand(200, 255))}, ${rand(0.3, 1).toFixed(2)})`;
-      g.fillRect(rand(0, s), rand(0, s), rand(0.6, 2), rand(0.6, 2));
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.fill();
+      if (r > 1.1) {
+        const halo = g.createRadialGradient(x, y, 0, x, y, r * 6);
+        halo.addColorStop(0, "rgba(255, 250, 240, 0.35)");
+        halo.addColorStop(1, "rgba(255, 250, 240, 0)");
+        g.fillStyle = halo;
+        g.fillRect(x - r * 6, y - r * 6, r * 12, r * 12);
+      }
     }
   });
 }
 
-/** Una burbuja: rosa, violeta o azul, con volumen, borde claro y brillo. */
+/** Una burbuja: rosa, violeta o azul, con volumen y orilla que se desvanece. */
 function bubble(tone: [string, string, string]) {
-  return sprite(128, (g, s) => {
+  return sprite(160, (g, s) => {
     const h = s / 2;
-    const grad = g.createRadialGradient(h * 0.75, h * 0.7, h * 0.05, h, h, h * 0.96);
+    const r = h * 0.8;
+    // Un halo alrededor: la burbuja brilla, no tiene borde de tinta.
+    const halo = g.createRadialGradient(h, h, r * 0.85, h, h, h);
+    halo.addColorStop(0, `${tone[1]}88`);
+    halo.addColorStop(1, `${tone[1]}00`);
+    g.fillStyle = halo;
+    g.fillRect(0, 0, s, s);
+    const grad = g.createRadialGradient(h - r * 0.3, h - r * 0.35, r * 0.05, h, h, r);
     grad.addColorStop(0, tone[0]);
     grad.addColorStop(0.55, tone[1]);
-    grad.addColorStop(1, tone[2]);
+    grad.addColorStop(0.92, tone[2]);
+    grad.addColorStop(1, `${tone[2]}00`);
     g.fillStyle = grad;
     g.beginPath();
-    g.arc(h, h, h * 0.96, 0, Math.PI * 2);
+    g.arc(h, h, r, 0, Math.PI * 2);
     g.fill();
-    // Manchas por dentro, como en el anime.
+    // Manchas por dentro, como en el anime, con borde suave.
     for (let i = 0; i < 5; i++) {
-      g.fillStyle = "rgba(40, 10, 80, 0.28)";
-      g.beginPath();
-      g.arc(h + rand(-0.4, 0.4) * h, h + rand(-0.4, 0.4) * h, rand(0.1, 0.24) * h, 0, Math.PI * 2);
-      g.fill();
+      const x = h + rand(-0.4, 0.4) * r;
+      const y = h + rand(-0.4, 0.4) * r;
+      const rr = rand(0.12, 0.28) * r;
+      const spot = g.createRadialGradient(x, y, 0, x, y, rr);
+      spot.addColorStop(0, "rgba(40, 10, 80, 0.32)");
+      spot.addColorStop(1, "rgba(40, 10, 80, 0)");
+      g.fillStyle = spot;
+      g.fillRect(x - rr, y - rr, rr * 2, rr * 2);
     }
-    g.strokeStyle = "rgba(255, 230, 255, 0.55)";
-    g.lineWidth = s * 0.03;
-    g.beginPath();
-    g.arc(h, h, h * 0.9, 0, Math.PI * 2);
-    g.stroke();
-    g.fillStyle = "rgba(255, 255, 255, 0.75)";
-    g.beginPath();
-    g.ellipse(h * 0.62, h * 0.55, h * 0.18, h * 0.11, -0.6, 0, Math.PI * 2);
-    g.fill();
+    // El brillo, difuso.
+    const shine = g.createRadialGradient(h - r * 0.4, h - r * 0.45, 0, h - r * 0.4, h - r * 0.45, r * 0.32);
+    shine.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+    shine.addColorStop(1, "rgba(255, 255, 255, 0)");
+    g.fillStyle = shine;
+    g.fillRect(0, 0, s, s);
   });
 }
 
-/** La trama de puntos violeta del fondo de las burbujas. */
+/** La trama de puntos violeta del fondo de las burbujas: puntos de orilla suave. */
 function dots() {
-  return sprite(22, (g, s) => {
+  return sprite(24, (g, s) => {
     g.fillStyle = "#4a1f78";
     g.fillRect(0, 0, s, s);
-    const grad = g.createRadialGradient(s * 0.42, s * 0.4, 1, s / 2, s / 2, s * 0.36);
-    grad.addColorStop(0, "#c58be8");
-    grad.addColorStop(1, "#22093f");
+    const grad = g.createRadialGradient(s * 0.44, s * 0.42, 0, s / 2, s / 2, s * 0.42);
+    grad.addColorStop(0, "#b47ee0");
+    grad.addColorStop(0.55, "#2c0f50");
+    grad.addColorStop(1, "#4a1f78");
     g.fillStyle = grad;
-    g.beginPath();
-    g.arc(s / 2, s / 2, s * 0.36, 0, Math.PI * 2);
-    g.fill();
+    g.fillRect(0, 0, s, s);
+  });
+}
+
+/** Un anillo de luz, de orillas suaves (el tunel). */
+function ring() {
+  return sprite(512, (g, s) => {
+    const h = s / 2;
+    const grad = g.createRadialGradient(h, h, h * 0.78, h, h, h);
+    grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+    grad.addColorStop(0.45, "rgba(255, 255, 255, 1)");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, s, s);
+  });
+}
+
+/** Tine un sprite blanco de un color (para los anillos). */
+function tint(src: HTMLCanvasElement, color: string) {
+  return sprite(src.width, (g, s) => {
+    g.drawImage(src, 0, 0);
+    g.globalCompositeOperation = "source-in";
+    g.fillStyle = color;
+    g.fillRect(0, 0, s, s);
   });
 }
 
@@ -130,13 +193,11 @@ function cloud() {
       const y = s / 2 + rand(-0.18, 0.18) * s;
       const r = rand(0.18, 0.3) * s;
       const grad = g.createRadialGradient(x, y, 0, x, y, r);
-      grad.addColorStop(0, "rgba(250, 246, 255, 0.95)");
-      grad.addColorStop(0.7, "rgba(214, 200, 245, 0.7)");
+      grad.addColorStop(0, "rgba(250, 246, 255, 0.7)");
+      grad.addColorStop(0.5, "rgba(226, 214, 250, 0.45)");
       grad.addColorStop(1, "rgba(214, 200, 245, 0)");
       g.fillStyle = grad;
-      g.beginPath();
-      g.arc(x, y, r, 0, Math.PI * 2);
-      g.fill();
+      g.fillRect(x - r, y - r, r * 2, r * 2);
     }
   });
 }
@@ -162,12 +223,17 @@ export function btdCut(parent: HTMLElement) {
   const R = Math.hypot(w, h) / 2;
   const N = Math.ceil(R * 2);
   const space = nebula(N);
-  const bubbles = [
+  const sharp = [
     bubble(["#fbd2f2", "#d06ad0", "#5a1f8a"]),
     bubble(["#e8c2ff", "#9a4fd8", "#3a1268"]),
     bubble(["#d6dcff", "#6a5ae0", "#24135e"]),
   ];
+  // Tres planos de foco: lejos (muy borrosas), en foco, y pegadas a la camara (borrosas).
+  const far = sharp.map((b) => blurred(b, 5));
+  const near = sharp.map((b) => blurred(b, 3));
   const grid = g.createPattern(dots(), "repeat");
+  const white = ring();
+  const rings = [tint(white, "#ffffff"), tint(white, "#f0a6e6"), tint(white, "#9a6ae0")];
   const fog = cloud();
   const font = getComputedStyle(document.documentElement).getPropertyValue("--font-jp").trim() || "sans-serif";
 
@@ -175,20 +241,22 @@ export function btdCut(parent: HTMLElement) {
     a: rand(0, Math.PI * 2),
     d: rand(0, 1),
     v: rand(0.8, 2.2),
-    size: rand(0.8, 2.4),
-    tint: Math.random() < 0.25 ? "#ffd27a" : Math.random() < 0.3 ? "#bfe7ff" : "#ffffff",
+    size: rand(0.6, 2),
+    tint: Math.random() < 0.25 ? "255, 210, 122" : Math.random() < 0.3 ? "191, 231, 255" : "255, 255, 255",
   }));
   const beams = Array.from({ length: 70 }, () => ({
     a: rand(0, Math.PI * 2),
     v: rand(0.6, 1.4),
-    width: rand(1, 5),
-    color: ["#ffffff", "#bfe7ff", "#f4b8ff", "#ffd27a", "#9f8cff"][Math.floor(rand(0, 5))],
+    width: rand(1, 4),
+    color: ["255, 255, 255", "191, 231, 255", "244, 184, 255", "255, 210, 122", "159, 140, 255"][Math.floor(rand(0, 5))],
     curve: rand(-0.35, 0.35),
   }));
-  const balls = Array.from({ length: w < 640 ? 40 : 64 }, () => ({
+  const balls = Array.from({ length: w < 640 ? 46 : 72 }, (_, i) => ({
     x: rand(-0.05, 1.05) * w,
     y: rand(-0.05, 1.05) * h,
-    r: rand(14, 70),
+    // 0: lejos, 1: en foco, 2: cerca.
+    depth: i % 6 === 0 ? 2 : i % 3 === 0 ? 0 : 1,
+    r: rand(14, 60),
     at: rand(0, 0.7),
     tone: Math.floor(rand(0, 3)),
   }));
@@ -200,24 +268,38 @@ export function btdCut(parent: HTMLElement) {
     dy: rand(-40, 40),
   }));
 
+  /** Un destello suave de luz desde el centro: tapa la costura entre fases. */
+  const bloom = (alpha: number, radius: number, color = "246, 236, 255") => {
+    if (alpha <= 0.01) return;
+    const grad = g.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, `rgba(255, 255, 255, ${alpha.toFixed(3)})`);
+    grad.addColorStop(0.35, `rgba(${color}, ${(alpha * 0.75).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${color}, 0)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+  };
+
   function draw(u: number) {
     g.globalCompositeOperation = "source-over";
     g.globalAlpha = 1;
     g.clearRect(0, 0, w, h);
 
-    // 1-3. El espacio: se cierra sobre la pagina desde los bordes.
-    const spaceAlpha = span(u, 0, 0.08, 0.55, 0.62);
+    // 1. La oscuridad se cierra desde los bordes, como una vineta suave.
+    const dark = seg(u, 0, 0.12);
+    if (u < 0.2) {
+      const inner = R * (1.05 - dark * 1.05);
+      const grad = g.createRadialGradient(cx, cy, Math.max(0, inner * 0.55), cx, cy, Math.max(1, inner * 1.25));
+      grad.addColorStop(0, "rgba(7, 5, 13, 0)");
+      grad.addColorStop(1, `rgba(7, 5, 13, ${(0.5 + dark * 0.5).toFixed(3)})`);
+      g.fillStyle = grad;
+      g.fillRect(0, 0, w, h);
+    }
+
+    // 2-3. El espacio, que aparece dentro de la oscuridad.
+    const spaceAlpha = span(u, 0.06, 0.16, 0.5, 0.6);
     if (spaceAlpha > 0) {
       g.save();
       g.globalAlpha = spaceAlpha;
-      // Se cierra como una iris oscura que crece desde los bordes hacia dentro.
-      const close = seg(u, 0, 0.1);
-      if (close < 1) {
-        g.beginPath();
-        g.rect(0, 0, w, h);
-        g.arc(cx, cy, R * (1 - close) * 1.05, 0, Math.PI * 2, true);
-        g.clip("evenodd");
-      }
       g.translate(cx, cy);
       g.rotate(-u * 1.1);
       const zoom = 1 + u * 0.9;
@@ -227,13 +309,16 @@ export function btdCut(parent: HTMLElement) {
 
       // Las estrellas caen hacia el centro, cada vez mas rapido y mas largas.
       g.save();
-      g.globalAlpha = spaceAlpha;
+      g.globalCompositeOperation = "lighter";
       g.lineCap = "round";
-      const speed = 0.4 + seg(u, 0.15, 0.55) * 2.4;
+      const speed = 0.4 + seg(u, 0.15, 0.5) * 2.4;
       for (const s of stars) {
         const d = ((s.d - u * s.v * speed + 10) % 1) * R * 1.15;
-        const len = 2 + seg(u, 0.2, 0.55) * 60 * (d / R);
-        g.strokeStyle = s.tint;
+        const len = 2 + seg(u, 0.18, 0.5) * 70 * (d / R);
+        const grad = g.createLinearGradient(cx + Math.cos(s.a) * d, cy + Math.sin(s.a) * d, cx + Math.cos(s.a) * (d + len), cy + Math.sin(s.a) * (d + len));
+        grad.addColorStop(0, `rgba(${s.tint}, ${(spaceAlpha * 0.95).toFixed(3)})`);
+        grad.addColorStop(1, `rgba(${s.tint}, 0)`);
+        g.strokeStyle = grad;
         g.lineWidth = s.size;
         g.beginPath();
         g.moveTo(cx + Math.cos(s.a) * d, cy + Math.sin(s.a) * d);
@@ -243,40 +328,40 @@ export function btdCut(parent: HTMLElement) {
       g.restore();
 
       // Los haces de luz convergen en una estrella blanca.
-      const warp = span(u, 0.3, 0.42, 0.56, 0.62);
+      const warp = span(u, 0.26, 0.38, 0.52, 0.6);
       if (warp > 0) {
         g.save();
         g.globalCompositeOperation = "lighter";
-        g.globalAlpha = warp * 0.8;
         g.lineCap = "round";
         for (const b of beams) {
-          const p = seg(u, 0.3, 0.6) * b.v;
+          const p = seg(u, 0.26, 0.58) * b.v;
           const d0 = R * (1.2 - p * 0.9);
           const d1 = Math.max(0, d0 - R * 0.5);
-          const a0 = b.a;
           const a1 = b.a + b.curve;
-          g.strokeStyle = b.color;
+          const x0 = cx + Math.cos(b.a) * d0;
+          const y0 = cy + Math.sin(b.a) * d0;
+          const x1 = cx + Math.cos(a1) * d1;
+          const y1 = cy + Math.sin(a1) * d1;
+          // Cola que se desvanece: el haz no tiene corte.
+          const grad = g.createLinearGradient(x0, y0, x1, y1);
+          grad.addColorStop(0, `rgba(${b.color}, 0)`);
+          grad.addColorStop(1, `rgba(${b.color}, ${(warp * 0.8).toFixed(3)})`);
+          g.strokeStyle = grad;
           g.lineWidth = b.width;
           g.beginPath();
-          g.moveTo(cx + Math.cos(a0) * d0, cy + Math.sin(a0) * d0);
-          g.quadraticCurveTo(cx + Math.cos((a0 + a1) / 2) * (d0 + d1) * 0.5, cy + Math.sin((a0 + a1) / 2) * (d0 + d1) * 0.5, cx + Math.cos(a1) * d1, cy + Math.sin(a1) * d1);
+          g.moveTo(x0, y0);
+          g.quadraticCurveTo(cx + Math.cos((b.a + a1) / 2) * (d0 + d1) * 0.5, cy + Math.sin((b.a + a1) / 2) * (d0 + d1) * 0.5, x1, y1);
           g.stroke();
         }
-        const glow = 40 + warp * R * 0.35;
-        const grad = g.createRadialGradient(cx, cy, 0, cx, cy, glow);
-        grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-        grad.addColorStop(0.25, "rgba(240, 220, 255, 0.8)");
-        grad.addColorStop(1, "rgba(160, 120, 255, 0)");
-        g.fillStyle = grad;
-        g.fillRect(cx - glow, cy - glow, glow * 2, glow * 2);
         g.restore();
+        bloom(warp, 60 + warp * R * 0.4, "200, 170, 255");
       }
     }
 
-    // 4. Las burbujas, sobre la trama de puntos; una enorme llena la pantalla.
-    const bubbleAlpha = span(u, 0.55, 0.6, 0.76, 0.8);
+    // 4. Las burbujas sobre la trama, en tres planos; una enorme llena la pantalla.
+    const bubbleAlpha = span(u, 0.5, 0.6, 0.76, 0.82);
     if (bubbleAlpha > 0 && grid) {
-      const p = seg(u, 0.55, 0.8);
+      const p = seg(u, 0.5, 0.82);
       g.save();
       g.globalAlpha = bubbleAlpha;
       g.translate(cx, cy);
@@ -285,28 +370,42 @@ export function btdCut(parent: HTMLElement) {
       g.fillStyle = grid;
       g.fillRect(-w, -h, w * 3, h * 3);
       g.restore();
+      // Profundidad: la trama se oscurece hacia los bordes.
       g.save();
       g.globalAlpha = bubbleAlpha;
-      for (const b of balls) {
-        const q = seg(p, b.at * 0.6, b.at * 0.6 + 0.3);
-        if (q <= 0) continue;
-        const r = b.r * (0.3 + q * 1.4) * (1 + p);
-        const x = cx + (b.x - cx) * (1 + p * 0.6);
-        const y = cy + (b.y - cy) * (1 + p * 0.6);
-        g.drawImage(bubbles[b.tone], x - r, y - r, r * 2, r * 2);
+      const vig = g.createRadialGradient(cx, cy, R * 0.2, cx, cy, R);
+      vig.addColorStop(0, "rgba(30, 8, 60, 0)");
+      vig.addColorStop(1, "rgba(30, 8, 60, 0.6)");
+      g.fillStyle = vig;
+      g.fillRect(0, 0, w, h);
+      for (const depth of [0, 1, 2]) {
+        const set = depth === 0 ? far : depth === 1 ? sharp : near;
+        const scale = depth === 0 ? 0.55 : depth === 1 ? 1 : 1.9;
+        const drift = depth === 0 ? 0.3 : depth === 1 ? 0.6 : 1.1;
+        for (const b of balls) {
+          if (b.depth !== depth) continue;
+          const q = seg(p, b.at * 0.6, b.at * 0.6 + 0.3);
+          if (q <= 0) continue;
+          const r = b.r * scale * (0.3 + q * 1.4) * (1 + p);
+          const x = cx + (b.x - cx) * (1 + p * drift);
+          const y = cy + (b.y - cy) * (1 + p * drift);
+          g.globalAlpha = bubbleAlpha * (depth === 0 ? 0.6 : depth === 2 ? 0.85 : 1);
+          g.drawImage(set[b.tone], x - r * 1.25, y - r * 1.25, r * 2.5, r * 2.5);
+        }
       }
-      const big = seg(u, 0.68, 0.8);
+      const big = seg(u, 0.66, 0.82);
       if (big > 0) {
-        const r = 40 + big * big * R * 1.4;
-        g.drawImage(bubbles[1], cx - r, cy - r, r * 2, r * 2);
+        const r = 40 + big * big * R * 1.5;
+        g.globalAlpha = bubbleAlpha;
+        g.drawImage(near[1], cx - r * 1.25, cy - r * 1.25, r * 2.5, r * 2.5);
       }
       g.restore();
     }
 
-    // 5. El tunel: anillos que vienen hacia ti, el centro cada vez mas blanco.
-    const tunnelAlpha = span(u, 0.76, 0.8, 0.92, 0.96);
+    // 5. El tunel: anillos de luz que vienen hacia ti, el centro cada vez mas blanco.
+    const tunnelAlpha = span(u, 0.74, 0.82, 0.9, 0.96);
     if (tunnelAlpha > 0) {
-      const p = seg(u, 0.76, 0.96);
+      const p = seg(u, 0.74, 0.96);
       g.save();
       g.globalAlpha = tunnelAlpha;
       const bg = g.createRadialGradient(cx, cy, 0, cx, cy, R);
@@ -315,63 +414,56 @@ export function btdCut(parent: HTMLElement) {
       bg.addColorStop(1, "#3a1668");
       g.fillStyle = bg;
       g.fillRect(0, 0, w, h);
+      g.globalCompositeOperation = "lighter";
       for (let i = 0; i < 16; i++) {
-        const z = (i / 16 + p * 1.6) % 1;
-        const r = R * 1.25 * z ** 2.2;
-        g.strokeStyle = i % 3 === 0 ? "rgba(255, 255, 255, 0.8)" : i % 3 === 1 ? "rgba(236, 150, 230, 0.75)" : "rgba(120, 70, 190, 0.8)";
-        g.lineWidth = 3 + z * 34;
-        g.beginPath();
-        g.arc(cx, cy, r, 0, Math.PI * 2);
-        g.stroke();
+        const z = (i / 16 + p * 1.4) % 1;
+        const r = R * 1.3 * z ** 2.1;
+        g.globalAlpha = tunnelAlpha * (0.35 + z * 0.5);
+        g.drawImage(rings[i % 3], cx - r, cy - r, r * 2, r * 2);
       }
-      const core = 30 + p * p * R * 1.3;
-      const grad = g.createRadialGradient(cx, cy, 0, cx, cy, core);
-      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-      grad.addColorStop(0.6, "rgba(246, 236, 255, 0.85)");
-      grad.addColorStop(1, "rgba(246, 236, 255, 0)");
-      g.fillStyle = grad;
-      g.fillRect(0, 0, w, h);
       g.restore();
+      bloom(tunnelAlpha * (0.4 + p * 0.6), 40 + p * p * R * 1.4);
     }
 
     // 6. Nubes lavanda que se abren y dejan ver la pagina otra vez.
-    const fogAlpha = span(u, 0.9, 0.94, 0.94, 1);
+    const fogAlpha = span(u, 0.88, 0.93, 0.93, 1);
     if (fogAlpha > 0) {
-      const p = seg(u, 0.9, 1);
+      const p = seg(u, 0.88, 1);
       g.save();
       g.globalAlpha = fogAlpha;
-      g.fillStyle = "rgba(232, 224, 250, 0.9)";
+      g.fillStyle = "rgba(232, 224, 250, 0.85)";
       g.fillRect(0, 0, w, h);
       for (const f of puffs) {
-        const r = f.r * (1 + p * 0.5);
+        const r = f.r * (1 + p * 0.6);
         g.drawImage(fog, f.x + f.dx * p - r, f.y + f.dy * p - r, r * 2, r * 2);
       }
       g.restore();
     }
 
-    // El destello del principio.
-    const flash = 1 - seg(u, 0, 0.06);
-    if (flash > 0) {
-      g.fillStyle = `rgba(255, 246, 255, ${flash.toFixed(3)})`;
-      g.fillRect(0, 0, w, h);
-    }
+    // Los destellos que cosen las fases: la luz del principio y cada cambio.
+    bloom(1 - seg(u, 0, 0.08), R * 1.2);
+    bloom(peak(u, 0.555, 0.06) * 0.9, R * 1.1);
+    bloom(peak(u, 0.79, 0.05) * 0.8, R * 1.1);
 
-    // バイツァ・ダスト, mientras se cae al espacio.
-    const title = span(u, 0.06, 0.12, 0.4, 0.5);
+    // バイツァ・ダスト, mientras se cae al espacio: entra y se va con un halo.
+    const title = span(u, 0.1, 0.18, 0.36, 0.46);
     if (title > 0) {
       const size = Math.min(w * 0.11, 120);
       g.save();
       g.globalAlpha = title;
       g.translate(cx, cy);
-      g.scale(1 + u * 0.25, 1 + u * 0.25);
+      g.scale(0.92 + u * 0.3, 0.92 + u * 0.3);
       g.font = `900 ${size}px ${font}`;
       g.textAlign = "center";
       g.textBaseline = "middle";
       g.lineJoin = "round";
-      g.lineWidth = size * 0.14;
-      g.strokeStyle = "#161418";
+      g.shadowColor = "rgba(232, 145, 196, 0.85)";
+      g.shadowBlur = size * 0.4;
+      g.lineWidth = size * 0.12;
+      g.strokeStyle = "#1d1220";
       g.strokeText("バイツァ・ダスト", 0, 0);
-      g.fillStyle = "#e891c4";
+      g.shadowBlur = 0;
+      g.fillStyle = "#f1a9d2";
       g.fillText("バイツァ・ダスト", 0, 0);
       g.restore();
     }

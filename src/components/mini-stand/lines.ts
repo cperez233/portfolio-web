@@ -44,6 +44,8 @@ export interface PowerLines {
   bonus?: string[];
   /** Frases propias de cada variante del poder (si no hay, usa say/done). */
   variants?: Record<string, { say: string[]; done?: string[] }>;
+  /** El nombre del ataque, gritado justo antes de que se active. */
+  call?: string;
 }
 
 export interface StandLines {
@@ -123,8 +125,8 @@ export interface StandLines {
       wait: string[];
       cut: string[];
     };
-    /** Bites the Dust: despues de rebobinar la explosion. */
-    dust: [string, string][];
+    /** Bites the Dust: lo que grita justo antes de la activacion. */
+    dust: string[];
     /** Gold Experience: mientras florece el nombre. */
     gold: string[];
     /**
@@ -642,12 +644,7 @@ export const standLines: Record<Language, StandLines> = {
           "Ese tiempo no pasó. Cris sí: ingeniero y creador.",
         ],
       },
-      dust: [
-        ["¿Déjà vu?", "Le hice rollback a la página entera."],
-        ["Esto nunca pasó.", "Bites the Dust: Ctrl+Z, versión Stand."],
-        ["¿Explosión? ¿Cuál?", "Deshacer, con explosión incluida."],
-        ["Tranquilo, no explotó nada.", "Bueno, sí. Pero ya no."],
-      ],
+      dust: ["¡Bites the Dust!"],
       gold: [
         "Le di vida al nombre. Así crecen 35K seguidores.",
         "Así crecieron 2.5M de likes: con vida.",
@@ -959,9 +956,10 @@ export const standLines: Record<Language, StandLines> = {
         jp: "負けて死ね",
         say: ["Killer Queen… ¡Daisan no bakudan!", "Killer Queen… ¡Bites the Dust!"],
         done: ["El tiempo retrocedió. Nadie lo notó.", "¿Déjà vu? Normal.", "Another one bites the dust."],
+        call: "¡Bites the Dust!",
         variants: {
           bomb: { say: ["Killer Queen ya tocó algo…", "Eso de ahí es una bomba."], done: ["Explotó. Y no pasó nada.", "Ctrl+Z, con explosión incluida."] },
-          rewind: { say: ["Killer Queen… ¡Bites the Dust!", "¡Daisan no bakudan!"], done: ["El tiempo retrocedió. Nadie lo notó.", "¿Déjà vu? Normal."] },
+          rewind: { say: ["Killer Queen… tercera bomba.", "¿Y si volvemos un rato atrás?"], done: ["El tiempo retrocedió. Nadie lo notó.", "¿Déjà vu? Normal."] },
         },
       },
       kingcrimson: {
@@ -1458,12 +1456,7 @@ export const standLines: Record<Language, StandLines> = {
           "That time never passed. Cris did: engineer and creator.",
         ],
       },
-      dust: [
-        ["Déjà vu?", "I rolled the whole page back."],
-        ["This never happened.", "Bites the Dust: Ctrl+Z, Stand edition."],
-        ["Explosion? What explosion?", "Undo, explosion included."],
-        ["Relax, nothing blew up.", "Well, it did. Not anymore."],
-      ],
+      dust: ["Bites the Dust!"],
       gold: [
         "I gave the name life. That's how 35K followers grow.",
         "That's how 2.5M likes grew: with life.",
@@ -1765,9 +1758,10 @@ export const standLines: Record<Language, StandLines> = {
         jp: "負けて死ね",
         say: ["Killer Queen… Daisan no bakudan!", "Killer Queen… Bites the Dust!"],
         done: ["Time went back. Nobody noticed.", "Déjà vu? Normal.", "Another one bites the dust."],
+        call: "Bites the Dust!",
         variants: {
           bomb: { say: ["Killer Queen already touched something…", "That thing there is a bomb."], done: ["It blew up. And nothing happened.", "Ctrl+Z, explosion included."] },
-          rewind: { say: ["Killer Queen… Bites the Dust!", "Daisan no bakudan!"], done: ["Time went back. Nobody noticed.", "Déjà vu? Normal."] },
+          rewind: { say: ["Killer Queen… third bomb.", "What if we go back a bit?"], done: ["Time went back. Nobody noticed.", "Déjà vu? Normal."] },
         },
       },
       kingcrimson: {

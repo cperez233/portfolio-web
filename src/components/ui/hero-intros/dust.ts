@@ -33,14 +33,14 @@ const T = {
   back: 2420,
   click: 2780,
   boom: 3100,
-  // La explosion se ve entera (boom.ts); despues, la activacion (btd-cut.ts).
-  btd: 4850,
-  rewind: 4850 + CUT_MS,
-  rewindMs: 1750,
-  // El primer globo, al final del rebobinado; el segundo, ya con todo en su sitio.
-  first: 8900,
-  second: 9600,
-  relay: 10450,
+  // Con la explosion aun en el aire, el Stand lo dice: ¡Bites the Dust!
+  call: 3650,
+  // La activacion (btd-cut.ts) y el rebobinado. Al final no habla: el chico
+  // remata con su frase al llegar (mini-stand.tsx), y asi no se pisan.
+  btd: 4950,
+  rewind: 4950 + CUT_MS,
+  rewindMs: 1550,
+  relay: 10000,
 } as const;
 
 /** Lo que tarda cada pieza en volver a su hueco. */
@@ -49,10 +49,8 @@ const BACK_MS = 620;
 export const dust: IntroDef = {
   name: "Killer Queen",
   start: T.open,
-  condense: 11300,
+  condense: 10900,
   run(kit) {
-    const first = pickLine(kit.lines.dust.map(([a]) => a));
-    const second = kit.lines.dust.find(([a]) => a === first)?.[1] ?? "";
     const { vw, vh, small } = kit;
     const fx = kit.fx("dust-fx");
     const photo = kit.portrait();
@@ -162,10 +160,17 @@ export const dust: IntroDef = {
       for (const piece of pieces(kit.stage)) throwIt(piece, piece.nav ? 0.4 : 0.8);
     });
 
-    // バイツァ・ダスト: la activacion, a pantalla completa (btd-cut.ts).
-    kit.at(T.btd, () => {
+    // El nombre, antes de que se active.
+    kit.at(T.call, () => {
       kit.frame("stand", { body: "point", face: "smug" });
       kit.lunge(0.06, 260);
+      kit.talk(pickLine(kit.lines.dust), 1100);
+    });
+
+    // バイツァ・ダスト: la activacion, a pantalla completa (btd-cut.ts).
+    kit.at(T.btd, () => {
+      kit.hush();
+      kit.frame("stand", { body: "high", face: "laugh" });
       btdCut(fx);
       playSfx("warudo");
       kit.shake(small ? 5 : 9, 300);
@@ -236,14 +241,6 @@ export const dust: IntroDef = {
         kit.frame("stand", { body: "idle", face: "smug" });
       });
       kit.later(T.rewindMs + 360, () => tape.remove());
-    });
-    kit.at(T.first, () => {
-      kit.frame("stand", { face: "open" });
-      kit.talk(first, 900);
-    });
-    kit.at(T.second, () => {
-      kit.frame("stand", { face: "wink" });
-      kit.talk(second, 900);
     });
     kit.at(T.relay, kit.relay);
   },

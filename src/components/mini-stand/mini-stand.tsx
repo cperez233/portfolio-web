@@ -1660,6 +1660,12 @@ export function MiniStand() {
         act.current("pose", 1600);
         say.current(pickLine(lines.universe.stop), 2400);
       },
+      call: power.call
+        ? () => {
+            act.current("pose", 1400);
+            say.current(power.call!, 1300);
+          }
+        : undefined,
     });
     if (id === "hermit") {
       const facts = lines.hermit.map((line) =>

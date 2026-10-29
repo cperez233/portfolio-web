@@ -292,13 +292,18 @@ The render loop stops off-screen.
       the path they left by, with a trail, snapping into their slot; the
       explosion swallows itself. It ends there: the page is back as it
       was, without replaying the entrance. Between the explosion and the
-      rewind comes the activation, modelled on Kira's last Bites the Dust
-      in the anime (`btd-cut.ts`, one full-screen canvas): a flash, space
-      with a nebula and stars falling inwards under バイツァ・ダスト, beams of
-      light converging on a white star, a field of pink and violet
-      bubbles until one fills the screen, a ring tunnel whitening at the
-      centre and lavender clouds that open on the page. The mini Stand's
-      power plays it too, before its own rewind.
+      rewind the Stand shouts "¡Bites the Dust!" and the activation plays,
+      modelled on Kira's last Bites the Dust in the anime (`btd-cut.ts`,
+      one full-screen canvas, 3.4s): darkness closing in like a soft
+      vignette, space with a nebula and stars falling inwards under
+      バイツァ・ダスト, beams of light converging on a white star, a field of
+      pink and violet bubbles in three planes of focus until one fills the
+      screen, a tunnel of soft light rings whitening at the centre and
+      lavender clouds that open on the page. Phases cross-fade and a soft
+      bloom hides each seam; nothing has a hard edge. The giant says
+      nothing after the rewind: the mini Stand closes with one line. The
+      mini Stand's power plays the activation too, after shouting the
+      name, before its own rewind.
     - **Gold Experience** (`gold.ts`): a 無駄無駄 rush on the name and a
       無駄ァ! finisher; a golden wave turns the letters into real wood
       (stretched `feTurbulence` grain clipped to the glyphs), a tree
