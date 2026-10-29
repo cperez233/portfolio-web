@@ -43,6 +43,7 @@ const T = {
 } as const;
 
 export const gold: IntroDef = {
+  name: "Gold Experience",
   start: T.open,
   condense: 9300,
   run(kit) {

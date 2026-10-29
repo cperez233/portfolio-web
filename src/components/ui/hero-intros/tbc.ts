@@ -28,7 +28,7 @@ const T = {
   freeze: 2350,
   arrow: 2520,
   thaw: 5900,
-  talk: 6600,
+  talk: 6300,
   relay: 7600,
 } as const;
 

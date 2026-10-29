@@ -36,8 +36,8 @@ const T = {
   rewind: 4150,
   rewindMs: 2000,
   replay: 6900,
-  first: 7850,
-  second: 8650,
+  first: 7450,
+  second: 8350,
   relay: 9450,
 } as const;
 
@@ -45,6 +45,7 @@ const T = {
 const BACK_MS = 620;
 
 export const dust: IntroDef = {
+  name: "Killer Queen",
   start: T.open,
   condense: 10400,
   run(kit) {

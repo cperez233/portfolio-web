@@ -97,7 +97,6 @@ export interface StandLines {
     world: string[];
     diamond: string[];
     oops: string[];
-    fixed: string[];
     jokes: [string, string][];
     laughs: string[];
     /**
@@ -132,9 +131,9 @@ export interface StandLines {
      * Sticky Fingers: el codigo que se ve con la pagina abierta (un renglon
      * por elemento), lo que dice mientras esta abierta y al cerrarla.
      */
-    zipper: { code: string[]; talk: string[]; done: string[] };
+    zipper: { code: string[]; talk: string[] };
     /** Echoes ACT 3: levantando el nombre (shout) y ya arriba. */
-    echoes: { strain: string[]; done: string[] };
+    echoes: { strain: string[] };
     /** To Be Continued: lo que dice al volver el color ({n}: tu proxima visita). */
     tbc: { after: string[] };
     /**
@@ -603,7 +602,6 @@ export const standLines: Record<Language, StandLines> = {
         "Yo no fui. Bueno, sí.",
       ],
       oops: ["Uy. Qué pena.", "Ups… tu pantalla.", "Eso sonó caro.", "¿Eso fue el vidrio?", "Ay. Me pasé."],
-      fixed: ["Listo, como nueva.", "Arreglado. Aquí no pasó nada.", "Ni se nota, ¿cierto?", "Quedó mejor que antes."],
       jokes: [
         ["Detuve el tiempo del mundo entero…", "…para posar sin que nadie me interrumpa."],
         ["Nadie se puede mover…", "…ni para tomarme una foto. Rayos."],
@@ -619,11 +617,11 @@ export const standLines: Record<Language, StandLines> = {
       end: {
         crimson: ["Saltamos a lo bueno.", "¿Qué pasó? Nada. King Crimson.", "Ese tiempo no vuelve. Sigue.", "Corte limpio. De nada."],
         dust: ["¿Raro, no? Ya pasó una vez.", "Déjà vu resuelto. Sigue.", "Esto ya lo vi. Ah, no.", "Rollback exitoso."],
-        gold: ["Las flores se van. Cris no.", "Vuelve a ser texto. Por ahora.", "Todo lo que toco florece.", "Vida dorada. Sigue."],
+        gold: ["Las flores se van. Cris no.", "Vuelve a ser texto. Por ahora.", "Todo lo que toco florece.", "Giorno estaría orgulloso."],
         zipper: ["Cerrado. Arrivederci.", "Todo en su sitio. Ari ari.", "Por dentro también es bonito.", "Ziiip. Listo."],
         echoes: ["Ya pesa normal. Creo.", "Mi espalda… Sigue.", "Todo en su sitio. Uf.", "Liviano otra vez. ズン."],
-        tbc: ["Empieza el episodio. ゴゴゴ.", "Hoy el protagonista eres tú.", "Nuevo capítulo. Sin spoilers.", "Dale play. Yo te acompaño."],
-        door: ["Ya lo sabes. Sin vuelta atrás.", "Lo escrito, escrito está.", "Pregúntame más. Tócame.", "Ahora no se te olvida."],
+        tbc: ["Empieza el episodio. ゴゴゴ.", "Hoy el protagonista eres tú.", "Nuevo capítulo. Sin spoilers.", "Siguiente episodio: tú bajas, yo narro."],
+        door: ["Ya lo sabes. Sin vuelta atrás.", "Lo escrito, escrito está.", "Rohan lo escribió. Se cumple.", "Ahora no se te olvida."],
       },
       skipped: ["¿Saltaste mi entrada? Respeto.", "Directo al grano. Me gusta.", "Sin ceremonia. Muy ingeniero.", "Ok, ok. Ya llegué."],
       crimson: {
@@ -671,11 +669,9 @@ export const standLines: Record<Language, StandLines> = {
           "Así se ve una web de Cris por dentro. Ordenadita.",
           "Bonito por fuera, bien hecho por dentro. Ese es el truco.",
         ],
-        done: ["Arrivederci. Ya viste lo de adentro.", "Cerrado. Ni se nota la costura.", "Ari ari. Todo vuelve a su sitio."],
       },
       echoes: {
         strain: ["¡Pesa como un deploy en viernes!", "¡Uf! Este nombre carga mucha experiencia.", "¡Ni el servidor pesa tanto!"],
-        done: ["Listo. Ya pesa normal.", "Arriba. Ese nombre tiene peso.", "Ingeniería: levantar lo que se cae."],
       },
       tbc: {
         after: ["Continuará… en el episodio {n}.", "Fin del episodio. Empieza el portafolio.", "To be continued. Tú sigue bajando."],
@@ -1418,7 +1414,6 @@ export const standLines: Record<Language, StandLines> = {
         "Wasn't me. Ok, it was.",
       ],
       oops: ["Oops. Sorry.", "Uh… your screen.", "That sounded expensive.", "Was that the glass?", "Oh. Too much."],
-      fixed: ["There, good as new.", "Fixed. Nothing happened here.", "Can't even tell, right?", "Better than before."],
       jokes: [
         ["I stopped time for the whole world…", "…so I could pose without interruptions."],
         ["Nobody can move…", "…not even to take my picture. Darn."],
@@ -1434,11 +1429,11 @@ export const standLines: Record<Language, StandLines> = {
       end: {
         crimson: ["Straight to the good part.", "What happened? King Crimson.", "That time is gone. Go on.", "Clean cut. You're welcome."],
         dust: ["Weird, right? Happened before.", "Déjà vu solved. Go on.", "Seen this. Oh wait, no.", "Rollback successful."],
-        gold: ["Flowers fade. Talent stays.", "Back to text. For now.", "Everything I touch blooms.", "Golden life. Go on."],
+        gold: ["Flowers fade. Talent stays.", "Back to text. For now.", "Everything I touch blooms.", "Giorno would be proud."],
         zipper: ["Zipped up. Arrivederci.", "All in place. Ari ari.", "Pretty on the inside too.", "Ziiip. Done."],
         echoes: ["Normal weight again. I think.", "My back… Go on.", "Everything's in place. Phew.", "Light again. ズン."],
-        tbc: ["The episode begins. ゴゴゴ.", "Today you're the lead.", "New chapter. No spoilers.", "Hit play. I'll tag along."],
-        door: ["Now you know. No going back.", "What's written stays written.", "Ask me more. Tap me.", "Now you won't forget."],
+        tbc: ["The episode begins. ゴゴゴ.", "Today you're the lead.", "New chapter. No spoilers.", "Next episode: you scroll, I narrate."],
+        door: ["Now you know. No going back.", "What's written stays written.", "Rohan wrote it. It comes true.", "Now you won't forget."],
       },
       skipped: ["Skipped my entrance? Respect.", "Straight to it. I like that.", "No ceremony. Very engineer.", "Ok, ok. I'm here."],
       crimson: {
@@ -1486,11 +1481,9 @@ export const standLines: Record<Language, StandLines> = {
           "That's a Cris website on the inside. Tidy.",
           "Pretty outside, well built inside. That's the trick.",
         ],
-        done: ["Arrivederci. Now you've seen inside.", "Zipped. You can't even see the seam.", "Ari ari. Everything back in place."],
       },
       echoes: {
         strain: ["Heavy as a Friday deploy!", "Oof! This name carries a lot of experience.", "Not even the server weighs this much!"],
-        done: ["There. Normal weight again.", "Up it goes. That name has weight.", "Engineering: lifting what falls."],
       },
       tbc: {
         after: ["To be continued… in episode {n}.", "End of episode. The portfolio begins.", "To be continued. Keep scrolling."],

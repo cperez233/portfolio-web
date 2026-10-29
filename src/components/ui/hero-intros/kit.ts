@@ -72,6 +72,12 @@ export interface IntroKit {
 
 /** Una entrada: cuando arranca y su ultimo respaldo para el relevo (ms desde el primer pintado). */
 export interface IntroDef {
+  /**
+   * El Stand que copia: lo grita en su globo al usarlo, como en el anime
+   * ("ZA WARUDO!", "Killer Queen!"). nameAt: cuando, si no es al empezar.
+   */
+  name?: string;
+  nameAt?: number;
   start: number;
   condense: number;
   /** Lo que hay que dejar listo desde ya, antes de que el copy suba (Star Finger esconde el h1). */

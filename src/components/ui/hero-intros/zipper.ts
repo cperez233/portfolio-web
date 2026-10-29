@@ -57,6 +57,7 @@ function highlight(line: string) {
 }
 
 export const zipper: IntroDef = {
+  name: "Sticky Fingers",
   start: T.open,
   condense: 10400,
   run(kit) {
@@ -340,10 +341,8 @@ export const zipper: IntroDef = {
       kit.shout("アリーヴェデルチ!", vw / 2, (at?.y ?? y0) - kit.tall() * 0.55, "power-pop-word is-blue is-big", 1300);
       kit.shake(kit.small ? 4 : 6, 260);
     });
-    kit.at(T.last, () => {
-      kit.frame("stand", { face: "wink" });
-      kit.talk(pickLine(lines.done), 1000);
-    });
+    // Sin frase aqui: el chico remata al llegar (mini-stand.tsx).
+    kit.at(T.last, () => kit.frame("stand", { face: "wink" }));
     kit.at(T.relay, kit.relay);
   },
 };

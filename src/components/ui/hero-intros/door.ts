@@ -68,6 +68,7 @@ function placeBook(kit: IntroKit) {
 }
 
 export const door: IntroDef = {
+  name: "Heaven's Door",
   start: T.open,
   condense: 10400,
   prepare() {

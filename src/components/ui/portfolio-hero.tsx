@@ -137,6 +137,14 @@ const DIAMOND = {
 */
 const WORLD = { shout: 1560, stop: 1860, ms: 2800, joke: 460, punchline: 1810, condense: 8000, after: 3310 } as const;
 
+/**
+ * Cuanto se queda un globo a la vista despues de escribirse: lo pedido, y
+ * nunca menos de lo que se tarda en leerlo (unos 18 caracteres por segundo).
+ */
+function readMs(text: string, ms: number) {
+  return Math.max(ms, 700 + text.length * 55);
+}
+
 /* Inclinacion de cada pose JoJo, en grados: torcidas, como en el manga. */
 const POSE_TILT: Partial<Record<Body, number>> = { pose: -13, arms: 6, point: 11, wide: -9, high: 14 };
 
@@ -481,6 +489,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     let bubble: HTMLParagraphElement | null = null;
     let typing = 0;
     let hideAt = 0;
+    /** Grita el nombre del Stand que copia, como en el anime ("¡KILLER QUEEN!"). */
+    const callName = (name: string) => talk(languageRef.current === "es" ? `¡${name.toUpperCase()}!` : `${name.toUpperCase()}!`, 700);
     const talk = (text: string, ms: number) => {
       const head = svg?.getBoundingClientRect();
       if (!text || !head?.width) return;
@@ -521,7 +531,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         if (shown >= text.length) window.clearInterval(typing);
       }, 24);
       timers.push(typing);
-      hideAt = window.setTimeout(() => node.removeAttribute("data-on"), ms + text.length * 24);
+      // Lo que tarda en escribirse y, despues, tiempo de leerlo segun su largo.
+      hideAt = window.setTimeout(() => node.removeAttribute("data-on"), text.length * 24 + readMs(text, ms));
       timers.push(hideAt);
     };
     const hush = () => {
@@ -649,6 +660,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const tall = svg?.getBoundingClientRect().height ?? 200;
       window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "diamond" } }));
       frame("stand", { face: "angry" });
+      callName("Crazy Diamond");
       lunge(0.05, 260);
       // A un lado del Stand y no encima: que se le vea la cara de enojo.
       shout("ドラララ", from.x - tall * 0.75, from.y - tall * 0.3, "power-pop-word is-pink is-big", 1100);
@@ -741,10 +753,8 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         glass?.heal(origin.x, origin.y - tall * 0.35, DIAMOND.healMs);
         shattered?.mend(DIAMOND.healMs);
       });
-      at(DIAMOND.fixed, () => {
-        frame("stand", { face: "wink" });
-        talk(pickLine(lines.fixed), 700);
-      });
+      // Sin frase aqui: el chico remata al llegar (mini-stand.tsx).
+      at(DIAMOND.fixed, () => frame("stand", { face: "wink" }));
     };
 
     /*
@@ -786,6 +796,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       if (!from) return relay();
       const tall = svg?.getBoundingClientRect().height ?? 200;
       frame("stand", { face: "smug" });
+      callName("Za Warudo");
       // Sobre el nombre y no sobre el Stand.
       shout("ザ・ワールド!", vw / 2, from.y + tall * 0.2, "power-pop-word is-gold is-big", 1300);
       lunge(0.06, 200);
@@ -1090,6 +1101,10 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
 
       if (def) {
         def.prepare?.(kit);
+        if (def.name) {
+          const name = def.name;
+          at(def.nameAt ?? def.start, () => callName(name));
+        }
         at(def.start, () => {
           introOn = true;
           window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: intro } }));

@@ -61,6 +61,8 @@ const wall = (plus = 0) => {
 const SPIN = ["◐", "◓", "◑", "◒"];
 
 export const crimson: IntroDef = {
+  name: "King Crimson",
+  nameAt: T.call,
   start: T.open,
   condense: 9500,
   run(kit) {
@@ -111,7 +113,7 @@ export const crimson: IntroDef = {
     kit.onCleanup(() => window.clearInterval(crawl));
 
     kit.frame("stand", { body: "idle", face: "happy" });
-    kit.talk(pickLine(lines.wait), 1400);
+    kit.at(T.open + 250, () => kit.talk(pickLine(lines.wait), 900));
     kit.at(T.yawn, () => kit.frame("stand", { body: "idle", face: "blink" }));
 
     // Epitaph: un cuadro del futuro, el medidor lleno.

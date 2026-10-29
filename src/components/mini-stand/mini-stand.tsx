@@ -334,7 +334,9 @@ export function MiniStand() {
       const instant = reducedMotion || text === linesRef.current.sleep;
       typing = { text, shown: instant ? text.length : 0, next: performance.now() };
       if (!instant) bubble.textContent = "";
-      bubbleUntil = ms === Infinity ? Infinity : performance.now() + ms + text.length * TYPE_MS;
+      // Lo que tarda en escribirse y, despues, tiempo de leerlo segun su largo
+      // (unos 18 caracteres por segundo): las frases largas se cortaban a medias.
+      bubbleUntil = ms === Infinity ? Infinity : performance.now() + text.length * TYPE_MS + Math.max(ms, 700 + text.length * 55);
     };
     poke.current = () => {
       lastActivity = performance.now();
@@ -789,10 +791,8 @@ export function MiniStand() {
       Las entradas del hero (portfolio-hero.tsx) avisan con "jojo:intro":
       start (empieza el poder; con ZA WARUDO el tiempo se detiene y el
       chico espera escondido), end (el grande ya se hizo el chico: remata
-      con una frase de la entrada que toco y, un rato despues, saluda
-      segun la hora) y cancel (se desmonto a medias: solo se limpia).
+      con una frase de la entrada que toco, y nada mas) y cancel (se desmonto a medias: solo se limpia).
     */
-    let greetLater = 0;
     const onIntro = (event: Event) => {
       const { phase, kind } = (event as CustomEvent<{ phase: string; kind?: string }>).detail ?? {};
       const root = document.documentElement;
@@ -822,12 +822,8 @@ export function MiniStand() {
         act.current(face, 1500);
         sfx(mark, "mark");
       }, 850);
-      window.clearTimeout(greetLater);
-      greetLater = window.setTimeout(() => {
-        greeted = false;
-        if (!sleeping && !panelOpen.current && performance.now() - lastSpokeAt > 2500) greet();
-        else greeted = true;
-      }, 5200);
+      // Sin saludo despues: con la frase del final basta (antes hablaba de
+      // mas y una frase pisaba a la otra).
     };
     window.addEventListener("jojo:intro", onIntro);
     window.addEventListener("jojo:timestop", onTimeStop);
@@ -1387,7 +1383,7 @@ export function MiniStand() {
           siempre una ayuda de la seccion, señalando: que tocar, que
           arrastrar, a donde ir. Si no, piensa en voz alta.
         */
-        if (mode === "out" && now - lastSpokeAt > 18000 && now - lastActivity < 5000 && now - settledSince > 2500) {
+        if (mode === "out" && now - lastSpokeAt > 26000 && now - lastActivity < 5000 && now - settledSince > 2500) {
           const lines = linesRef.current;
           const tips = short(lines.tips[current?.id ?? ""] ?? lines.tips.default ?? []);
           if (!chatted.current && !nudged) {
@@ -1574,7 +1570,6 @@ export function MiniStand() {
       window.removeEventListener("online", onOnline);
       window.removeEventListener("beforeprint", onPrint);
       window.clearTimeout(selectTimer);
-      window.clearTimeout(greetLater);
       window.removeEventListener("jojo:intro", onIntro);
       document.documentElement.classList.remove("intro-world");
       window.removeEventListener("jojo:timestop", onTimeStop);

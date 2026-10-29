@@ -49,6 +49,7 @@ function cracks(width: number, height: number, from: number[], rays: number) {
 }
 
 export const echoes: IntroDef = {
+  name: "Echoes ACT 3",
   start: T.open,
   condense: 8600,
   run(kit) {
@@ -231,10 +232,8 @@ export const echoes: IntroDef = {
       });
     });
 
-    kit.at(T.done, () => {
-      kit.frame("stand", { body: "high", face: "happy" });
-      kit.talk(pickLine(kit.lines.echoes.done), 1100);
-    });
+    // Sin frase aqui: el chico remata al llegar (mini-stand.tsx).
+    kit.at(T.done, () => kit.frame("stand", { body: "high", face: "happy" }));
     kit.at(T.relay, kit.relay);
   },
 };
