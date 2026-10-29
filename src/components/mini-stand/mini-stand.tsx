@@ -305,6 +305,12 @@ export function MiniStand() {
     let bubbleUntil = 0;
     let bw = 0;
     let bh = 0;
+    /*
+      Donde se ancla el globo. No sigue cada vaiven del Stand (flotando se
+      mece unos pixeles): el texto se movia todo el rato y costaba leerlo.
+      Solo se corre si el Stand se va de verdad (scroll, otro sitio).
+    */
+    let anchor: { x: number; y: number } | null = null;
     say.current = (text, ms = 2800) => {
       if (!text) {
         bubble.removeAttribute("data-on");
@@ -313,6 +319,7 @@ export function MiniStand() {
         return;
       }
       lastSpokeAt = performance.now();
+      anchor = null;
       if (text !== linesRef.current.sleep) saidLog.current = [...saidLog.current, text].slice(-4);
       bubble.style.width = "";
       bubble.textContent = text;
@@ -1502,19 +1509,27 @@ export function MiniStand() {
       }
       if (bubbleUntil && now > bubbleUntil) say.current(null);
       if (bubble!.hasAttribute("data-on")) {
-        let bx = Math.min(Math.max(12, body.x - bw / 2), width - bw - 12);
-        let by = body.y - spriteH - bh - 10;
+        // Zona muerta de 6px: el vaiven no lo mueve; el scroll o un viaje, si.
+        if (!anchor) anchor = { x: body.x, y: body.y };
+        const drift = Math.hypot(body.x - anchor.x, body.y - anchor.y);
+        if (drift > 6) {
+          anchor.x += (body.x - anchor.x) * (1 - 6 / drift);
+          anchor.y += (body.y - anchor.y) * (1 - 6 / drift);
+        }
+        const { x: sx, y: sy } = anchor;
+        let bx = Math.min(Math.max(12, sx - bw / 2), width - bw - 12);
+        let by = sy - spriteH - bh - 10;
         let side = "";
         // Sin sitio arriba (debajo del menu): al costado, nunca encima
         // del texto que se esta leyendo.
         if (by < 64) {
-          by = body.y - spriteH * 0.8;
-          const right = body.x + spriteW / 2 + 10;
+          by = sy - spriteH * 0.8;
+          const right = sx + spriteW / 2 + 10;
           side = right + bw < width - 12 ? "right" : "left";
-          bx = side === "right" ? right : Math.max(12, body.x - spriteW / 2 - 10 - bw);
+          bx = side === "right" ? right : Math.max(12, sx - spriteW / 2 - 10 - bw);
         }
         bubble!.style.transform = `translate3d(${Math.round(bx)}px, ${Math.round(by)}px, 0)`;
-        bubble!.style.setProperty("--tail-x", `${Math.round(body.x - bx)}px`);
+        bubble!.style.setProperty("--tail-x", `${Math.round(sx - bx)}px`);
         if (side) bubble!.setAttribute("data-side", side);
         else bubble!.removeAttribute("data-side");
       }

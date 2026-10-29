@@ -322,7 +322,9 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
       </FadeIn>
 
       <motion.div
-        style={shouldReduceMotion ? undefined : { y: galleryY }}
+        // Capa propia (will-change): sin ella, la captura inclinada se
+        // volvia a rasterizar en cada cuadro del parallax y su texto titilaba.
+        style={shouldReduceMotion ? undefined : { y: galleryY, willChange: "transform" }}
         className={cn(
           "mt-8 lg:col-span-7 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:self-center",
           flip ? "lg:col-start-6" : "lg:col-start-1",

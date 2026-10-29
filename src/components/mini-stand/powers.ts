@@ -3,6 +3,7 @@
 import type { PowerId, StandLines } from "./lines";
 import { stopTime } from "@/lib/time-stop";
 import { playSfx } from "@/lib/sfx";
+import { createGlass } from "@/components/ui/hero-crack";
 import {
   centerTarget,
   layer,
@@ -340,14 +341,20 @@ async function crazyDiamond(ctx: PowerContext) {
   const iy = Math.min(h - 60, Math.max(90, ctx.y));
   const node = layer("power-cd", true);
   node.innerHTML = crackWeb(ix, iy);
+  // Cada golpe de la rafaga deja su estrella de grietas donde pega (antes
+  // solo saltaba el destello y parecia que algunos no rompian nada).
+  const glass = ctx.reducedMotion ? null : createGlass();
 
   if (!ctx.reducedMotion) {
     for (let i = 0; i < 9; i++) {
       window.setTimeout(() => {
         const angle = Math.random() * Math.PI * 2;
         const dist = rand(40, 170);
+        const hx = ix + Math.cos(angle) * dist * 0.5;
+        const hy = iy + Math.sin(angle) * dist * 0.4;
         pop("ドラ", ix + Math.cos(angle) * dist, iy + Math.sin(angle) * dist * 0.6, "power-pop-word is-pink", 700);
-        impact(ix + Math.cos(angle) * dist * 0.5, iy + Math.sin(angle) * dist * 0.4);
+        impact(hx, hy);
+        glass?.hit(hx, hy, rand(46, 80));
       }, i * 80);
     }
   }
@@ -384,7 +391,8 @@ async function crazyDiamond(ctx: PowerContext) {
     await wait(1400);
     // Arreglado: pieza a pieza, con un brillo rosa.
     node.classList.add("is-healing");
-    playSfx("heal");
+    if (glass) glass.heal(ix, iy, 700);
+    else playSfx("heal");
     for (const el of pieces) {
       el.classList.remove("power-broken");
       if (!ctx.reducedMotion) el.classList.add("power-healed");
@@ -401,6 +409,7 @@ async function crazyDiamond(ctx: PowerContext) {
     main?.classList.remove("power-cd-broken");
     for (const el of pieces) el.classList.remove("power-broken", "power-healed");
     clears.forEach((clear) => clear());
+    glass?.cancel();
     node.remove();
   }
 }

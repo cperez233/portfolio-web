@@ -46,11 +46,6 @@ export default function Footer() {
       className="relative z-40 overflow-x-clip border-t border-line bg-canvas px-5 pb-0 pt-20 transition-colors duration-500 sm:px-8 md:px-10"
     >
       <SectionEdge />
-      {/* ゴゴゴ en 3D junto al "¿Te acercas?": tiembla, sigue al puntero y late al tocarlo. */}
-      <Menacing3D
-        fallbackSize="clamp(1.4rem, 3vw, 2.8rem)"
-        className="absolute right-[3%] top-6 z-10 h-36 w-24 sm:h-56 sm:w-36 lg:top-10 lg:h-72 lg:w-44"
-      />
       <div
         aria-hidden="true"
         className="glow-accent pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(48rem,120vw)] -translate-x-1/2"
@@ -64,9 +59,16 @@ export default function Footer() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col gap-12 border-b border-line pb-14 lg:flex-row lg:justify-between lg:gap-16"
+          /*
+            En escritorio, dos columnas que se llenan las dos: a la
+            izquierda el saludo y, al pie, los enlaces; a la derecha el
+            formulario entero. Antes el formulario colgaba bajo el saludo y
+            los enlaces dejaban media pantalla vacia a la derecha. En
+            celular el orden sigue igual: saludo, formulario, enlaces.
+          */
+          className="grid gap-12 border-b border-line pb-14 lg:grid-cols-12 lg:gap-x-16 lg:gap-y-10"
         >
-          <div className="w-full max-w-xl min-w-0 shrink-0 lg:max-w-md">
+          <div className="w-full max-w-xl min-w-0 lg:col-span-5 lg:row-start-1 lg:max-w-none">
             <FadeSwap>
               <p data-part={`${t.jojo.part} 9`} className="jojo-eyebrow text-accent-ink">
                 {t.footer.eyebrow}
@@ -98,14 +100,19 @@ export default function Footer() {
             </a>
             </Magnetic>
             </div>
+          </div>
 
-            <div className="mt-8">
-              <ContactForm />
-            </div>
+          <div className="relative min-w-0 lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1">
+            {/* ゴゴゴ en 3D asomando por la esquina de la carta: tiembla, sigue al puntero y late al tocarlo. */}
+            <Menacing3D
+              fallbackSize="clamp(1.4rem, 3vw, 2.4rem)"
+              className="absolute -right-2 -top-24 z-10 h-28 w-20 sm:-top-28 sm:h-36 sm:w-24 lg:-right-10 lg:-top-32 lg:h-44 lg:w-28"
+            />
+            <ContactForm />
           </div>
 
           {/* Tres columnas: navegacion, redes, contacto */}
-          <div className="grid flex-1 grid-cols-2 gap-8 sm:grid-cols-3 lg:max-w-2xl">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-5 lg:row-start-2 lg:self-end lg:gap-6 lg:border-t lg:border-line lg:pt-8">
             {footerGroups.map((group) => (
               <nav key={group.key} aria-label={t.footer.groups[group.key]}>
                 <FadeSwap>

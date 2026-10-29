@@ -156,8 +156,10 @@ export function createMenacingScene({
       raf = requestAnimationFrame(tick);
       return;
     }
-    tiltY += (pointerX * 0.5 - tiltY) * 0.06;
-    tiltX += (pointerY * 0.3 - tiltX) * 0.06;
+    // Sigue al puntero con poco giro: con mas, al pasar el raton por la
+    // pagina el ゴゴゴ daba vueltas de un lado a otro.
+    tiltY += (pointerX * 0.2 - tiltY) * 0.05;
+    tiltX += (pointerY * 0.12 - tiltX) * 0.05;
     root.rotation.y = reducedMotion ? -0.35 : -0.35 + tiltY;
     root.rotation.x = reducedMotion ? 0.1 : 0.1 + tiltX;
 

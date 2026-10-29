@@ -589,9 +589,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       const cells: { x: number; y: number }[] = [];
       for (let r = 0; r < rowsN; r++) for (let c = 0; c < cols; c++) cells.push({ x: c, y: r });
       const out: { x: number; y: number }[] = [];
+      let last: { x: number; y: number } | null = null;
       while (out.length < count) {
         const deck = [...cells].sort(() => Math.random() - 0.5);
+        // En la costura entre dos barajas, nunca la misma celda dos veces seguidas:
+        // el golpe caia sobre su propia grieta y parecia que no rompia nada.
+        if (last && deck[0] === last) deck.push(deck.shift()!);
         for (const cell of deck) {
+          last = cell;
           if (out.length >= count) break;
           out.push({
             x: (cell.x + rand(0.2, 0.8)) * cellW,
@@ -1144,10 +1149,12 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
   /*
     Estilo JoJo: Anton (mas estrecha que la Geist Black, de ahi el vw un
     poco mayor) y los dos colores de la portada del README: nombre en
-    crema/tinta, apellido en oro.
+    crema/tinta, apellido en oro. En celular, 27vw: CRISTIAN llena el
+    ancho (en Anton mide ~3.3 veces el tamano de fuente); con 22vw se
+    quedaba en tres cuartos de la pantalla y el hero se veia chico.
   */
   const nameBaseClassName =
-    "w-full flex-nowrap justify-center whitespace-nowrap font-display transition-colors duration-500 text-[22vw] uppercase leading-[0.84] tracking-[0.01em] select-none sm:text-[18.5vw] md:text-[17vw] lg:text-[15.5vw]";
+    "w-full flex-nowrap justify-center whitespace-nowrap font-display transition-colors duration-500 text-[27vw] uppercase leading-[0.84] tracking-[0.01em] select-none sm:text-[18.5vw] md:text-[17vw] lg:text-[15.5vw]";
   const firstNameClassName = `${nameBaseClassName} hero-name-first text-ink`;
   const nameClassName = `${nameBaseClassName} hero-name-last text-name`;
 
@@ -1281,13 +1288,13 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
             title={t.jojo.timeStop}
             className="relative block cursor-pointer transition-transform duration-300 hover:scale-105"
           >
-            <span className="manga-portrait relative block h-[86px] w-[60px] overflow-hidden bg-surface-2 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]">
+            <span className="manga-portrait relative block h-[104px] w-[72px] overflow-hidden bg-surface-2 sm:h-[146px] sm:w-[100px] md:h-[168px] md:w-[116px] lg:h-[194px] lg:w-[134px]">
               <Image
                 src={portrait.local}
                 alt={site.name}
                 fill
                 priority
-                sizes="(min-width: 1024px) 134px, (min-width: 768px) 116px, (min-width: 640px) 100px, 60px"
+                sizes="(min-width: 1024px) 134px, (min-width: 768px) 116px, (min-width: 640px) 100px, 72px"
                 className="object-cover"
               />
             </span>

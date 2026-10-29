@@ -2899,6 +2899,20 @@ html.time-stopped,
 html.time-stopped body {
   cursor: not-allowed;
 }
+/*
+  ...y nada responde al puntero: sin hover, sin imanes, sin transiciones.
+  Lo que estaba bajo el cursor vuelve a su estado quieto en el mismo
+  cuadro del destello y ahi se queda hasta que el tiempo vuelva. Solo el
+  boton de saltar la entrada sigue vivo (data-time-free).
+*/
+html.time-stopped body *:not([data-time-free], [data-time-free] *) {
+  pointer-events: none !important;
+}
+html.time-stopped :not(.power-live, .power-live *),
+html.time-stopped :not(.power-live, .power-live *)::before,
+html.time-stopped :not(.power-live, .power-live *)::after {
+  transition-property: none !important;
+}
 /* El Stand por encima de los efectos (es el unico que se mueve). */
 html.stand-front .stand-layer {
   z-index: 72;

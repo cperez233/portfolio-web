@@ -108,7 +108,7 @@ export function ContactForm() {
     >
       <p className="manga-form-title">{copy.title}</p>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="manga-label block min-w-0">
           {copy.name}
           <input
@@ -138,7 +138,7 @@ export function ContactForm() {
         <textarea
           name="message"
           required
-          rows={4}
+          rows={5}
           maxLength={4000}
           placeholder={copy.messagePlaceholder}
           className={cn(fieldClass, "resize-y leading-relaxed")}

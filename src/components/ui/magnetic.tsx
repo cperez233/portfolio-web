@@ -17,6 +17,11 @@ const spring = { stiffness: 260, damping: 18, mass: 0.6 };
  *
  * `strength` es la fraccion de la distancia al centro que se desplaza:
  * 0.3 se nota sin que el boton se escape del dedo.
+ *
+ * Se mide y se escucha en un envoltorio que NO se mueve: medido sobre el
+ * propio boton (que ya se corrio hacia el cursor), el centro cambiaba en
+ * cada evento y, en el borde, el boton se salia de debajo del cursor, se
+ * soltaba, volvia y se volvia a soltar: temblaba sin parar.
  */
 export function Magnetic({
   children,
@@ -43,7 +48,8 @@ export function Magnetic({
   const active = canHover && !shouldReduceMotion;
 
   const handleMove = (event: PointerEvent<HTMLSpanElement>) => {
-    if (!active) return;
+    // Con el tiempo detenido (ZA WARUDO) nada se mueve, tampoco esto.
+    if (!active || document.documentElement.classList.contains("time-stopped")) return;
     const rect = event.currentTarget.getBoundingClientRect();
     x.set((event.clientX - rect.left - rect.width / 2) * strength);
     y.set((event.clientY - rect.top - rect.height / 2) * strength);
@@ -55,13 +61,10 @@ export function Magnetic({
   };
 
   return (
-    <motion.span
-      className="inline-flex"
-      style={active ? { x: springX, y: springY } : undefined}
-      onPointerMove={handleMove}
-      onPointerLeave={reset}
-    >
-      {children}
-    </motion.span>
+    <span className="inline-flex" onPointerMove={handleMove} onPointerLeave={reset}>
+      <motion.span className="inline-flex" style={active ? { x: springX, y: springY } : undefined}>
+        {children}
+      </motion.span>
+    </span>
   );
 }
