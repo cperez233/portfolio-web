@@ -1,127 +1,235 @@
 /* editorial-ui · Cristian Pérez · cristianperez.me */
 
 import { pickLine } from "@/components/mini-stand/pick";
-import { pop } from "@/components/mini-stand/power-kit";
-import { type IntroDef, typeInto } from "./kit";
+import { pop, rand } from "@/components/mini-stand/power-kit";
+import { playSfx } from "@/lib/sfx";
+import { ease, type IntroDef, type IntroKit } from "./kit";
 
 /*
-  Heaven's Door: el Stand de Rohan, el mangaka, convierte a la gente en
-  libros que se pueden leer, y escribe ordenes en sus paginas. Aqui el
-  Stand traza una linea en el aire (como un dibujante) y la linea se
-  abre en un libro: dos hojas que giran como puertas. La de la izquierda
-  es la ficha de Cris, renglon por renglon. En la de la derecha el Stand
-  escribe la orden, a ti: recordaras que Cris es ingeniero de sistemas y
-  creador de contenido. La subraya, el libro se cierra y se rie.
+  Heaven's Door: el Stand de Rohan, el mangaka, vuelve libro a quien
+  toca y le escribe ordenes en las paginas. Aqui el libro eres tu: el
+  Stand traza el garabato en el aire (como Rohan dibujando a Pink Dark
+  Boy), la pantalla se abre en paginas que pasan a toda velocidad y
+  queda abierta una pagina de manga, con vinetas, trama, lineas de
+  velocidad y globos. En la vineta grande el Stand te escribe la orden a
+  mano: una al azar, todas sobre lo que hace Cris ("Compraras una web,
+  un aplicativo o varios"). La firma con un sello, se rie y el libro se
+  cierra.
 
-  El libro se abre donde no tapa al Stand: a su izquierda si hay sitio
-  (escritorio), debajo si no (celular).
+  En escritorio va a doble pagina (la izquierda es tu pagina "de vida",
+  llena de texto, como en el anime); en celular, una sola. El libro va
+  donde no tapa al Stand: a su lado o debajo.
 */
 const T = {
   open: 1600,
-  stroke: 1800,
-  book: 2100,
-  rows: 2450,
-  rowStep: 200,
-  order: 3600,
-  closeAfter: 450,
-  relay: 7400,
+  stroke: 1820,
+  book: 2280,
+  riffle: 2380,
+  write: 3050,
+  closeAfter: 1250,
+  relay: 8200,
 } as const;
 
-const ORDER_STEP = 24;
+const WRITE_STEP = 36;
 
 const esc = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
+/** Renglones de "texto" de manga: rayas de tinta de largo distinto. */
+const scribble = (n: number) =>
+  Array.from({ length: n }, () => `<i style="width:${Math.round(rand(55, 100))}%"></i>`).join("");
+
+/** Donde va el libro: al lado del Stand si hay sitio, si no debajo. */
+function placeBook(kit: IntroKit) {
+  const stand = kit.stage.querySelector(".hero-stand-core svg")?.getBoundingClientRect();
+  const { vw, vh } = kit;
+  const top = 84;
+  const roomLeft = (stand?.left ?? vw) - 28;
+  const roomRight = vw - (stand?.right ?? vw) - 28;
+  const side = Math.max(roomLeft, roomRight);
+  if (!kit.small && side >= 560) {
+    const height = Math.min(600, vh - top - 90);
+    const width = Math.min(side - 16, height * 1.45, 1000);
+    const left = roomLeft >= roomRight ? Math.max(16, roomLeft - width) : vw - roomRight + 12;
+    return { left, top: Math.max(top, (vh - height) / 2 - 10), width, height, spread: true };
+  }
+  const below = Math.max(top, (stand?.bottom ?? vh * 0.35) - 8);
+  const height = Math.min(520, vh - below - 76);
+  const width = Math.min(vw - 24, height * 0.78);
+  return { left: (vw - width) / 2, top: below, width, height, spread: false };
+}
+
 export const door: IntroDef = {
   start: T.open,
-  condense: 9300,
+  condense: 10400,
+  prepare() {
+    // La letra a mano, antes de que haga falta.
+    try {
+      const family = getComputedStyle(document.documentElement).getPropertyValue("--font-caveat").trim();
+      if (family) void document.fonts.load(`700 32px ${family}`).catch(() => {});
+    } catch {}
+  },
   run(kit) {
     const lines = kit.lines.door;
+    const order = pickLine(lines.orders);
     const fx = kit.fx("hd-fx");
+    const box = placeBook(kit);
+
     kit.frame("stand", { body: "point", face: "smug" });
     kit.lunge(0.05, 240);
     const hand0 = kit.hand("point");
     if (hand0) kit.shout("ヘブンズ・ドアー!", kit.vw / 2, hand0.y - kit.tall() * 0.6, "power-pop-word is-gold is-big", 1200);
 
-    // Donde va el libro: a la izquierda del Stand o debajo.
-    const place = () => {
-      const stand = kit.stage.querySelector(".hero-stand-core svg")?.getBoundingClientRect();
-      const name = kit.letters().map((el) => el.getBoundingClientRect());
-      const top = name.length ? Math.min(...name.map((r) => r.top)) : kit.vh * 0.25;
-      const bottom = name.length ? Math.max(...name.map((r) => r.bottom)) : kit.vh * 0.6;
-      const roomLeft = (stand?.left ?? kit.vw) - 24;
-      if (!kit.small && stand && roomLeft > 520) {
-        const width = Math.min(720, roomLeft - 16);
-        const height = 300;
-        return { left: Math.max(16, roomLeft - width), top: Math.max(96, (top + bottom) / 2 - height / 2), width, height };
-      }
-      const width = kit.vw - 32;
-      const below = (stand?.bottom ?? bottom) + 12;
-      return { left: 16, top: Math.max(96, Math.min(below, kit.vh - 330)), width, height: 300 };
-    };
-
-    // Un trazo de tinta en el aire, de la mano al centro del libro: el dibujante.
-    let box = place();
+    // El garabato en el aire: de la mano al centro del libro, en tres rizos.
     kit.at(T.stroke, () => {
-      box = place();
       const from = kit.hand("point");
       if (!from) return;
-      const x1 = box.left + box.width / 2;
-      const y1 = box.top + box.height / 2;
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("class", "hd-stroke");
       svg.setAttribute("width", String(kit.vw));
       svg.setAttribute("height", String(kit.vh));
-      const cx = (from.x + x1) / 2;
-      const cy = Math.min(from.y, y1) - 80;
-      svg.innerHTML = `<path pathLength="1" d="M${from.x.toFixed(0)} ${from.y.toFixed(0)} Q${cx.toFixed(0)} ${cy.toFixed(0)} ${x1.toFixed(0)} ${y1.toFixed(0)} L${x1.toFixed(0)} ${(y1 - box.height * 0.42).toFixed(0)} L${x1.toFixed(0)} ${(y1 + box.height * 0.42).toFixed(0)}"/>`;
+      const r = Math.min(box.width, box.height) * 0.16;
+      let d = `M${from.x.toFixed(0)} ${from.y.toFixed(0)}`;
+      for (let i = 1; i <= 3; i++) {
+        const t = i / 3;
+        const x = from.x + (cx - from.x) * t;
+        const y = from.y + (cy - from.y) * t;
+        d += ` C${(x - r * 1.4).toFixed(0)} ${(y - r * 1.6).toFixed(0)} ${(x + r * 1.5).toFixed(0)} ${(y - r * 1.2).toFixed(0)} ${x.toFixed(0)} ${y.toFixed(0)}`;
+      }
+      svg.innerHTML = `<path class="hd-stroke-ink" pathLength="1" d="${d}"/><path pathLength="1" d="${d}"/>`;
       fx.appendChild(svg);
-      const path = svg.querySelector("path")!;
-      kit.keep(path.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: 300, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "both" }));
-      kit.later(520, () => svg.remove());
+      for (const path of svg.querySelectorAll("path")) {
+        kit.keep(path.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: 380, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "both" }));
+      }
+      pop("シュッ", Math.min(kit.vw - 60, cx + 40), Math.max(110, cy - r * 2), "power-pop-word is-gold", 700);
+      kit.later(560, () => svg.classList.add("is-leaving"));
+      kit.later(900, () => svg.remove());
     });
 
-    // El libro: dos hojas que se abren como puertas desde el trazo.
-    let order: HTMLElement | null = null;
+    // El libro: la pantalla se abre en paginas que pasan solas.
     let book: HTMLElement | null = null;
+    let ink: HTMLElement | null = null;
     kit.at(T.book, () => {
+      fx.classList.add("is-dim");
       book = document.createElement("div");
-      book.className = "hd-book";
-      Object.assign(book.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, minHeight: `${box.height}px` });
-      book.innerHTML =
-        `<div class="hd-page is-left"><span class="hd-head">${esc(lines.rows[0][1].split(" · ")[0])}</span>` +
-        `<dl class="hd-rows">${lines.rows.map(([k, v]) => `<div class="hd-row"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></div>` +
-        `<div class="hd-page is-right"><span class="hd-head is-order">${esc(lines.orderLabel)}</span>` +
-        `<p class="hd-order"><span class="hd-ink"></span><i class="hd-nib"></i></p><span class="hd-sign">ヘブンズ・ドアー</span></div>`;
+      book.className = box.spread ? "hd-book is-spread" : "hd-book";
+      Object.assign(book.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` });
+      const life =
+        `<div class="hd-page is-life">` +
+        `<span class="hd-folio">${esc(lines.lifeLabel)}</span>` +
+        `<div class="hd-grid is-life">` +
+        `<div class="hd-panel is-tone"><span class="hd-lines">${scribble(7)}</span></div>` +
+        `<div class="hd-panel is-speed"><b class="hd-sfx">ドドド</b></div>` +
+        `<div class="hd-panel is-wide"><span class="hd-lines">${scribble(9)}</span></div>` +
+        `<div class="hd-panel"><span class="hd-lines">${scribble(5)}</span></div>` +
+        `<div class="hd-panel is-tone is-dark"><span class="hd-lines">${scribble(5)}</span></div>` +
+        `</div></div>`;
+      const orderPage =
+        `<div class="hd-page is-order">` +
+        `<span class="hd-folio">${esc(lines.orderLabel)}</span>` +
+        `<div class="hd-grid is-order">` +
+        `<div class="hd-panel is-speed is-small"><b class="hd-sfx is-gold">ヘブンズ・ドアー</b></div>` +
+        `<div class="hd-panel is-tone is-small"><b class="hd-sfx">カキカキ</b></div>` +
+        `<div class="hd-panel is-big"><p class="hd-balloon"><span class="hd-text"><span class="hd-ink"></span><i class="hd-nib"></i></span>` +
+        `<svg class="hd-under" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M2 6 Q30 2 55 6 T98 4"/></svg></p>` +
+        `<span class="hd-seal">${esc(lines.seal)}</span></div>` +
+        `</div></div>`;
+      book.innerHTML = (box.spread ? life : "") + orderPage + `<div class="hd-leaves"></div>`;
       fx.appendChild(book);
-      order = book.querySelector<HTMLElement>(".hd-ink");
-      pop("バッ", box.left + box.width / 2, box.top - 8, "power-pop-word is-gold", 700);
+      ink = book.querySelector<HTMLElement>(".hd-ink");
+      kit.keep(
+        book.animate(
+          [
+            { scale: "0.2 0.02", opacity: 0 },
+            { scale: "1 0.04", opacity: 1, offset: 0.35 },
+            { scale: "1", opacity: 1 },
+          ],
+          { duration: 360, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "backwards" },
+        ),
+      );
+      kit.shake(kit.small ? 4 : 7, 260);
+      playSfx("thud");
+      pop("バララッ", box.left + box.width * 0.8, Math.max(100, box.top - 6), "power-pop-word is-gold is-big", 900);
     });
 
-    // La ficha, renglon por renglon.
-    lines.rows.forEach((_, i) => {
-      kit.at(T.rows + i * T.rowStep, () => book?.querySelectorAll(".hd-row")[i]?.classList.add("is-on"));
-    });
-
-    // La orden: el Stand la escribe en la otra hoja, a ti.
-    const done = T.order + lines.order.length * ORDER_STEP;
-    kit.at(T.order, () => {
-      kit.frame("stand", { body: "point", face: "laugh" });
-      if (order) kit.onCleanup(typeInto(order, lines.order, ORDER_STEP));
-    });
-    kit.at(done + 120, () => {
-      book?.querySelector(".hd-order")?.classList.add("is-signed");
-      kit.frame("stand", { body: "high", face: "smug" });
-      if (book) {
-        const r = book.getBoundingClientRect();
-        kit.shout("ドン!", r.left + r.width * 0.75, r.top + r.height * 0.62, "power-pop-word is-gold is-big", 900);
+    // Las paginas pasan a toda velocidad (riffle), de derecha a izquierda.
+    kit.at(T.riffle, () => {
+      const leaves = book?.querySelector<HTMLElement>(".hd-leaves");
+      if (!leaves) return;
+      const count = kit.small ? 6 : 9;
+      for (let i = 0; i < count; i++) {
+        const leaf = document.createElement("span");
+        leaf.className = "hd-leaf";
+        leaf.innerHTML = `<span class="hd-lines">${scribble(10)}</span>`;
+        leaves.appendChild(leaf);
+        kit.keep(
+          leaf.animate(
+            [
+              { transform: "rotateY(0deg)", filter: "brightness(1)" },
+              { transform: "rotateY(-90deg)", filter: "brightness(0.75)", offset: 0.5 },
+              { transform: "rotateY(-180deg)", filter: "brightness(1)" },
+            ],
+            { duration: 300, delay: i * 55, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "both" },
+          ),
+        ).onfinish = () => leaf.remove();
       }
     });
-    kit.at(done + 700, () => book?.classList.add("is-closing"));
-    kit.at(done + 700 + T.closeAfter, () => {
+
+    // La orden, a mano, letra por letra; la pluma va delante.
+    let written = 0;
+    kit.at(T.write, () => {
+      kit.frame("stand", { body: "point", face: "laugh" });
+      if (!ink) return;
+      const target = ink;
+      const chars = Array.from(order);
+      const timer = window.setInterval(() => {
+        written += 1;
+        target.textContent = chars.slice(0, written).join("");
+        if (written % 14 === 1) {
+          const r = target.getBoundingClientRect();
+          pop(written % 28 === 1 ? "カキッ" : "カリカリ", Math.min(kit.vw - 50, r.right + 10), Math.max(100, r.top - 24), "power-pop-word is-gold", 520);
+        }
+        if (written >= chars.length) window.clearInterval(timer);
+      }, WRITE_STEP);
+      kit.onCleanup(() => window.clearInterval(timer));
+    });
+
+    const done = T.write + Array.from(order).length * WRITE_STEP + 140;
+    // Subrayado de un trazo y el sello: ドン.
+    kit.at(done, () => book?.classList.add("is-signed"));
+    kit.at(done + 380, () => {
+      book?.classList.add("is-sealed");
+      kit.frame("stand", { body: "high", face: "smug" });
+      const seal = book?.querySelector(".hd-seal")?.getBoundingClientRect();
+      if (seal) kit.shout("ドン!", seal.right + 40, seal.top + 10, "power-pop-word is-gold is-big", 900);
+      kit.shake(kit.small ? 5 : 8, 280);
+      playSfx("thud");
+    });
+
+    // Se rie y el libro se cierra: las paginas pasan al reves y se va.
+    const close = done + 380 + T.closeAfter;
+    kit.at(close, () => {
+      book?.classList.add("is-closing");
+      kit.frame("stand", { body: "idle", face: "laugh" });
+      if (book) {
+        const b = book;
+        kit.tween(
+          420,
+          (t) => {
+            b.style.scale = `${1 - t * 0.12} ${1 - t * 0.98}`;
+            b.style.opacity = String(1 - t * t);
+          },
+          ease.in,
+        );
+      }
+      kit.later(260, () => fx.classList.remove("is-dim"));
+    });
+    kit.at(close + 520, () => {
       fx.classList.add("is-leaving");
       kit.frame("stand", { face: "wink" });
-      kit.talk(pickLine(lines.done), 1000);
+      kit.talk(pickLine(lines.done), 1100);
     });
-    kit.at(Math.max(T.relay, done + 2300), kit.relay);
+    kit.at(Math.min(9600, Math.max(T.relay, close + 1900)), kit.relay);
   },
 };

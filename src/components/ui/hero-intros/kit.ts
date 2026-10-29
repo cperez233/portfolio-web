@@ -22,6 +22,14 @@ export interface IntroKit {
   onCleanup(fn: () => void): void;
   /** Capa fija para efectos (sigue viva con el tiempo detenido). */
   fx(className?: string): HTMLElement;
+  /**
+   * Capa dentro del hero, delante del nombre y detras del retrato y del
+   * Stand (que siguen a la vista). Mide la ventana: sus hijos van en px
+   * de la ventana, como en fx.
+   */
+  behind(className?: string): HTMLElement;
+  /** Corre `step(t)` cada cuadro durante `ms` (t de 0 a 1, ya suavizado); se corta al saltar. */
+  tween(ms: number, step: (t: number) => void, ease?: (t: number) => number): void;
 
   /** Cambia el cuadro del Stand grande. */
   frame(name: Frame, extra?: { body?: Body; face?: Face }): void;
@@ -96,6 +104,15 @@ export function typeInto(el: HTMLElement, text: string, step: number, onDone?: (
   }, step);
   return () => window.clearInterval(timer);
 }
+
+/** Curvas para tween. */
+export const ease = {
+  linear: (t: number) => t,
+  out: (t: number) => 1 - (1 - t) ** 3,
+  in: (t: number) => t ** 3,
+  inOut: (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2),
+  back: (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2,
+};
 
 /** Sustituye {n} en una frase. */
 export const fill = (text: string, n: number | string) => text.replace(/\{n\}/g, String(n));

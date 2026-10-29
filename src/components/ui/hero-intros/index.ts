@@ -4,7 +4,7 @@ import type { IntroDef } from "./kit";
 import { crimson } from "./crimson";
 import { dust } from "./dust";
 import { gold } from "./gold";
-import { finger } from "./finger";
+import { zipper } from "./zipper";
 import { echoes } from "./echoes";
 import { tbc } from "./tbc";
 import { door } from "./door";
@@ -18,4 +18,4 @@ export { finishEntrance } from "./entrance";
   WARUDO (las dos primeras) siguen en portfolio-hero.tsx: comparten mas
   con el efecto del relevo (el vidrio, el tiempo detenido).
 */
-export const INTROS = { crimson, dust, gold, finger, echoes, tbc, door } satisfies Record<string, IntroDef>;
+export const INTROS = { crimson, dust, gold, zipper, echoes, tbc, door } satisfies Record<string, IntroDef>;

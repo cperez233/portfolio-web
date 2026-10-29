@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Anton, Archivo, Dela_Gothic_One, Fira_Code } from "next/font/google";
+import { Anton, Archivo, Caveat, Dela_Gothic_One, Fira_Code } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { dictionaries, type Language } from "@/data/content";
 import { LanguageProvider } from "@/lib/language";
@@ -46,6 +46,18 @@ const delaGothic = Dela_Gothic_One({
   variable: "--font-dela",
   weight: "400",
   subsets: ["latin"],
+  preload: false,
+});
+
+/*
+  Letra a mano: la orden que Heaven's Door escribe en la pagina de manga
+  (hero-intros/door.ts). preload false: solo la baja quien ve esa entrada,
+  y la entrada la pide antes de empezar a escribir.
+*/
+const caveat = Caveat({
+  variable: "--font-caveat",
+  weight: "700",
+  subsets: ["latin", "latin-ext"],
   preload: false,
 });
 
@@ -178,7 +190,7 @@ export function RootShell({
     <html
       lang={language}
       suppressHydrationWarning
-      className={`dark ${archivo.variable} ${anton.variable} ${delaGothic.variable} ${firaCode.variable} h-full antialiased`}
+      className={`dark ${archivo.variable} ${anton.variable} ${delaGothic.variable} ${caveat.variable} ${firaCode.variable} h-full antialiased`}
     >
       {/* La regla asume que <head> solo aparece en app/layout.tsx; este
           componente ES el layout raiz, compartido por los dos idiomas. */}

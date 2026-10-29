@@ -91,7 +91,7 @@ const INTRO_FACES: Record<string, [Action, string]> = {
   crimson: ["smug", "…!"],
   dust: ["wink", "?!"],
   gold: ["blush", "♪"],
-  finger: ["smug", "✦"],
+  zipper: ["wink", "ジッ"],
   echoes: ["sweat", "ふぅ"],
   tbc: ["pose", "ゴゴゴ"],
   door: ["laugh", "フフフ"],

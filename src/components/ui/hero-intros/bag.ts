@@ -12,7 +12,7 @@
 
   `?intro=crimson` (o cualquier id) fuerza una, para verlas o probarlas.
 */
-export const INTRO_IDS = ["diamond", "world", "crimson", "dust", "gold", "finger", "echoes", "tbc", "door"] as const;
+export const INTRO_IDS = ["diamond", "world", "crimson", "dust", "gold", "zipper", "echoes", "tbc", "door"] as const;
 export type IntroId = (typeof INTRO_IDS)[number];
 
 const BAG_KEY = "jojo-intro-bag";

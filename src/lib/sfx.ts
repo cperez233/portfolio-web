@@ -14,7 +14,7 @@
  * Todo suena bajito (master 0.35) y ningun sonido dura mas de ~1.2s.
  */
 
-export type Sfx = "crack" | "heal" | "thud" | "warudo" | "resume";
+export type Sfx = "crack" | "heal" | "thud" | "warudo" | "resume" | "zip" | "boom" | "rewind";
 
 const KEY = "jojo-sound";
 
@@ -144,6 +144,36 @@ export function playSfx(kind: Sfx) {
   } else if (kind === "warudo") {
     tone(audio, now, 520, 46, 0.7, 0.55, "sawtooth");
     tone(audio, now + 0.02, 90, 36, 0.45, 0.9);
+  } else if (kind === "zip") {
+    // Cierre: ruido que sube de tono, a dientes.
+    const source = noise(audio, 0.6);
+    const filter = audio.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.Q.value = 6;
+    filter.frequency.setValueAtTime(900, now);
+    filter.frequency.exponentialRampToValueAtTime(3800, now + 0.55);
+    const teeth = audio.createGain();
+    for (let i = 0; i < 26; i++) teeth.gain.setValueAtTime(i % 2 ? 0.15 : 1, now + i * 0.022);
+    source.connect(filter);
+    filter.connect(teeth);
+    teeth.connect(envelope(audio, now, 0.6, 0.6));
+    source.start(now);
+    source.stop(now + 0.6);
+  } else if (kind === "boom") {
+    tone(audio, now, 90, 28, 0.9, 1);
+    const source = noise(audio, 1);
+    const filter = audio.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(2400, now);
+    filter.frequency.exponentialRampToValueAtTime(140, now + 0.9);
+    source.connect(filter);
+    filter.connect(envelope(audio, now, 0.9, 1));
+    source.start(now);
+    source.stop(now + 1);
+  } else if (kind === "rewind") {
+    // Cinta al reves: barrido que baja, con trino.
+    tone(audio, now, 1400, 180, 1.1, 0.22, "sawtooth");
+    tone(audio, now + 0.05, 900, 120, 1.05, 0.18, "square");
   } else {
     tick(audio, now, 0.55, 5200);
     tick(audio, now + 0.16, 0.4, 4400);

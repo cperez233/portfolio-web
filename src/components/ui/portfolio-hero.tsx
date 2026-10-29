@@ -81,7 +81,7 @@ function SlamText({ text, start, step, className = "" }: SlamTextProps) {
           repetir hasta que salgan todas (hero-intros/bag.ts). Dos viven
           aqui (DIAMOND / WORLD); las otras siete, cada una en su archivo
           de hero-intros/ (King Crimson, Bites the Dust, Gold Experience,
-          Star Finger, Echoes ACT 3, To Be Continued y Heaven's Door):
+          Sticky Fingers, Echoes ACT 3, To Be Continued y Heaven's Door):
           · Crazy Diamond: rompe la cuarta pared. Le pega a la pantalla
             misma con una rafaga ドラララ: cada puno sale de el, crece hacia
             quien mira y choca contra el vidrio, que se agrieta donde pega.
@@ -866,7 +866,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       if (svg) svg.style.scale = "";
     };
 
-    // Lo que cada entrada de hero-intros/ pide deshacer (sus clases, el h1 de Star Finger...).
+    // Lo que cada entrada de hero-intros/ pide deshacer (sus clases, sus capas, sus animaciones...).
     const cleanups: (() => void)[] = [];
     const runCleanups = () =>
       cleanups.splice(0).forEach((fn) => {
@@ -1023,6 +1023,31 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         const node = fxLayer();
         if (className) node.classList.add(...className.split(" "));
         return node;
+      },
+      behind: (className) => {
+        const wrap = portraitRef.current?.closest(".hero-paste")?.parentElement;
+        const box = wrap?.parentElement;
+        const node = document.createElement("div");
+        node.className = className ? `hero-behind ${className}` : "hero-behind";
+        node.setAttribute("aria-hidden", "true");
+        if (!wrap || !box) return kit.fx(className);
+        // Mide la ventana aunque viva dentro del hero: se corre lo que el hero se corre.
+        const r = box.getBoundingClientRect();
+        Object.assign(node.style, { left: `${-r.left}px`, top: `${-r.top}px`, width: `${vw}px`, height: `${vh}px` });
+        box.insertBefore(node, wrap);
+        layers.push(node);
+        return node;
+      },
+      tween: (ms, step, curve = (t) => t) => {
+        const t0 = performance.now();
+        let id = 0;
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - t0) / ms);
+          step(curve(t));
+          if (t < 1) id = requestAnimationFrame(tick);
+        };
+        id = requestAnimationFrame(tick);
+        cleanups.push(() => cancelAnimationFrame(id));
       },
       frame,
       heart,

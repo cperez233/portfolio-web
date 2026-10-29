@@ -444,7 +444,7 @@ const FROG = `<svg viewBox="0 0 80 66" width="120" height="99"><g ${INK} stroke-
   <path d="M27 12 Q31 11 33 14" stroke="#b6eda0" stroke-width="2" fill="none" stroke-linecap="round"/>
 </svg>`;
 
-const BUTTERFLY = (id: string, a: string, b: string) =>
+export const BUTTERFLY = (id: string, a: string, b: string) =>
   `<svg viewBox="0 0 60 48" width="62" height="50"><defs><radialGradient id="${id}" cx="0.5" cy="0.5" r="0.6"><stop offset="0.25" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></radialGradient></defs>
   <g class="wing-l"><path d="M30 22 Q20 2 6 4 Q-2 8 6 20 Q12 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q14 28 10 38 Q12 46 22 40 Q28 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="13" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="18" cy="36" r="2" fill="#161418"/><path d="M29 22 L12 9 M29 23 L8 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>
   <g class="wing-r"><path d="M30 22 Q40 2 54 4 Q62 8 54 20 Q48 26 30 24Z" fill="url(#${id})" ${INK} stroke-width="2.2"/><path d="M30 25 Q46 28 50 38 Q48 46 38 40 Q32 34 30 26Z" fill="${a}" ${INK} stroke-width="2.2"/><circle cx="47" cy="12" r="3" fill="#fbf7ec" stroke="#161418" stroke-width="1.5"/><circle cx="42" cy="36" r="2" fill="#161418"/><path d="M31 22 L48 9 M31 23 L52 17" stroke="#161418" stroke-width="1" opacity=".55"/></g>

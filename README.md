@@ -227,7 +227,7 @@ The render loop stops off-screen.
   one per visit, picked at random from a bag in `localStorage` so none
   repeats until all nine have played (and never the same one twice in a
   row across bags; `ui/hero-intros/bag.ts`). Force one with
-  `?intro=diamond`, `world`, `crimson`, `dust`, `gold`, `finger`,
+  `?intro=diamond`, `world`, `crimson`, `dust`, `gold`, `zipper`,
   `echoes`, `tbc` or `door`. A "Skip intro" plate (bottom right, also
   `Esc`, and it works while time is stopped) cuts everything, leaves the
   CSS entrance on its last frame and hands over to the mini Stand, which
@@ -260,35 +260,63 @@ The render loop stops off-screen.
   - The other seven live in `ui/hero-intros/`, one file each, and only
     use the `IntroKit` the hero effect lends them (the Stand's clock,
     frames, bubble, effect layers and the handover):
-    - **King Crimson** (`crimson.ts`): the Stand starts a painfully formal
-      speech ("slide 1 of 47") with an editor timeline crawling at the
-      bottom. キング・クリムゾン: two crimson frames (結果だけだ!!), the boring
-      clip is ripple-deleted from the timeline, and the Stand is already
-      posing somewhere else. Then the summary: systems engineer and
-      content creator.
+    - **King Crimson** (`crimson.ts`): a huge loading meter in the middle
+      of the screen, "Loading Cris…", crawling through three hours.
+      Epitaph flashes a frame of the future (the meter at 100%), then
+      キング・クリムゾン: time is erased across the whole screen. The page
+      falls into a crimson void where only the Stand moves; the name, the
+      portrait and the copy become ghosts trailing what "would have
+      happened", and the meter's missing frames shatter and fall. Time
+      snaps back with the meter already full (結果だけだ): systems engineer
+      and content creator.
     - **Bites the Dust** (`dust.ts`): Killer Queen flies from its hand to
-      a letter, カチッ, the name explodes, and the tape rewinds for real:
-      the letters fly back and the whole CSS entrance plays backwards
-      (`entrance.ts`, negative playback rate) and then again. Déjà vu.
-    - **Gold Experience** (`gold.ts`): a golden wave turns the letters to
-      wood; branches draw themselves out of them with leaves and flowers,
-      a ladybug walks along CRISTIAN, the flowers shed hearts (the likes)
-      and everything withers back into text.
-    - **Star Finger** (`finger.ts`): the h1 isn't written yet. The finger
-      stretches to it and types it letter by letter, ending with a ドン
-      on the full stop. The typed text is an overlay; the real h1 stays
-      in place (transparent), so readers and crawlers are unaffected.
-    - **Echoes ACT 3** (`echoes.ts`): 3 FREEZE. CRISTIAN gets so heavy it
-      falls onto PÉREZ, which gets squashed (ズン, cracked floor), and the
-      Stand lifts it back up, sweating (ヨイショ).
-    - **To Be Continued** (`tbc.ts`): a big pose, sepia freeze frame with
-      the arrow, then the next episode's title card (第N話, N being your
-      visit number: name, "systems engineer and content creator") and
-      the page starts over as the new episode.
-    - **Heaven's Door** (`door.ts`): the Stand draws a line in the air
-      that opens into a book: Cris's profile on one page and, on the
-      other, the order it writes on you: you will remember that Cris is
-      a systems engineer and a content creator.
+      the portrait (すでに触っている…), カチッ, and the explosion takes the
+      page: an impact frame, a spiked burst, an inked smoke cloud,
+      debris, and the letters, the portrait, the copy, the buttons and
+      the nav all blown away. バイツァ・ダスト: the tape rewinds like a VHS
+      (tracking noise, a counter going down, a big clock spinning
+      backwards), everything flies back in jolts, and the whole CSS
+      entrance plays backwards (`entrance.ts`) and then again. Déjà vu.
+    - **Gold Experience** (`gold.ts`): a 無駄無駄 rush on the name and a
+      無駄ァ! finisher; a golden wave turns the letters into real wood
+      (stretched `feTurbulence` grain clipped to the glyphs), a tree
+      bursts out of the punched letter across the page with leaves and
+      flowers, the hero's buttons become butterflies (like Giorno's
+      banknotes) and the flowers shed hearts. Then it all goes back:
+      butterflies into buttons, falling leaves, branches retracting.
+    - **Sticky Fingers** (`zipper.ts`), which replaced Star Finger (a
+      single finger poke can't fill a screen; it was a typewriter effect,
+      not a scene): the Stand punches the screen and a zipper appears
+      edge to edge (ジッ); the pull runs across it and the page opens like
+      a jacket. Inside is what you don't see: the same name as a
+      wireframe with boxes, guides and measurements, and the code that
+      builds it. Design outside, engineering inside. アリアリ, it zips it
+      shut and says アリーヴェデルチ.
+    - **Echoes ACT 3** (`echoes.ts`): 3 FREEZE makes everything heavy.
+      CRISTIAN crushes PÉREZ into a crater, the portrait drops on top, and
+      the copy, the buttons and even the nav crash to the bottom of the
+      screen; an impact frame, cracks across the floor and dust. The
+      Stand lifts it all back up, sweating (ヨイショ).
+    - **To Be Continued** (`tbc.ts`): a dramatic pose, then the freeze
+      frame: sepia, grain, film scratches, a slow push-in, and the arrow
+      sliding in. The ending credits roll over the still frame (nearly
+      every credit is Cris: engineering, design, video, content), ending
+      on the next episode, 第N話 (your next visit). Colour comes back with
+      a wipe behind the departing arrow, with no cut. Roundabout is not
+      bundled (no license for the recording): set
+      `NEXT_PUBLIC_ROUNDABOUT_URL` to an audio file you can use and
+      `NEXT_PUBLIC_ROUNDABOUT_CUE` to the second that should land on the
+      freeze; it plays only with the site's sound on and once the browser
+      allows audio.
+    - **Heaven's Door** (`door.ts`): the Stand scribbles in the air and
+      the screen opens into a book whose pages riffle past; it settles
+      on a manga spread (your "life" page, then panels, screentone, speed
+      lines and a speech balloon) where the Stand handwrites an order in
+      the balloon (Caveat), picked at random: "You will buy a website, an
+      app, or several", "You will remember Cris is a systems engineer and
+      content creator"… Underline, seal (ドン), a laugh, and the book
+      closes. One page on phones, a spread on desktop, never over the
+      Stand.
   - Either way, after the handover the mini Stand closes with a line
     about what just happened and, a few seconds later, greets you
     (`jojo:intro` events, handled in `mini-stand/mini-stand.tsx`; lines
