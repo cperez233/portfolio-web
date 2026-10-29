@@ -917,9 +917,9 @@ export const standLines: Record<Language, StandLines> = {
         say: ["Gold Experience. ¡Vida!", "Yo, Giorno… no. Pero casi."],
         done: ["La página está viva. De verdad.", "Vida para todos."],
         variants: {
-          garden: { say: ["Gold Experience. ¡Vida!", "¡Que florezca todo!"], done: ["Mariquitas incluidas. De nada.", "Primavera instantánea."] },
+          garden: { say: ["Gold Experience. ¡Vida!", "¡Que florezca todo!"], done: ["Brotó vida por todas partes.", "Primavera instantánea."] },
           tree: { say: ["Gold Experience… ¡un árbol!", "¡Crece!"], done: ["Un árbol entero. Fotosíntesis.", "Ese árbol ya da sombra."] },
-          frog: { say: ["Esa caja… ¡será una rana!", "Gold Experience. ¡Ribbit!"], done: ["Era una caja. Ahora salta.", "La rana volvió a ser caja. Tranquilo."] },
+          frog: { say: ["Eso de ahí… ¡será una rana!", "Gold Experience. ¡Ribbit!"], done: ["Era parte de la página. Ahora salta.", "La rana volvió a su sitio. Tranquilo."] },
           butterflies: { say: ["¡Mariposas! Vida pura.", "Gold Experience… ¡a volar!"], done: ["Se fueron volando, libres.", "Pura vida, ¿no?"] },
           snake: { say: ["Ese título… ¡serpiente!", "Gold Experience. Sssss."], done: ["Volvió a ser título. Ufff.", "No muerde. Creo."] },
         },
@@ -959,6 +959,10 @@ export const standLines: Record<Language, StandLines> = {
         jp: "負けて死ね",
         say: ["Killer Queen… ¡Daisan no bakudan!", "Killer Queen… ¡Bites the Dust!"],
         done: ["El tiempo retrocedió. Nadie lo notó.", "¿Déjà vu? Normal.", "Another one bites the dust."],
+        variants: {
+          bomb: { say: ["Killer Queen ya tocó algo…", "Eso de ahí es una bomba."], done: ["Explotó. Y no pasó nada.", "Ctrl+Z, con explosión incluida."] },
+          rewind: { say: ["Killer Queen… ¡Bites the Dust!", "¡Daisan no bakudan!"], done: ["El tiempo retrocedió. Nadie lo notó.", "¿Déjà vu? Normal."] },
+        },
       },
       kingcrimson: {
         name: "King Crimson",
@@ -1719,9 +1723,9 @@ export const standLines: Record<Language, StandLines> = {
         say: ["Gold Experience. Life!", "I, Giorno… no. But close."],
         done: ["The page is alive. Really.", "Life for everyone."],
         variants: {
-          garden: { say: ["Gold Experience. Life!", "Let it all bloom!"], done: ["Ladybugs included. You're welcome.", "Instant spring."] },
+          garden: { say: ["Gold Experience. Life!", "Let it all bloom!"], done: ["Life sprouted everywhere.", "Instant spring."] },
           tree: { say: ["Gold Experience… a tree!", "Grow!"], done: ["A whole tree. Photosynthesis.", "That tree gives shade already."] },
-          frog: { say: ["That box… will be a frog!", "Gold Experience. Ribbit!"], done: ["It was a box. Now it hops.", "The frog is a box again. Relax."] },
+          frog: { say: ["That thing… will be a frog!", "Gold Experience. Ribbit!"], done: ["It was part of the page. Now it hops.", "The frog is back in place. Relax."] },
           butterflies: { say: ["Butterflies! Pure life.", "Gold Experience… fly!"], done: ["They flew away, free.", "Pure life, huh?"] },
           snake: { say: ["That title… a snake!", "Gold Experience. Sssss."], done: ["A title again. Phew.", "It doesn't bite. I think."] },
         },
@@ -1761,6 +1765,10 @@ export const standLines: Record<Language, StandLines> = {
         jp: "負けて死ね",
         say: ["Killer Queen… Daisan no bakudan!", "Killer Queen… Bites the Dust!"],
         done: ["Time went back. Nobody noticed.", "Déjà vu? Normal.", "Another one bites the dust."],
+        variants: {
+          bomb: { say: ["Killer Queen already touched something…", "That thing there is a bomb."], done: ["It blew up. And nothing happened.", "Ctrl+Z, explosion included."] },
+          rewind: { say: ["Killer Queen… Bites the Dust!", "Daisan no bakudan!"], done: ["Time went back. Nobody noticed.", "Déjà vu? Normal."] },
+        },
       },
       kingcrimson: {
         name: "King Crimson",

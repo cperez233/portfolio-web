@@ -173,16 +173,22 @@ The render loop stops off-screen.
   see below), Star Platinum (ORA rush onto a card, Star Finger, or The
   World with punches that land when time resumes), Crazy Diamond
   (shatters every piece on screen, sampled on a grid so boxes break too,
-  then repairs them one by one), Gold Experience (a golden burst of life, then a garden, a swaying tree growing
-  from the bottom, a card turning into a frog, butterflies, or a title
-  turning into a snake), Echoes (ACT 1 sounds that shake what they touch,
+  then repairs them one by one), Gold Experience (a golden burst of life,
+  then one of: sprigs sprouting from what is on screen, a tree growing
+  from the bottom with flowers and golden fruit, a piece of the page
+  turning into a frog, butterflies, or any title, the hero's included,
+  with a snake slithering under it; all painted like the intro's tree,
+  from `hero-intros/gold-art.ts`, with no ink outline), Echoes (ACT 1 sounds that shake what they touch,
   ACT 2 stickers you tap, ACT 3 FREEZE), Soft & Wet (bubbles that steal a
   title's colour or a whole image until you pop them), Hermit Purple
   (thorny vines and a developing spirit photo with your visit), Made in
   Heaven (animations up to 14x, day and night flashing, then the universe
   starts resetting to the old burgundy site until the Stand stops it),
-  Bites the Dust (Killer Queen into an eye, カチッ, explosion, the page
-  rewinding in jolts with every loop running backwards, and a déjà vu)
+  Bites the Dust (two random forms: a bomb, where something near the
+  Stand blows up with the hero's explosion, the pieces around it fly off
+  and come back one by one to their dashed slots as the explosion
+  swallows itself; or the rewind, where カチッ and the page jolts back
+  up in VHS tape with every loop running backwards, and a déjà vu)
   and King Crimson. All visual, nothing is removed, one at a time.
   Every random line comes from `pick.ts`: none of the last 3 picks of a
   list comes back until a fourth one has been said.

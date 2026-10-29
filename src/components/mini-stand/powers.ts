@@ -5,6 +5,7 @@ import { stopTime } from "@/lib/time-stop";
 import { playSfx } from "@/lib/sfx";
 import { createGlass } from "@/components/ui/hero-crack";
 import { grow, paint, svgEl, type Limb, type Painted } from "@/components/ui/hero-intros/gold-art";
+import { BOOM_MS, PRIME_MS, createBoom } from "@/components/ui/hero-intros/boom";
 import {
   centerTarget,
   layer,
@@ -57,6 +58,7 @@ export interface PowerContext {
 export const POWER_VARIANTS: Partial<Record<PowerId, string[]>> = {
   starplatinum: ["rush", "finger", "world"],
   goldexperience: ["garden", "tree", "frog", "butterflies", "snake"],
+  bitesthedust: ["bomb", "rewind"],
   echoes: ["act1", "act2", "act3"],
 };
 
@@ -619,8 +621,8 @@ async function geFrog(ctx: PowerContext) {
     return r.width * r.height > 6000 && r.width * r.height < 200000;
   });
   const target = candidates[Math.floor(Math.random() * candidates.length)] ?? centerTarget();
-  if (!target) return geGarden(ctx);
-  const r = target.getBoundingClientRect();
+  // Sin nada que convertir, la rana sale igual, de al lado del Stand.
+  const r = target?.getBoundingClientRect() ?? new DOMRect(ctx.x - 40, ctx.y - 30, 80, 60);
   const node = layer("power-ge", true);
   const frog = document.createElement("span");
   frog.className = "power-frog";
@@ -630,7 +632,7 @@ async function geFrog(ctx: PowerContext) {
   frog.style.transform = `translate(${fx}px, ${fy}px)`;
   try {
     lifeBurst(fx, fy, 1.3);
-    target.classList.add("power-ge-morph");
+    target?.classList.add("power-ge-morph");
     await wait(450);
     node.appendChild(frog);
     pop("ケロッ", fx + 40, fy - 60, "power-pop-word is-green", 800);
@@ -660,11 +662,11 @@ async function geFrog(ctx: PowerContext) {
     }
     frog.classList.add("is-leaving");
     lifeBurst(fx, fy, 1);
-    target.classList.remove("power-ge-morph");
-    target.classList.add("power-healed-soft");
+    target?.classList.remove("power-ge-morph");
+    target?.classList.add("power-healed-soft");
     await wait(600);
   } finally {
-    target.classList.remove("power-ge-morph", "power-healed-soft");
+    target?.classList.remove("power-ge-morph", "power-healed-soft");
     node.remove();
   }
 }
@@ -708,7 +710,8 @@ async function geButterflies(ctx: PowerContext) {
 
 /** Un titulo se vuelve serpiente: ondula y una serpiente lo cruza. */
 async function geSnake(ctx: PowerContext) {
-  const target = onScreen("main h2, main h3, footer h2", 1)[0];
+  // Cualquier titulo a la vista, tambien el del hero (arriba de todo no hay h2).
+  const target = onScreen("main h1, main h2, main h3, footer h2, main dt", 1)[0];
   if (!target) return geButterflies(ctx);
   const r = target.getBoundingClientRect();
   const node = layer("power-ge", true);
@@ -1174,43 +1177,222 @@ async function madeInHeaven(ctx: PowerContext) {
 /* Bites the Dust                                                      */
 /* ------------------------------------------------------------------ */
 
-export const KILLER_QUEEN = `<svg viewBox="0 0 48 48" width="48" height="48"><g stroke="#161418" stroke-width="3" stroke-linejoin="round"><path d="M8 20 L6 4 L18 12Z M40 20 L42 4 L30 12Z" fill="#e891c4"/><circle cx="24" cy="24" r="17" fill="#e891c4"/><path d="M12 30 Q24 44 36 30" fill="#ece6d8"/></g><path d="M15 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 M25 21 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="#161418"/><path d="M22 27 l2 3 l2 -3Z" fill="#161418"/><path d="M17 33 v4 M21 34 v4 M25 34 v4 M29 33 v4" stroke="#161418" stroke-width="2"/></svg>`;
+/** La cinta de VHS rebobinando, como en la intro (CSS .btd-tape). */
+function btdTape(seconds: number) {
+  const tape = layer("power-btd-bomb btd-tape", true);
+  tape.innerHTML =
+    `<span class="btd-lines"></span><span class="btd-track"></span>` +
+    `<span class="btd-osd"><b>◀◀ REW</b><i>00:00:${String(seconds).padStart(2, "0")}</i></span>` +
+    `<span class="btd-title">BITES THE DUST</span>`;
+  return tape;
+}
+
+/** Cuadro de impacto: destello y negativo, dos cuadros. */
+function btdFlash() {
+  const flash = layer("power-btd-bomb dust-flash", true);
+  window.setTimeout(() => flash.remove(), 170);
+}
+
+/** Bites the Dust: dos formas, al azar (POWER_VARIANTS). */
+async function bitesTheDust(ctx: PowerContext) {
+  if (ctx.variant === "bomb") return btdBomb(ctx);
+  return btdRewind(ctx);
+}
 
 /**
- * Bites the Dust, como en la Parte 4: Killer Queen (en chiquito) entra
- * en un ojo, "カチッ", explota, y el tiempo se rebobina: la pantalla va
- * para atras a tirones, con el reloj girando al reves y las animaciones
- * de la pagina corriendo hacia atras, hasta donde estabas hace un rato.
- * Al volver, el Stand repite lo que habia dicho (deja vu).
+ * La bomba, como la entrada del hero (hero-intros/dust.ts): Killer Queen
+ * ya toco algo de la pagina cerca del Stand (すでに触っている…), カチッ, y
+ * eso explota (boom.ts): lo de alrededor sale volando. バイツァ・ダスト y
+ * el rebobinado: donde estaba cada pieza queda su hueco punteado, las
+ * piezas vuelven una tras otra por el mismo camino, con su rastro, y la
+ * explosion se traga a si misma. Todo queda como estaba.
  */
-async function bitesTheDust(ctx: PowerContext) {
+async function btdBomb(ctx: PowerContext) {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const node = layer("power-btd-intro", true);
+  const small = w < 640;
+  const pieces = piecesOnScreen(36);
+  // La bomba: lo mas cercano al Stand que tenga buen tamano.
+  let target: HTMLElement | null = null;
+  let best = Infinity;
+  for (const el of pieces) {
+    const r = el.getBoundingClientRect();
+    const area = r.width * r.height;
+    if (area < 2500 || area > w * h * 0.18) continue;
+    const d = Math.hypot(r.left + r.width / 2 - ctx.x, r.top + r.height / 2 - ctx.y);
+    if (d < best) {
+      best = d;
+      target = el;
+    }
+  }
+  if (!target || ctx.reducedMotion) return btdRewind(ctx);
+  const tr = target.getBoundingClientRect();
+  const spot = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
+  const node = layer("power-btd-bomb", true);
+  standInFront(true);
+  const flung: { el: HTMLElement; anim: Animation; slot: DOMRect }[] = [];
+  const timers: number[] = [];
+  let boom: ReturnType<typeof createBoom> | null = null;
+  let tape: HTMLElement | null = null;
+  let raf = 0;
+  try {
+    // 1. Ya lo toco.
+    target.animate([{ scale: "1" }, { scale: "0.95 1.04" }, { scale: "1" }], { duration: 260, easing: "ease-out", composite: "add" });
+    pop("✦", spot.x + rand(-20, 20), spot.y + rand(-14, 14), "power-sparkle", 700);
+    pop("すでに触っている…", Math.min(w - 120, Math.max(120, spot.x)), Math.max(90, tr.top - 24), "power-pop-word is-pink", 1200);
+    await wait(1000);
+    // 2. カチッ.
+    pop("カチッ", Math.min(window.innerWidth - 90, Math.max(90, ctx.x)), Math.max(80, ctx.y - 60), "power-pop-word is-pink is-big", 800);
+    playSfx("crack");
+    await wait(260);
+
+    // 3. La explosion, pintada en su tiempo; antes, los rayos de luz.
+    boom = createBoom(node, spot.x, spot.y, true);
+    const b = boom;
+    const length = PRIME_MS + BOOM_MS * 0.8;
+    let shown = -PRIME_MS;
+    const t0 = performance.now();
+    const play = (now: number) => {
+      shown = Math.min(now - t0, length) - PRIME_MS;
+      b.draw(shown);
+      if (now - t0 < length) raf = requestAnimationFrame(play);
+    };
+    raf = requestAnimationFrame(play);
+    await wait(PRIME_MS);
+    playSfx("boom");
+    btdFlash();
+    pop("ドグォォン!!", Math.min(w - 140, Math.max(140, spot.x)), Math.max(100, spot.y - (small ? 110 : 170)), "power-pop-word is-pink is-big", 1300);
+    quake(600, false, true);
+    // Lo de alrededor sale volando desde la bomba; la bomba, deshecha.
+    const reach = small ? 380 : 620;
+    const push = small ? 220 : 400;
+    for (const el of pieces) {
+      if (flung.some((f) => f.el.contains(el) || el.contains(f.el))) continue;
+      const r = el.getBoundingClientRect();
+      const ux = r.left + r.width / 2 - spot.x;
+      const uy = r.top + r.height / 2 - spot.y;
+      const d = Math.max(30, Math.hypot(ux, uy));
+      if (el !== target && d > reach) continue;
+      const force = push * Math.min(1.6, 260 / d + 0.5);
+      const x = (ux / d) * force + rand(-24, 24);
+      const y = (uy / d) * force - rand(10, 60);
+      const rot = rand(-55, 55);
+      const frames: Keyframe[] =
+        el === target
+          ? [
+              { translate: "0 0", scale: "1", opacity: 1 },
+              { translate: `0 ${rand(-30, -10).toFixed(0)}px`, scale: "0.3", opacity: 0 },
+            ]
+          : [
+              { translate: "0 0", rotate: "0deg" },
+              { translate: `${(x * 0.85).toFixed(0)}px ${(y * 0.85).toFixed(0)}px`, rotate: `${(rot * 0.8).toFixed(0)}deg`, offset: 0.3 },
+              { translate: `${x.toFixed(0)}px ${(y + 30).toFixed(0)}px`, rotate: `${rot.toFixed(0)}deg` },
+            ];
+      const anim = el.animate(frames, { duration: el === target ? 380 : 1100, easing: "cubic-bezier(0.1, 0.85, 0.3, 1)", fill: "both", composite: "add" });
+      flung.push({ el, anim, slot: r });
+    }
+    await wait(1900);
+
+    // 4. バイツァ・ダスト y la cinta al reves.
+    pop("バイツァ・ダスト!", w / 2, Math.max(120, h * 0.26), "power-pop-word is-pink is-big", 1300);
+    await wait(260);
+    playSfx("rewind");
+    tape = btdTape(7);
+    const counter = tape.querySelector<HTMLElement>(".btd-osd i");
+    const REW = 2000;
+    cancelAnimationFrame(raf);
+    const from = shown;
+    const r0 = performance.now();
+    const back = (now: number) => {
+      const t = Math.min(1, (now - r0) / (REW * 0.85));
+      const k = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      b.draw(from - (from + PRIME_MS) * k);
+      if (counter) counter.textContent = `00:00:0${Math.max(0, Math.round(7 * (1 - t)))}`;
+      if (t < 1) raf = requestAnimationFrame(back);
+    };
+    raf = requestAnimationFrame(back);
+    // Los huecos: donde estaba cada cosa.
+    const slots = flung.map(({ slot }) => {
+      const el = document.createElement("span");
+      el.className = "btd-slot";
+      Object.assign(el.style, { left: `${slot.left}px`, top: `${slot.top}px`, width: `${slot.width}px`, height: `${slot.height}px` });
+      node.appendChild(el);
+      return el;
+    });
+    // Una tras otra, por el mismo camino, cada una a su hueco.
+    const BACK_MS = 560;
+    const order = flung.map((_, i) => i).sort(() => Math.random() - 0.5);
+    const spread = Math.max(0, REW - BACK_MS - 260) / Math.max(1, order.length - 1);
+    order.forEach((i, k) => {
+      timers.push(
+        window.setTimeout(() => {
+          const { anim, el } = flung[i];
+          const total = Number(anim.effect?.getComputedTiming().duration) || 1100;
+          anim.pause();
+          anim.currentTime = total;
+          anim.playbackRate = -total / BACK_MS;
+          anim.play();
+          let trail = 0;
+          const drop = window.setInterval(() => {
+            const r = el.getBoundingClientRect();
+            const ghost = document.createElement("span");
+            ghost.className = "btd-trail";
+            Object.assign(ghost.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+            node.appendChild(ghost);
+            window.setTimeout(() => ghost.remove(), 380);
+            if (++trail > 9) window.clearInterval(drop);
+          }, 55);
+          timers.push(drop);
+          anim.onfinish = () => {
+            window.clearInterval(drop);
+            slots[i].classList.add("is-filled");
+          };
+        }, 160 + k * spread),
+      );
+    });
+    await wait(REW + 200);
+    tape.classList.add("is-flash");
+    await wait(260);
+    tape.classList.add("is-leaving");
+    await wait(400);
+  } finally {
+    cancelAnimationFrame(raf);
+    timers.forEach((timer) => {
+      window.clearTimeout(timer);
+      window.clearInterval(timer);
+    });
+    flung.forEach(({ anim }) => anim.cancel());
+    boom?.remove();
+    tape?.remove();
+    node.remove();
+    standInFront(false);
+  }
+}
+
+/**
+ * El atraso, como en la Parte 4: カチッ, un destello, y el tiempo se
+ * rebobina: la pantalla va para atras a tirones, con la cinta de VHS y
+ * las animaciones de la pagina corriendo hacia atras, hasta donde estabas
+ * hace un rato. Al volver, el Stand repite lo que habia dicho (deja vu).
+ */
+async function btdRewind(ctx: PowerContext) {
+  const h = window.innerHeight;
   standInFront(true);
   let rewind: ReturnType<typeof retime> | null = null;
-  const tape = layer("power-btd", true);
-  tape.classList.add("is-hidden");
+  let tape: HTMLElement | null = null;
   try {
     if (!ctx.reducedMotion) {
-      // 1. Killer Queen entra en el ojo.
-      node.innerHTML = `<span class="power-eye"><svg viewBox="0 0 200 100" width="200" height="100"><path d="M6 50 Q100 -20 194 50 Q100 120 6 50Z" fill="#ece6d8" stroke="#161418" stroke-width="6"/><circle cx="100" cy="50" r="30" fill="#b388eb" stroke="#161418" stroke-width="5"/><circle class="pupil" cx="100" cy="50" r="13" fill="#161418"/></svg></span><span class="power-kq">${KILLER_QUEEN}</span>`;
-      const kq = node.querySelector<HTMLElement>(".power-kq")!;
-      kq.style.setProperty("--from-x", `${ctx.x - w / 2}px`);
-      kq.style.setProperty("--from-y", `${ctx.y - h * 0.42}px`);
-      await wait(1100);
-      // 2. カチッ: el interruptor.
-      pop("カチッ", w / 2 + 70, h * 0.3, "power-pop-word is-pink is-big", 900);
-      await wait(380);
-      // 3. Explosion.
-      node.innerHTML = `<span class="power-btd-boom"></span>`;
-      quake(500, ctx.reducedMotion, true);
-      await wait(450);
+      pop("カチッ", Math.min(window.innerWidth - 90, Math.max(90, ctx.x)), Math.max(80, ctx.y - 60), "power-pop-word is-pink is-big", 800);
+      playSfx("crack");
+      await wait(420);
+      btdFlash();
+      pop("バイツァ・ダスト!", window.innerWidth / 2, Math.max(120, h * 0.26), "power-pop-word is-pink is-big", 1300);
+      await wait(300);
+      playSfx("rewind");
     }
-    // 4. Rebobinar: a tirones, como una cinta.
-    tape.classList.remove("is-hidden");
-    tape.innerHTML = `<span class="power-btd-vortex"></span><span class="power-btd-clock"><i></i><i></i></span><span class="power-btd-rew">◀◀ REW</span><span class="power-btd-text">BITES THE DUST</span>`;
-    node.innerHTML = "";
+    // Rebobinar: a tirones, como una cinta.
+    tape = btdTape(7);
+    const counter = tape.querySelector<HTMLElement>(".btd-osd i");
     rewind = ctx.reducedMotion ? null : retime(-3, tape);
     let target = ctx.pastScroll;
     if (Math.abs(target - window.scrollY) < h * 0.5) {
@@ -1223,6 +1405,7 @@ async function bitesTheDust(ctx: PowerContext) {
       // Cada tiron retrocede un trozo; en medio, un temblor de imagen.
       const t = i / steps;
       scrollToY(from + (target - from) * (1 - (1 - t) ** 2), true);
+      if (counter) counter.textContent = `00:00:0${steps - i}`;
       tape.classList.remove("is-jolt");
       void tape.offsetWidth;
       tape.classList.add("is-jolt");
@@ -1238,8 +1421,7 @@ async function bitesTheDust(ctx: PowerContext) {
   } finally {
     rewind?.restore();
     standInFront(false);
-    node.remove();
-    tape.remove();
+    tape?.remove();
   }
 }
 

@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import {
-  AnimatePresence,
-  motion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUp, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { cases, miniProjects, moreWork, type CaseShot, type CaseStudy } from "@/data/site";
@@ -272,26 +267,13 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
   const { t, language } = useLanguage();
   const copy = t.projects.items[index];
   const shouldReduceMotion = useReducedMotion();
-  const blockRef = useRef<HTMLElement>(null);
   // Casos alternos: galeria a la izquierda, luego a la derecha.
   const flip = index % 2 === 1;
-
-  /*
-    Parallax suave entre capas: la galeria se desplaza un poco mas lenta
-    que el texto. 24px, poco a proposito: en celular un parallax largo
-    marea.
-  */
-  const { scrollYProgress } = useScroll({
-    target: blockRef,
-    offset: ["start end", "end start"],
-  });
-  const galleryY = useTransform(scrollYProgress, [0, 1], [24, -24]);
 
   const labels = t.projects.labels;
 
   return (
     <article
-      ref={blockRef}
       aria-labelledby={`case-${item.key}`}
       className="grid lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-14"
     >
@@ -321,17 +303,20 @@ function CaseBlock({ item, index }: { item: CaseStudy; index: number }) {
         </FadeSwap>
       </FadeIn>
 
-      <motion.div
-        // Capa propia (will-change): sin ella, la captura inclinada se
-        // volvia a rasterizar en cada cuadro del parallax y su texto titilaba.
-        style={shouldReduceMotion ? undefined : { y: galleryY, willChange: "transform" }}
+      {/*
+        Sin parallax: la captura inclinada deslizandose a otra velocidad que
+        el texto se volvia a muestrear en cada cuadro y su letra pequena
+        "nadaba" (en carpy, Tostrivia y Radar K-pop, capturas llenas de
+        texto, se veia como si la pagina temblara).
+      */}
+      <div
         className={cn(
           "mt-8 lg:col-span-7 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:self-center",
           flip ? "lg:col-start-6" : "lg:col-start-1",
         )}
       >
         <Gallery item={item} alts={copy.shotAlts} flip={flip} />
-      </motion.div>
+      </div>
 
       <div
         className={cn(
