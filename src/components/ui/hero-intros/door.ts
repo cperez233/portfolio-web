@@ -7,30 +7,37 @@ import { ease, type IntroDef, type IntroKit } from "./kit";
 
 /*
   Heaven's Door: el Stand de Rohan, el mangaka, vuelve libro a quien
-  toca y le escribe ordenes en las paginas. Aqui el libro eres tu: el
-  Stand traza el garabato en el aire (como Rohan dibujando a Pink Dark
-  Boy), la pantalla se abre en paginas que pasan a toda velocidad y
-  queda abierta una pagina de manga, con vinetas, trama, lineas de
-  velocidad y globos. En la vineta grande el Stand te escribe la orden a
-  mano: una al azar, todas sobre lo que hace Cris ("Compraras una web,
-  un aplicativo o varios"). La firma con un sello, se rie y el libro se
-  cierra.
+  toca. Como en el anime, no aparece un libro: la persona se abre. Aqui
+  la persona es el retrato. El Stand traza el garabato en el aire hasta
+  la foto, a la foto le sale una costura por el medio y la cara se parte
+  en dos tapas, que se abren hacia los lados (son la piel: no hay portada
+  de verdad); de adentro se despliegan las paginas, con su borde de hojas.
+  Rohan arranca un trozo de una pagina (ビリッ), que sale volando. En la
+  pagina de la orden el Stand escribe a mano una al azar, todas sobre lo
+  que hace Cris ("Compraras una web, un aplicativo o varios"), la subraya
+  y la sella. Despues las paginas se recogen, las tapas se cierran, la
+  costura desaparece y la cara vuelve a ser la foto, en su sitio.
 
-  En escritorio va a doble pagina (la izquierda es tu pagina "de vida",
-  llena de texto, como en el anime); en celular, una sola. El libro va
-  donde no tapa al Stand: a su lado o debajo.
+  La cara crece desde el retrato hasta donde no tapa al Stand (a su lado
+  o debajo). En escritorio se abre a doble pagina (la de la izquierda es
+  tu pagina "de vida"); en celular, una sola.
 */
 const T = {
   open: 1600,
   stroke: 1820,
-  book: 2280,
-  riffle: 2380,
-  write: 3050,
-  closeAfter: 1250,
-  relay: 8200,
+  split: 2240,
+  grow: 2400,
+  growMs: 420,
+  unfold: 2620,
+  unfoldMs: 560,
+  riffle: 3120,
+  tear: 3740,
+  write: 3960,
+  closeAfter: 950,
+  foldMs: 480,
 } as const;
 
-const WRITE_STEP = 36;
+const WRITE_STEP = 34;
 
 const esc = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
 
@@ -38,7 +45,7 @@ const esc = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt
 const scribble = (n: number) =>
   Array.from({ length: n }, () => `<i style="width:${Math.round(rand(55, 100))}%"></i>`).join("");
 
-/** Donde va el libro: al lado del Stand si hay sitio, si no debajo. */
+/** Donde se abre: al lado del Stand si hay sitio, si no debajo. */
 function placeBook(kit: IntroKit) {
   const stand = kit.stage.querySelector(".hero-stand-core svg")?.getBoundingClientRect();
   const { vw, vh } = kit;
@@ -47,14 +54,16 @@ function placeBook(kit: IntroKit) {
   const roomRight = vw - (stand?.right ?? vw) - 28;
   const side = Math.max(roomLeft, roomRight);
   if (!kit.small && side >= 560) {
-    const height = Math.min(600, vh - top - 90);
-    const width = Math.min(side - 16, height * 1.45, 1000);
-    const left = roomLeft >= roomRight ? Math.max(16, roomLeft - width) : vw - roomRight + 12;
+    const height = Math.min(560, vh - top - 110);
+    // Lo que sobresalen las tapas abiertas, a cada lado; puede montarse un
+    // poco sobre el margen del dibujo del Stand (que es aire).
+    const width = Math.min(side + 90 - height * 0.3, height * 1.5, 920);
+    const left = roomLeft >= roomRight ? Math.max(16 + height * 0.15, roomLeft + 90 - width - height * 0.15) : vw - roomRight - 78 + height * 0.15;
     return { left, top: Math.max(top, (vh - height) / 2 - 10), width, height, spread: true };
   }
   const below = Math.max(top, (stand?.bottom ?? vh * 0.35) - 8);
-  const height = Math.min(520, vh - below - 76);
-  const width = Math.min(vw - 24, height * 0.78);
+  const height = Math.min(500, vh - below - 80);
+  const width = Math.min(vw - 72, height * 0.74);
   return { left: (vw - width) / 2, top: below, width, height, spread: false };
 }
 
@@ -73,23 +82,27 @@ export const door: IntroDef = {
     const order = pickLine(lines.orders);
     const fx = kit.fx("hd-fx");
     const box = placeBook(kit);
+    const photo = kit.portrait();
+    const img = photo?.querySelector("img");
 
+    // El nombre del Stand, al sacarlo.
     kit.frame("stand", { body: "point", face: "smug" });
     kit.lunge(0.05, 240);
     const hand0 = kit.hand("point");
     if (hand0) kit.shout("ヘブンズ・ドアー!", kit.vw / 2, hand0.y - kit.tall() * 0.6, "power-pop-word is-gold is-big", 1200);
 
-    // El garabato en el aire: de la mano al centro del libro, en tres rizos.
+    // El garabato en el aire: de la mano a la cara, en tres rizos.
     kit.at(T.stroke, () => {
       const from = kit.hand("point");
-      if (!from) return;
-      const cx = box.left + box.width / 2;
-      const cy = box.top + box.height / 2;
+      const to = photo?.getBoundingClientRect();
+      if (!from || !to) return;
+      const cx = to.left + to.width / 2;
+      const cy = to.top + to.height / 2;
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("class", "hd-stroke");
       svg.setAttribute("width", String(kit.vw));
       svg.setAttribute("height", String(kit.vh));
-      const r = Math.min(box.width, box.height) * 0.16;
+      const r = Math.max(28, to.width * 0.45);
       let d = `M${from.x.toFixed(0)} ${from.y.toFixed(0)}`;
       for (let i = 1; i <= 3; i++) {
         const t = i / 3;
@@ -100,21 +113,60 @@ export const door: IntroDef = {
       svg.innerHTML = `<path class="hd-stroke-ink" pathLength="1" d="${d}"/><path pathLength="1" d="${d}"/>`;
       fx.appendChild(svg);
       for (const path of svg.querySelectorAll("path")) {
-        kit.keep(path.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: 380, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "both" }));
+        kit.keep(path.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: 360, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "both" }));
       }
-      pop("シュッ", Math.min(kit.vw - 60, cx + 40), Math.max(110, cy - r * 2), "power-pop-word is-gold", 700);
-      kit.later(560, () => svg.classList.add("is-leaving"));
-      kit.later(900, () => svg.remove());
+      pop("シュッ", Math.min(kit.vw - 60, cx + 50), Math.max(110, cy - r * 2), "power-pop-word is-gold", 700);
+      kit.later(520, () => svg.classList.add("is-leaving"));
+      kit.later(860, () => svg.remove());
     });
 
-    // El libro: la pantalla se abre en paginas que pasan solas.
+    /*
+      La cara: en el sitio final (box), pero al principio escalada hasta
+      tapar justo el retrato, con su misma foto. cw es el ancho de la cara
+      cerrada (la proporcion del retrato); las paginas, abiertas, miden
+      box.width.
+    */
+    const H = box.height;
+    const ratio = photo ? photo.offsetWidth / Math.max(1, photo.offsetHeight) : 0.69;
+    const cw = Math.min(box.width, H * ratio);
+    const half = cw / 2;
+    const open = kit.small ? 100 : 128;
+    let face: HTMLElement | null = null;
     let book: HTMLElement | null = null;
+    let flaps: HTMLElement[] = [];
     let ink: HTMLElement | null = null;
-    kit.at(T.book, () => {
-      fx.classList.add("is-dim");
-      book = document.createElement("div");
-      book.className = box.spread ? "hd-book is-spread" : "hd-book";
-      Object.assign(book.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` });
+    /** De la cara cerrada (0) a las paginas abiertas del todo (1). */
+    const unfold = (t: number) => {
+      if (!book) return;
+      const width = cw + (box.width - cw) * t;
+      book.style.scale = `${(width / box.width).toFixed(4)} 1`;
+      const [left, right] = flaps;
+      left.style.left = `${(box.width / 2 - width / 2).toFixed(1)}px`;
+      right.style.left = `${(box.width / 2 + width / 2 - half).toFixed(1)}px`;
+      left.style.transform = `rotateY(${(-open * t).toFixed(1)}deg)`;
+      right.style.transform = `rotateY(${(open * t).toFixed(1)}deg)`;
+    };
+    /** La transformacion que lleva la cara cerrada a tapar el retrato. */
+    const toPortrait = () => {
+      const r = photo?.getBoundingClientRect();
+      if (!r?.width) return "none";
+      const s = r.height / H;
+      const dx = r.left + r.width / 2 - (box.left + box.width / 2);
+      const dy = r.top + r.height / 2 - (box.top + H / 2);
+      return `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${s.toFixed(4)})`;
+    };
+
+    // La costura: la foto se parte por el medio.
+    kit.at(T.split, () => {
+      const src = img?.currentSrc || img?.src || "";
+      // La foto en la cara, recortada igual que el retrato (cover, al centro).
+      const nat = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : ratio;
+      const bw = nat > ratio ? H * nat : cw;
+      const bh = nat > ratio ? H : cw / nat;
+      const ox = (cw - bw) / 2;
+      const oy = (H - bh) / 2;
+      const skin = (x: number) =>
+        `background-image:url('${src.replace(/'/g, "%27")}');background-size:${bw.toFixed(1)}px ${bh.toFixed(1)}px;background-position:${(ox + x).toFixed(1)}px ${oy.toFixed(1)}px`;
       const life =
         `<div class="hd-page is-life">` +
         `<span class="hd-folio">${esc(lines.lifeLabel)}</span>` +
@@ -135,45 +187,110 @@ export const door: IntroDef = {
         `<svg class="hd-under" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M2 6 Q30 2 55 6 T98 4"/></svg></p>` +
         `<span class="hd-seal">${esc(lines.seal)}</span></div>` +
         `</div></div>`;
-      book.innerHTML = (box.spread ? life : "") + orderPage + `<div class="hd-leaves"></div>`;
-      fx.appendChild(book);
-      ink = book.querySelector<HTMLElement>(".hd-ink");
+      const flap = (side: "left" | "right") =>
+        `<div class="hd-flap is-${side}" style="width:${half.toFixed(1)}px">` +
+        `<span class="hd-skin" style="${skin(side === "left" ? 0 : -half)}"></span>` +
+        `<span class="hd-flip"><span class="hd-lines">${scribble(12)}</span></span>` +
+        `</div>`;
+      face = document.createElement("div");
+      face.className = "hd-face";
+      Object.assign(face.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${H}px` });
+      face.innerHTML =
+        `<div class="${box.spread ? "hd-book is-spread" : "hd-book"}">${(box.spread ? life : "") + orderPage}<div class="hd-leaves"></div></div>` +
+        flap("left") +
+        flap("right") +
+        `<span class="hd-seam" style="height:${H}px"></span>`;
+      fx.appendChild(face);
+      book = face.querySelector<HTMLElement>(".hd-book");
+      flaps = [...face.querySelectorAll<HTMLElement>(".hd-flap")];
+      ink = face.querySelector<HTMLElement>(".hd-ink");
+      face.style.transform = toPortrait();
+      unfold(0);
+      // La foto de verdad se esconde: ahora la cara es esta.
+      if (photo) photo.style.visibility = "hidden";
+      kit.onCleanup(() => photo && (photo.style.visibility = ""));
+      face.classList.add("is-split");
+      kit.shake(kit.small ? 3 : 5, 200);
+      const r = photo?.getBoundingClientRect();
+      if (r) pop("ズバッ", r.right + 30, Math.max(100, r.top + 10), "power-pop-word is-gold", 700);
+      playSfx("crack");
+    });
+
+    // La cara crece hasta donde se va a leer.
+    kit.at(T.grow, () => {
+      if (!face) return;
+      fx.classList.add("is-dim");
       kit.keep(
-        book.animate(
-          [
-            { scale: "0.2 0.02", opacity: 0 },
-            { scale: "1 0.04", opacity: 1, offset: 0.35 },
-            { scale: "1", opacity: 1 },
-          ],
-          { duration: 360, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "backwards" },
-        ),
+        face.animate([{ transform: toPortrait() }, { transform: "none" }], {
+          duration: T.growMs,
+          easing: "cubic-bezier(0.3, 0.8, 0.3, 1)",
+          fill: "forwards",
+        }),
       );
+    });
+
+    // Las tapas (la cara) se abren y de adentro salen las paginas.
+    kit.at(T.unfold, () => {
+      if (!face) return;
+      face.classList.add("is-open");
+      kit.tween(T.unfoldMs, unfold, ease.out);
       kit.shake(kit.small ? 4 : 7, 260);
       playSfx("thud");
-      pop("バララッ", box.left + box.width * 0.8, Math.max(100, box.top - 6), "power-pop-word is-gold is-big", 900);
+      pop("バララッ", box.left + box.width * 0.85, Math.max(100, box.top - 6), "power-pop-word is-gold is-big", 900);
     });
 
     // Las paginas pasan a toda velocidad (riffle), de derecha a izquierda.
-    kit.at(T.riffle, () => {
+    const riffle = (back: boolean) => {
       const leaves = book?.querySelector<HTMLElement>(".hd-leaves");
       if (!leaves) return;
-      const count = kit.small ? 6 : 9;
+      const count = kit.small ? 5 : 6;
       for (let i = 0; i < count; i++) {
         const leaf = document.createElement("span");
         leaf.className = "hd-leaf";
         leaf.innerHTML = `<span class="hd-lines">${scribble(10)}</span>`;
         leaves.appendChild(leaf);
+        const turn = [
+          { transform: "rotateY(0deg)", filter: "brightness(1)" },
+          { transform: "rotateY(-90deg)", filter: "brightness(0.75)", offset: 0.5 },
+          { transform: "rotateY(-180deg)", filter: "brightness(1)" },
+        ];
         kit.keep(
-          leaf.animate(
-            [
-              { transform: "rotateY(0deg)", filter: "brightness(1)" },
-              { transform: "rotateY(-90deg)", filter: "brightness(0.75)", offset: 0.5 },
-              { transform: "rotateY(-180deg)", filter: "brightness(1)" },
-            ],
-            { duration: 300, delay: i * 55, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "both" },
-          ),
+          leaf.animate(back ? turn.reverse().map((k, j) => ({ ...k, offset: j / 2 })) : turn, {
+            duration: 280,
+            delay: i * 50,
+            easing: "cubic-bezier(0.4, 0, 0.6, 1)",
+            fill: "both",
+          }),
         ).onfinish = () => leaf.remove();
       }
+    };
+    kit.at(T.riffle, () => riffle(false));
+
+    // Rohan arranca un trozo de la primera pagina: ビリッ.
+    kit.at(T.tear, () => {
+      const page = book?.querySelector<HTMLElement>(".hd-page");
+      if (!page) return;
+      const r = page.getBoundingClientRect();
+      const w = r.width * 0.36;
+      const h = r.height * 0.22;
+      page.classList.add("is-torn");
+      const scrap = document.createElement("span");
+      scrap.className = "hd-scrap";
+      Object.assign(scrap.style, { left: `${r.right - w}px`, top: `${r.bottom - h}px`, width: `${w}px`, height: `${h}px` });
+      scrap.innerHTML = `<span class="hd-lines">${scribble(4)}</span>`;
+      fx.appendChild(scrap);
+      kit.keep(
+        scrap.animate(
+          [
+            { translate: "0 0", rotate: "0deg", opacity: 1 },
+            { translate: `${rand(30, 60).toFixed(0)}px -40px`, rotate: "14deg", opacity: 1, offset: 0.25 },
+            { translate: `${rand(120, 220).toFixed(0)}px ${rand(140, 260).toFixed(0)}px`, rotate: `${rand(80, 160).toFixed(0)}deg`, opacity: 0 },
+          ],
+          { duration: 1300, easing: "cubic-bezier(0.3, 0.2, 0.6, 1)", fill: "forwards" },
+        ),
+      ).onfinish = () => scrap.remove();
+      kit.shout("ビリッ!", r.right - w / 2, Math.max(100, r.bottom - h - 20), "power-pop-word is-gold", 700);
+      playSfx("crack");
     });
 
     // La orden, a mano, letra por letra; la pluma va delante.
@@ -207,29 +324,36 @@ export const door: IntroDef = {
       playSfx("thud");
     });
 
-    // Se rie y el libro se cierra: las paginas pasan al reves y se va.
+    // Se cierra: las paginas se recogen, la cara se junta y vuelve a ser la foto.
     const close = done + 380 + T.closeAfter;
     kit.at(close, () => {
-      book?.classList.add("is-closing");
       kit.frame("stand", { body: "idle", face: "laugh" });
-      if (book) {
-        const b = book;
-        kit.tween(
-          420,
-          (t) => {
-            b.style.scale = `${1 - t * 0.12} ${1 - t * 0.98}`;
-            b.style.opacity = String(1 - t * t);
-          },
-          ease.in,
-        );
-      }
-      kit.later(260, () => fx.classList.remove("is-dim"));
+      riffle(true);
+      kit.later(260, () => kit.tween(T.foldMs, (t) => unfold(1 - t), ease.inOut));
     });
-    kit.at(close + 520, () => {
-      fx.classList.add("is-leaving");
+    kit.at(close + 260 + T.foldMs, () => {
+      if (!face) return;
+      face.classList.remove("is-open");
+      fx.classList.remove("is-dim");
+      const f = face;
+      kit.keep(
+        f.animate([{ transform: "none" }, { transform: toPortrait() }], {
+          duration: 380,
+          easing: "cubic-bezier(0.6, 0, 0.4, 1)",
+          fill: "forwards",
+        }),
+      ).onfinish = () => {
+        f.classList.remove("is-split");
+        kit.later(160, () => {
+          if (photo) photo.style.visibility = "";
+          f.remove();
+        });
+      };
+    });
+    kit.at(close + 260 + T.foldMs + 600, () => {
       kit.frame("stand", { face: "wink" });
       kit.talk(pickLine(lines.done), 1100);
     });
-    kit.at(Math.min(9600, Math.max(T.relay, close + 1900)), kit.relay);
+    kit.at(Math.min(9600, close + 260 + T.foldMs + 1500), kit.relay);
   },
 };

@@ -5961,7 +5961,7 @@ html.tbc-frozen main *::after {
     translate: 110vw 0;
   }
 }
-/* --- Heaven's Door: el garabato, el libro y la orden en una pagina de manga. --- */
+/* --- Heaven's Door: el garabato, la cara que se abre en paginas y la orden. --- */
 .hd-fx {
   transition:
     opacity 0.4s var(--ease-premium),
@@ -5992,12 +5992,100 @@ html.tbc-frozen main *::after {
   stroke: #161418;
   stroke-width: 13;
 }
+/*
+  La cara que se abre: las paginas (hd-book) y las dos tapas (hd-flap),
+  que son las mitades de la foto. Cada tapa tiene dos caras: la piel (la
+  foto) y, por detras, papel con su texto. La costura (hd-seam) es la
+  raya por donde se parte.
+*/
+.hd-face {
+  position: absolute;
+  perspective: 1400px;
+  transform-origin: 50% 50%;
+}
 .hd-book {
   position: absolute;
+  inset: 0;
   display: flex;
   perspective: 1800px;
   color: #161418;
   filter: drop-shadow(8px 8px 0 #161418);
+}
+/* Cerrada, las paginas no se ven: solo la cara. */
+.hd-face:not(.is-open) .hd-book {
+  visibility: hidden;
+}
+.hd-flap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-style: preserve-3d;
+}
+.hd-flap.is-left {
+  transform-origin: 0 50%;
+}
+.hd-flap.is-right {
+  transform-origin: 100% 50%;
+}
+.hd-skin,
+.hd-flip {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.hd-skin {
+  background-repeat: no-repeat;
+  background-color: #2a2630;
+}
+/* Al abrirse, el borde de la piel que queda al aire: un filo claro. */
+.hd-face.is-open .hd-flap.is-left .hd-skin {
+  box-shadow: inset -4px 0 0 #f7f2e8, inset -7px 0 0 #161418;
+}
+.hd-face.is-open .hd-flap.is-right .hd-skin {
+  box-shadow: inset 4px 0 0 #f7f2e8, inset 7px 0 0 #161418;
+}
+.hd-flip {
+  transform: rotateY(180deg);
+  background-color: #efe7d4;
+  border: 3px solid #161418;
+  /* Canto de hojas: rayas finas en el borde, como un libro visto de lado. */
+  background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(22, 20, 24, 0.12) 3px 4px);
+}
+.hd-flap.is-left .hd-flip {
+  border-left-width: 6px;
+}
+.hd-flap.is-right .hd-flip {
+  border-right-width: 6px;
+}
+.hd-seam {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 10px;
+  margin-left: -5px;
+  background-color: #161418;
+  clip-path: polygon(40% 0, 60% 0, 70% 18%, 45% 36%, 65% 55%, 40% 74%, 62% 100%, 38% 100%, 30% 74%, 52% 55%, 32% 36%, 55% 18%);
+  transform: scaleY(0);
+  transform-origin: 50% 0;
+  transition: transform 0.16s steps(3, end);
+}
+.hd-face.is-split .hd-seam {
+  transform: scaleY(1);
+}
+.hd-face.is-open .hd-seam {
+  visibility: hidden;
+}
+/* La pagina a la que le arrancaron un trozo, y el trozo que sale volando. */
+.hd-page.is-torn {
+  clip-path: polygon(0 0, 100% 0, 100% 74%, 93% 79%, 86% 76%, 80% 83%, 73% 80%, 68% 88%, 66% 100%, 0 100%);
+}
+.hd-scrap {
+  position: absolute;
+  background-color: #f7f2e8;
+  border: 3px solid #161418;
+  clip-path: polygon(0 18%, 7% 26%, 14% 20%, 20% 34%, 27% 30%, 32% 52%, 34% 100%, 100% 100%, 100% 0, 0 0);
+  filter: drop-shadow(5px 5px 0 #161418);
 }
 .hd-page {
   position: relative;
@@ -6121,7 +6209,7 @@ html.tbc-frozen main *::after {
   margin: 0;
   padding: 1em 1.4em;
   font-family: var(--font-caveat), "Comic Sans MS", cursive;
-  font-size: clamp(1.4rem, 2.5vw, 2.4rem);
+  font-size: clamp(1.3rem, 2vw, 2.1rem);
   line-height: 1.08;
   text-align: center;
   color: #161418;
