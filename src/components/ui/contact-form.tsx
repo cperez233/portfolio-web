@@ -104,7 +104,8 @@ export function ContactForm() {
       onSubmit={handleSubmit}
       onFocus={() => setWantCaptcha(true)}
       // Una carta en vineta: el titulo va en el cartel de tinta de arriba.
-      className="manga-form scroll-mt-24 p-5 sm:p-6"
+      // En escritorio llena el alto de su columna: crece el cuadro del mensaje.
+      className="manga-form scroll-mt-24 p-5 sm:p-6 lg:flex lg:flex-1 lg:flex-col"
     >
       <p className="manga-form-title">{copy.title}</p>
 
@@ -133,7 +134,7 @@ export function ContactForm() {
         </label>
       </div>
 
-      <label className="manga-label mt-4 block">
+      <label className="manga-label mt-4 block lg:flex lg:flex-1 lg:flex-col">
         {copy.message}
         <textarea
           name="message"
@@ -141,7 +142,7 @@ export function ContactForm() {
           rows={5}
           maxLength={4000}
           placeholder={copy.messagePlaceholder}
-          className={cn(fieldClass, "resize-y leading-relaxed")}
+          className={cn(fieldClass, "resize-y leading-relaxed lg:min-h-40 lg:flex-1")}
         />
       </label>
 

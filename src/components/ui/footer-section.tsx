@@ -102,11 +102,11 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="relative min-w-0 lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1">
+          <div className="relative min-w-0 lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1 lg:flex lg:flex-col">
             {/* ゴゴゴ en 3D asomando por la esquina de la carta: tiembla, sigue al puntero y late al tocarlo. */}
             <Menacing3D
               fallbackSize="clamp(1.4rem, 3vw, 2.4rem)"
-              className="absolute -right-2 -top-24 z-10 h-28 w-20 sm:-top-28 sm:h-36 sm:w-24 lg:-right-10 lg:-top-32 lg:h-44 lg:w-28"
+              className="absolute -right-2 -top-24 z-10 h-28 w-20 sm:-top-28 sm:h-36 sm:w-24 lg:-right-8 lg:-top-16 lg:h-40 lg:w-24"
             />
             <ContactForm />
           </div>
