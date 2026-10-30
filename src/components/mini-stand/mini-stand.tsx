@@ -709,14 +709,15 @@ export function MiniStand() {
         .filter(({ r }) => r.width > 40 && r.height > 16);
     }
     /** Aparece en otro sitio de lo que se ve, sin volar. Devuelve a donde. */
-    function teleport(avoid?: Element, holdMs = 4500) {
+    function teleport(avoid?: Element, holdMs = 4500, near?: Element) {
       const from = { x: body.x, y: body.y };
       const rects = visibleRects().filter(({ el }) => el !== avoid);
       const dist = (r: DOMRect) => Math.hypot(r.left + r.width / 2 - from.x, r.top - from.y);
       // Lo bastante lejos para que se note el salto, pero sin ir siempre al mismo extremo.
       const far = rects.filter(({ r }) => dist(r) > Math.min(width, height) * 0.3);
       const pool = far.length ? far : rects;
-      const dest = pool[Math.floor(Math.random() * pool.length)]?.r;
+      // Con `near` no es al azar: aparece junto a ese elemento (su blanco).
+      const dest = near?.isConnected ? near.getBoundingClientRect() : pool[Math.floor(Math.random() * pool.length)]?.r;
       const point = dest
         ? clampPoint({ x: dest.left + Math.min(dest.width * 0.75, SPRITE_W * scale * 1.5), y: dest.top - 1 })
         : clampPoint({ x: width - from.x, y: height * 0.4 });
@@ -734,7 +735,7 @@ export function MiniStand() {
       return point;
     }
     const onTimeStop = (event: Event) => {
-      const { active, by } = (event as CustomEvent<TimeStopDetail>).detail;
+      const { active, by, target } = (event as CustomEvent<TimeStopDetail>).detail;
       // En la entrada con ZA WARUDO el Stand no se congela ni se burla al
       // reanudarse: se mueve durante el tiempo detenido (ver onIntro).
       if (introWorld && by === "stand") return;
@@ -742,8 +743,9 @@ export function MiniStand() {
       if (active) {
         stop = { by, at: now, attempted: false };
         // Su ZA WARUDO: mientras el tiempo esta detenido no se ve nada, ni
-        // su globo. Aparece posando en otro sitio cuando vuelve.
-        if (by === "stand") say.current(null);
+        // su globo. Aparece posando en otro sitio cuando vuelve (Star Platinum,
+        // junto a su blanco).
+        if (by === "stand" || by === "platinum") say.current(null);
         return;
       }
       if (!stop) return;
@@ -758,8 +760,16 @@ export function MiniStand() {
       }
       lastActivity = now;
       sleeping = false;
-      // Star Platinum: The World ya cierra con la frase del poder; hablar aqui la encimaba.
-      if (reducedMotion || by === "platinum") return;
+      if (reducedMotion) return;
+      // Star Platinum: The World, como el de DIO: aparece de pronto junto a su
+      // blanco, con la rafaga de ORAs ya hecha. Cierra con la frase del poder
+      // (castPower); hablar aqui la encimaba.
+      if (by === "platinum") {
+        teleport(undefined, 2600, target);
+        act.current("punch", 1500);
+        sfx("オラ", "sfx");
+        return;
+      }
       const lines = linesRef.current;
       if (by === "page") {
         act.current("sweat", 1800);

@@ -221,11 +221,17 @@ async function starFinger(ctx: PowerContext, target: HTMLElement) {
   node.remove();
 }
 
-/** Star Platinum: The World: tiempo detenido, golpes que caen al reanudarse. */
+/**
+ * Star Platinum: The World, como el de DIO: con el tiempo detenido no se ve
+ * nada (la esfera y el nombre, y el Stand quieto). Al reanudarse ya paso todo:
+ * el Stand aparece de pronto junto a su blanco (mini-stand, por el evento de
+ * time-stop) y la rafaga de ORAs ya esta hecha, los golpes de golpe y el
+ * blanco ya abollado y empujado.
+ */
 async function starWorld(ctx: PowerContext, target: HTMLElement) {
   const r = target.getBoundingClientRect();
   const ms = ctx.reducedMotion ? 900 : 2200;
-  const resumed = stopTime(ms, "platinum");
+  const resumed = stopTime(ms, "platinum", target);
   /*
     El negativo de ZA WARUDO, pero suyo: la esfera nace del Stand, se
     abre de golpe y es violeta (el color de Star Platinum), asi que la
@@ -244,37 +250,45 @@ async function starWorld(ctx: PowerContext, target: HTMLElement) {
   }
   const tint = layer("power-spw", true);
   tint.innerHTML = `<span class="power-spw-text">スタープラチナ・ザ・ワールド</span>`;
-  const node = layer("power-sp", true);
-  const points: [number, number][] = [];
-  const count = ctx.reducedMotion ? 3 : 12;
-  for (let i = 0; i < count; i++) {
-    const tx = r.left + r.width * rand(0.1, 0.9);
-    const ty = r.top + r.height * rand(0.15, 0.85);
-    points.push([tx, ty]);
-    // Con el tiempo quieto, los punos quedan clavados en el aire.
-    const held = document.createElement("span");
-    held.className = "power-fist is-held";
-    held.style.left = `${tx + rand(-40, 40)}px`;
-    held.style.top = `${ty + rand(-40, 40)}px`;
-    held.style.setProperty("--fa", `${Math.atan2(ty - ctx.y, tx - ctx.x).toFixed(2)}rad`);
-    held.style.animationDelay = `${i * 110}ms`;
-    node.appendChild(held);
-  }
   await resumed;
-  // Salida: la esfera vuelve al Stand y Jotaro lo dice.
+  // El tiempo vuelve y la rafaga ya esta hecha: los golpes llegan todos a la vez.
   tint.innerHTML = `<span class="power-spw-text is-resume">そして時は動き出す</span>`;
   window.setTimeout(() => tint.classList.add("is-leaving"), 450);
-  node.querySelectorAll(".power-fist").forEach((el) => el.remove());
-  // Todos los golpes llegan a la vez: ドドドド.
-  points.forEach(([x, y], i) => window.setTimeout(() => impact(x, y), i * 25));
-  pop("ドドドド!", r.left + r.width / 2, r.top - 10, "power-pop-word is-purple is-big", 1100);
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const count = ctx.reducedMotion ? 4 : 22;
+  for (let i = 0; i < count; i++) {
+    const x = r.left + r.width * rand(0.05, 0.95);
+    const y = r.top + r.height * rand(0.1, 0.9);
+    window.setTimeout(() => {
+      impact(x, y);
+      if (!ctx.reducedMotion && i % 4 === 0) pop("オラ", x + rand(-30, 30), y - rand(10, 40), "power-pop-word is-purple", 800);
+    }, rand(0, 70));
+  }
+  quake(520, ctx.reducedMotion, true);
+  impact(cx, cy, true);
+  pop("オラァ!", cx, cy - 30, "power-pop-word is-purple is-big", 1100);
+  // Ya abollado y empujado, lejos de donde aparece el Stand; despues se arregla solo.
   target.classList.add("power-hit");
-  quake(500, ctx.reducedMotion, true);
-  await wait(600);
+  await wait(180);
   target.classList.remove("power-hit");
+  const dx = cx - ctx.x;
+  const dy = cy - ctx.y;
+  const d = Math.max(1, Math.hypot(dx, dy));
+  const clear = setVars(target, {
+    "--knock-x": `${((dx / d) * 46).toFixed(0)}px`,
+    "--knock-y": `${((dy / d) * 30).toFixed(0)}px`,
+    "--knock-r": `${rand(-6, 6).toFixed(1)}deg`,
+  });
+  target.classList.add("power-knocked");
+  await wait(320);
+  target.classList.remove("power-knocked");
+  target.classList.add("power-healed-soft");
+  await wait(700);
+  target.classList.remove("power-healed-soft");
+  clear();
   tint.remove();
   blend?.remove();
-  node.remove();
 }
 
 async function starPlatinum(ctx: PowerContext) {

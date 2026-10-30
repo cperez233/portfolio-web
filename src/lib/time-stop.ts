@@ -20,9 +20,12 @@ export interface TimeStopDetail {
   ms: number;
   /**
    * Quien lo detuvo: "page" (el toque del retrato), "stand" (ZA WARUDO del
-   * mini Stand) o "platinum" (Star Platinum: The World, sin moverse de sitio).
+   * mini Stand) o "platinum" (Star Platinum: The World; al reanudarse el
+   * Stand aparece junto a su blanco, con la rafaga ya hecha).
    */
   by: "page" | "stand" | "platinum";
+  /** Star Platinum: el blanco de la rafaga; al reanudarse el Stand ya esta junto a el. */
+  target?: Element;
 }
 
 let stopped = false;
@@ -37,7 +40,7 @@ export function isTimeStopped() {
 const SCROLL_KEYS = new Set([" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "Tab", "Enter"]);
 
 /** Detiene el tiempo `ms` milisegundos. Devuelve una promesa que se cumple al reanudarse. */
-export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise<void> {
+export function stopTime(ms: number, by: TimeStopDetail["by"] = "page", target?: Element): Promise<void> {
   if (typeof window === "undefined" || stopped) return Promise.resolve();
   stopped = true;
   const root = document.documentElement;
@@ -72,7 +75,7 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise
   const pin = () => window.scrollY !== y && window.scrollTo(0, y);
   window.addEventListener("scroll", pin);
 
-  window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: true, ms, by } }));
+  window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: true, ms, by, target } }));
 
   return new Promise((resolve) => {
     const resume = () => {
@@ -88,7 +91,7 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page"): Promise
       videos.forEach((video) => void video.play().catch(() => {}));
       window.__lenis?.start();
       stopped = false;
-      window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: false, ms, by } }));
+      window.dispatchEvent(new CustomEvent<TimeStopDetail>("jojo:timestop", { detail: { active: false, ms, by, target } }));
       resolve();
     };
     const early = () => resume();
