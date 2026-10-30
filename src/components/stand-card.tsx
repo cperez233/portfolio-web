@@ -215,7 +215,7 @@ export function StandCard({ className }: { className?: string }) {
             {copy.explainer}
           </p>
         </FadeSwap>
-        <StandArrow className="h-28 w-full sm:h-32 lg:h-36 lg:w-[42%]" />
+        <StandArrow className="z-10 h-32 w-full sm:h-36 lg:h-40 lg:w-[42%]" />
       </div>
       <div data-spot="standcard" className="grid gap-4 lg:grid-cols-12 lg:gap-0">
         {/* Vineta 1: nombre del Stand y su usuario */}
