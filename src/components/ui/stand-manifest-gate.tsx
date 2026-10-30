@@ -21,8 +21,12 @@
   hacia los 9.5s; el Stand grande se desvanece solo a los 11s). El hero lo suelta antes
   (al terminar el relevo, o en cuanto sabe que no habra relevo). Con
   reduced motion no hay grande, asi que no se esconde nada.
+
+  Si el hero hidrata tarde (primera visita, sin cache) y rebobina al grande
+  para darle su entrada (portfolio-hero.tsx), cancela este plazo
+  (window.__standGate): el relevo ya es su propia red de seguridad.
 */
-const script = `(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var r=document.documentElement;r.classList.add("stand-manifest");setTimeout(function(){r.classList.remove("stand-manifest")},11500)}catch(e){}})()`;
+const script = `(function(){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var r=document.documentElement;r.classList.add("stand-manifest");window.__standGate=setTimeout(function(){r.classList.remove("stand-manifest")},11500)}catch(e){}})()`;
 
 export function StandManifestGate() {
   return <script dangerouslySetInnerHTML={{ __html: script }} />;

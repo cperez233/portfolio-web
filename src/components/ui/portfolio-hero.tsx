@@ -108,6 +108,9 @@ const ENTRY = {
   copy: 1150,
 } as const;
 
+/** Hasta cuando se rebobina el Stand si el hero hidrata tarde (antes de que la compuerta suelte al chico). */
+const LATE_HYDRATION_MS = 10000;
+
 /*
   Crazy Diamond, en el reloj de la animacion del Stand (que ya cuenta su
   retardo): se prepara, la rafaga contra la pantalla (un puno cada step),
@@ -324,11 +327,12 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return skip();
 
     const run = giant.getAnimations().find((a) => (a as CSSAnimation).animationName === "hero-stand");
-    const elapsed = Number(run?.currentTime ?? Infinity);
+    let elapsed = Number(run?.currentTime ?? Infinity);
     const heroBox = heroRef.current?.getBoundingClientRect();
-    // Ya paso el momento (hidrato muy tarde), o el hero no esta a la vista
-    // (la pagina se abrio ya bajada): no hay relevo que ver.
-    if (!run || run.playState === "finished" || elapsed > ENTRY.stand + 1500) return skip();
+    // Ya paso todo (hidrato casi al final de la animacion, y la compuerta suelta
+    // al chico a los 11.5s), o el hero no esta a la vista (la pagina se abrio
+    // ya bajada): no hay relevo que ver.
+    if (!run || run.playState === "finished" || elapsed > LATE_HYDRATION_MS) return skip();
     if (heroBox && heroBox.bottom < window.innerHeight * 0.45) return skip();
 
     introRef.current ??= nextIntro();
@@ -337,8 +341,18 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const def = intro === "world" || intro === "diamond" ? null : INTROS[intro];
     const lines = standLines[languageRef.current].intro;
     const startAt = def ? def.start : intro === "world" ? WORLD.shout : DIAMOND.windup;
-    // El poder solo si no quedo atras (hidratacion tardia); sin el, el
-    // grande se hace chico en cuanto termina de subir.
+    // Primera visita, sin cache: el JS llega cuando el reloj de la animacion CSS
+    // ya paso el inicio del poder (la entrada CSS ya termino y el hero esta
+    // quieto). En vez de quedarse sin entrada, se rebobina solo el Stand grande
+    // a su aparicion y el poder corre completo desde ahi.
+    if (elapsed >= startAt + 250) {
+      run.currentTime = ENTRY.stand;
+      elapsed = ENTRY.stand;
+      // La compuerta soltaria al chico a los 11.5s de la pagina, a media entrada.
+      window.clearTimeout((window as { __standGate?: number }).__standGate);
+    }
+    // El poder solo si no quedo atras; sin el, el grande se hace chico en
+    // cuanto termina de subir.
     const show = elapsed < startAt + 250;
     const condenseAt = show ? (def ? def.condense : intro === "world" ? WORLD.condense : DIAMOND.condense) : Math.max(elapsed, ENTRY.stand + 450);
     // Solo sale de la bolsa si de verdad se ve.
