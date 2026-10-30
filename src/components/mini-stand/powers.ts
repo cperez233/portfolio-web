@@ -56,6 +56,8 @@ export interface PowerContext {
   ms?: number;
   /** El Stand grita el nombre del ataque (Bites the Dust, antes de activarse). */
   call?: () => void;
+  /** King Crimson: el tiempo ya se salto y la pantalla sigue a oscuras; el Stand se muda ahora. */
+  onSkip?: () => void;
 }
 
 export const POWER_VARIANTS: Partial<Record<PowerId, string[]>> = {
@@ -1462,13 +1464,23 @@ async function btdRewind(ctx: PowerContext) {
 /* King Crimson                                                        */
 /* ------------------------------------------------------------------ */
 
-/** King Crimson: se salta el tiempo hasta la siguiente seccion. */
+/**
+ * King Crimson: se salta el tiempo hasta la siguiente seccion. El Stand se
+ * muda mientras la pantalla esta del todo a oscuras (ya en la seccion
+ * nueva), asi que al volver la imagen ya esta en otro sitio y no se le ve
+ * ir ni queda su silueta.
+ */
 async function kingCrimson(ctx: PowerContext) {
   const node = layer("power-kc", true);
   await wait(ctx.reducedMotion ? 100 : 380);
   const next = sections().find((el) => el.getBoundingClientRect().top > 60);
   if (next) scrollToY(next.getBoundingClientRect().top + window.scrollY, true);
-  await wait(ctx.reducedMotion ? 300 : 700);
+  if (!ctx.reducedMotion) {
+    // Un cuadro despues del salto, aun dentro del tramo oscuro del parpadeo.
+    await wait(60);
+    ctx.onSkip?.();
+  }
+  await wait(ctx.reducedMotion ? 300 : 640);
   node.classList.add("is-leaving");
   await wait(450);
   node.remove();

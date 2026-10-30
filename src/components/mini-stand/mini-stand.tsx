@@ -709,7 +709,7 @@ export function MiniStand() {
         .filter(({ r }) => r.width > 40 && r.height > 16);
     }
     /** Aparece en otro sitio de lo que se ve, sin volar. Devuelve a donde. */
-    function teleport(avoid?: Element, holdMs = 4500, near?: Element) {
+    function teleport(avoid?: Element, holdMs = 4500, near?: Element, ghost = true) {
       const from = { x: body.x, y: body.y };
       const rects = visibleRects().filter(({ el }) => el !== avoid);
       const dist = (r: DOMRect) => Math.hypot(r.left + r.width / 2 - from.x, r.top - from.y);
@@ -722,9 +722,11 @@ export function MiniStand() {
         ? clampPoint({ x: dest.left + Math.min(dest.width * 0.75, SPRITE_W * scale * 1.5), y: dest.top - 1 })
         : clampPoint({ x: width - from.x, y: height * 0.4 });
       // Silueta donde estaba, que se desvanece.
-      const left = snapshot("stand-frozen");
-      window.setTimeout(() => left.classList.add("is-leaving"), 40);
-      window.setTimeout(() => left.remove(), 450);
+      if (ghost) {
+        const left = snapshot("stand-frozen");
+        window.setTimeout(() => left.classList.add("is-leaving"), 40);
+        window.setTimeout(() => left.remove(), 450);
+      }
       body.x = point.x;
       body.y = point.y;
       body.vx = 0;
@@ -839,8 +841,9 @@ export function MiniStand() {
     window.addEventListener("jojo:timestop", onTimeStop);
     window.addEventListener("jojo:timestop-attempt", onAttempt);
     markRef.current = (text) => sfx(text, "mark");
+    // King Crimson: se muda con la pantalla a oscuras, sin silueta donde estaba.
     blink.current = () => {
-      teleport();
+      teleport(undefined, 4500, undefined, false);
       sfx("ドン!", "sfx");
     };
 
@@ -1670,6 +1673,7 @@ export function MiniStand() {
         act.current("pose", 1600);
         say.current(pickLine(lines.universe.stop), 2400);
       },
+      onSkip: id === "kingcrimson" && !reducedMotion ? () => blink.current() : undefined,
       call: power.call
         ? () => {
             act.current("pose", 1400);
@@ -1702,8 +1706,7 @@ export function MiniStand() {
       say.current(`${before} ${pickLine(lines.dejaVu)}`, 2800);
       return;
     }
-    // King Crimson: el viaje del Stand tambien se borra; ya esta alli.
-    if (id === "kingcrimson" && !reducedMotion) blink.current();
+    // King Crimson: el viaje del Stand tambien se borra; ya se mudo en onSkip.
     // ZA WARUDO ya se burla al reanudarse (onTimeStop).
     if (id === "zawarudo" && !reducedMotion) return;
     const closing = perfect && power.bonus ? power.bonus : (variantLines?.done ?? power.done);
