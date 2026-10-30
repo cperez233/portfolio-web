@@ -19,8 +19,9 @@ import { fill, type IntroDef } from "./kit";
   si la animacion se saltara, y cae el vacio rojo y negro. En el vacio no
   pasa nada que se vea: la pagina no esta (ni el medidor, ni el menu, ni
   el retrato), solo King Crimson, quieto, en rojo. Quien mira no vive ese
-  tiempo. Vuelve con otro corte corrupto y la pagina ya esta en otro
-  punto, sin transicion: el medidor lleno con los tres pasos hechos, la
+  tiempo; justo antes del final el Stand se esconde dentro del vacio
+  y se muda sin que se le vea. Vuelve con otro corte corrupto y la
+  pagina ya esta en otro punto, sin transicion: el medidor lleno con los tres pasos hechos, la
   hora tres horas despues y el Stand en otro sitio y otra pose. Despues
   del corte, 結果だけだ: solo queda el resultado.
 
@@ -35,6 +36,8 @@ const T = {
   epitaph: 3900,
   call: 4750,
   erase: 5000,
+  // Sin que se le vea: se esconde dentro del vacio y se muda mientras no esta.
+  away: 6200,
   resume: 6450,
   result: 6750,
   talk: 7400,
@@ -167,10 +170,20 @@ export const crimson: IntroDef = {
       });
     });
 
+    // Antes de que vuelva el tiempo, el Stand desaparece del vacio y cambia de
+    // sitio y de pose con nadie mirando: asi no se le ve teletransportarse.
+    kit.at(T.away, () => {
+      root.classList.add("kc-away");
+      kit.jumpAside(pose, "wink");
+    });
+    kit.onCleanup(() => root.classList.remove("kc-away"));
+
     // El tiempo vuelve de golpe y ya paso todo: tres horas despues.
     kit.at(T.resume, () => {
       playSfx("resume");
       skip();
+      // Aparece ya en su nuevo sitio, junto con el corte.
+      root.classList.remove("kc-away");
       root.classList.remove("kc-erased");
       voidLayer?.remove();
       deck.classList.remove("is-erased");
@@ -185,8 +198,6 @@ export const crimson: IntroDef = {
         step.querySelector("b")!.textContent = "✓";
         step.querySelector("em")!.textContent = wall(52 + i * 64);
       });
-      // Ya esta en otro sitio, en otra pose: no se le vio ir.
-      kit.jumpAside(pose, "wink");
       const r = meter.getBoundingClientRect();
       pop("バァーン", r.right - 70, r.top - 10, "power-pop-word is-crimson is-big", 1000);
     });

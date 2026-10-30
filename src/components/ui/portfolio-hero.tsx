@@ -610,8 +610,11 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       azar dentro de cada celda y la parte de arriba libre de la barra.
     */
     const hitPoints = (count: number) => {
+      // Al menos una celda por golpe: si hay mas golpes que celdas, los ultimos
+      // caen sobre un vidrio ya roto y parece que no rompen nada (en celular eran
+      // 10 golpes para 8 celdas; en escritorio, 14 para 12).
       const cols = small ? 2 : 4;
-      const rowsN = small ? 4 : 3;
+      const rowsN = Math.max(small ? 4 : 3, Math.ceil(count / cols));
       const top = 90;
       const cellW = vw / cols;
       const cellH = (vh - top - 40) / rowsN;

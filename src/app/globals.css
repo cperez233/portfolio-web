@@ -5160,6 +5160,10 @@ html.kc-skip nav[aria-label] {
     filter: none;
   }
 }
+/* El Stand se esconde un instante dentro del vacio, mientras cambia de sitio. */
+html.kc-away .hero-stand {
+  visibility: hidden;
+}
 /* Lo de fuera del hero no esta en el tiempo borrado. */
 html.kc-erased :is(nav[aria-label], [data-stand-hero] .hero-rise, [data-stand-hero] .hero-paste, [data-stand-hero] .hero-pop, [data-stand-hero] .hero-don) {
   visibility: hidden;

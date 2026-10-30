@@ -27,11 +27,14 @@ export function nextIntro(): { id: IntroId; commit: () => void } {
     if (isIntro(forced)) return { id: forced, commit: () => {} };
 
     const last = window.localStorage.getItem(LAST_KEY);
-    let bag: IntroId[] = [];
-    try {
-      const raw: unknown = JSON.parse(window.localStorage.getItem(BAG_KEY) ?? "[]");
-      if (Array.isArray(raw)) bag = [...new Set(raw.filter(isIntro))];
-    } catch {}
+    const readBag = () => {
+      try {
+        const raw: unknown = JSON.parse(window.localStorage.getItem(BAG_KEY) ?? "[]");
+        if (Array.isArray(raw)) return [...new Set(raw.filter(isIntro))];
+      } catch {}
+      return [];
+    };
+    let bag = readBag();
     if (!bag.length) bag = [...INTRO_IDS];
     // En la costura entre dos bolsas, nunca la misma dos veces seguidas.
     const options = bag.length > 1 ? bag.filter((other) => other !== last) : bag;
@@ -40,7 +43,10 @@ export function nextIntro(): { id: IntroId; commit: () => void } {
       id,
       commit() {
         try {
-          const left = bag.filter((other) => other !== id);
+          // Se saca de la bolsa de ahora y no de la de cuando se eligio: con dos
+          // pestanas abiertas a la vez, la otra pudo gastar entradas en el medio.
+          const fresh = readBag();
+          const left = (fresh.length ? fresh : bag).filter((other) => other !== id);
           window.localStorage.setItem(BAG_KEY, JSON.stringify(left));
           window.localStorage.setItem(LAST_KEY, id);
         } catch {}
