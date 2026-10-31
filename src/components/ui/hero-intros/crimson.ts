@@ -66,8 +66,6 @@ const wall = (plus = 0) => {
 const SPIN = ["◐", "◓", "◑", "◒"];
 
 export const crimson: IntroDef = {
-  name: "King Crimson",
-  nameAt: T.call,
   start: T.open,
   condense: 11000,
   run(kit) {

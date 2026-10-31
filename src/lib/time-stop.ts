@@ -104,3 +104,42 @@ export function stopTime(ms: number, by: TimeStopDetail["by"] = "page", target?:
 export function endTimeStop() {
   resumeNow?.();
 }
+
+const HOLD_KEYS = new Set([" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"]);
+
+/**
+ * Fija el scroll sin detener el tiempo: la pagina sigue animando y se puede
+ * tocar todo (el boton de saltar, el menu, Tab), solo que no se desplaza.
+ * Lo usa Crazy Diamond: sus grietas son del vidrio de la pantalla, y al bajar
+ * se quedaban sobre otra seccion. `maxMs` lo suelta pase lo que pase: nadie
+ * se queda sin poder bajar. Devuelve como soltarlo antes.
+ */
+export function holdScroll(maxMs: number) {
+  const y = window.scrollY;
+  window.__lenis?.stop();
+  const block = (event: Event) => {
+    if (event instanceof KeyboardEvent) {
+      if (!HOLD_KEYS.has(event.key)) return;
+      // La barra espaciadora tambien aprieta botones.
+      if (event.target instanceof Element && event.target.closest("a, button, input, textarea, select")) return;
+    }
+    event.preventDefault();
+  };
+  const options = { capture: true, passive: false } as const;
+  const kinds = ["wheel", "touchmove", "keydown"] as const;
+  kinds.forEach((kind) => window.addEventListener(kind, block, options));
+  // Por si el navegador desplaza igual (barra de scroll): se devuelve al sitio.
+  const pin = () => window.scrollY !== y && window.scrollTo(0, y);
+  window.addEventListener("scroll", pin);
+  let held = true;
+  const release = () => {
+    if (!held) return;
+    held = false;
+    window.clearTimeout(timer);
+    kinds.forEach((kind) => window.removeEventListener(kind, block, options));
+    window.removeEventListener("scroll", pin);
+    window.__lenis?.start();
+  };
+  const timer = window.setTimeout(release, maxMs);
+  return release;
+}

@@ -4494,10 +4494,15 @@ html.intro-banner-low .power-zw-text {
   stroke: var(--color-canvas);
   stroke-width: 4.5;
   opacity: 0.7;
+  transition:
+    stroke 0.5s ease-out,
+    stroke-width 0.5s ease-out,
+    opacity 0.5s ease-out;
 }
 .hero-crack-line {
   stroke: var(--color-ink);
   stroke-width: 2.6;
+  transition: stroke 0.5s ease-out;
 }
 .hero-crack-halo.is-fine {
   stroke-width: 3;
@@ -4521,7 +4526,15 @@ html.intro-banner-low .power-zw-text {
   stroke: #e891c4;
 }
 .hero-crack.is-healing .hero-crack-line {
+  stroke: #fbe1ef;
+}
+.hero-crack.is-healing .hero-crack-halo {
   stroke: #e891c4;
+  stroke-width: 6.5;
+  opacity: 0.85;
+}
+.hero-crack.is-healing .hero-crack-halo.is-fine {
+  stroke-width: 4.5;
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-crack {
@@ -4609,6 +4622,7 @@ html.intro-banner-low .power-zw-text {
 }
 .hero-crack.is-healing .hero-crack-dot {
   stroke: #e891c4;
+  fill: rgba(251, 225, 239, 0.8);
 }
 .hero-shard {
   will-change: transform;
@@ -4628,6 +4642,7 @@ html.intro-banner-low .power-zw-text {
 }
 .hero-crack.is-healing .hero-shard-glass {
   stroke: #e891c4;
+  fill: rgba(251, 225, 239, 0.35);
 }
 
 /* Destello del vidrio al partirse. */
@@ -6220,4 +6235,77 @@ html.tbc-frozen main *::after {
   .intro-skip {
     display: none;
   }
+}
+
+/*
+  El crater de Killer Queen (blast.ts): el y lo que sale de el van por debajo
+  del Stand (z 40). El fuego lo pinta boom.ts, por encima de todo.
+*/
+.blast-ground {
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+  overflow: hidden;
+}
+.blast-crater,
+.blast-frag,
+.blast-chip,
+.blast-smoke {
+  position: absolute;
+  will-change: transform, opacity;
+}
+.blast-crater svg {
+  display: block;
+  overflow: visible;
+}
+/* Sus copias ya estan en su sitio: sin la entrada ni las transiciones del original. */
+.blast-frag,
+.blast-frag * {
+  animation: none !important;
+  transition: none !important;
+}
+.blast-hot {
+  animation: blast-hot 0.5s ease-in-out infinite alternate;
+}
+@keyframes blast-hot {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+.blast-smoke {
+  border-radius: 9999px;
+  opacity: 0;
+  background: radial-gradient(circle, rgba(58, 50, 52, 0.85) 0 34%, rgba(40, 34, 36, 0.5) 56%, transparent 72%);
+  animation: blast-smoke 1.9s ease-out infinite;
+}
+@keyframes blast-smoke {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.45);
+  }
+  22% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift, 0), var(--rise, -180px)) scale(1.5);
+  }
+}
+.is-rewinding .blast-smoke {
+  display: none;
+}
+
+/* Crazy Diamond repara el vidrio: la luz rosa que sale de el y barre las grietas. */
+.hero-heal-ring {
+  position: absolute;
+  border-radius: 9999px;
+  border: 3px solid #e891c4;
+  box-shadow:
+    0 0 26px 6px rgba(232, 145, 196, 0.55),
+    inset 0 0 26px 6px rgba(232, 145, 196, 0.35);
+  will-change: transform, opacity;
 }

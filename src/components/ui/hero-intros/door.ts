@@ -370,7 +370,6 @@ export const door: IntroDef = {
     });
     kit.at(close + 260 + T.foldMs + 600, () => {
       kit.frame("stand", { face: "wink" });
-      kit.talk(pickLine(lines.done), 1100);
     });
     kit.at(Math.min(9600, close + 260 + T.foldMs + 1500), kit.relay);
   },

@@ -184,11 +184,11 @@ The render loop stops off-screen.
   (thorny vines and a developing spirit photo with your visit), Made in
   Heaven (animations up to 14x, day and night flashing, then the universe
   starts resetting to the old burgundy site until the Stand stops it),
-  Bites the Dust (two random forms: a bomb, where something near the
-  Stand blows up with the hero's explosion, the pieces around it fly off
-  and come back one by one to their dashed slots as the explosion
-  swallows itself; or the rewind, where カチッ and the page jolts back
-  up in VHS tape with every loop running backwards, and a déjà vu)
+  Bites the Dust (always the bomb: something near the Stand blows into
+  pieces with the hero's explosion, what is next to it gets bitten, burnt
+  and pushed aside by the shock wave and a smoking crater stays behind
+  (`mini-stand/blast.ts`), then everything rewinds to its dashed slot as the
+  explosion swallows itself, in VHS tape, and a déjà vu)
   and King Crimson. All visual, nothing is removed, one at a time.
   Every random line comes from `pick.ts`: none of the last 3 picks of a
   list comes back until a fourth one has been said.
@@ -251,8 +251,11 @@ The render loop stops off-screen.
     150 ms hit-stop, a web of cracks across the whole screen (also
     through each letter), the letters thrown back and shards of glass
     falling. The Stand notices ("Oops… your screen") and Crazy Diamond
-    fixes it: the shards fly back up, every crack closes toward its fist
-    and the letters return. Only `clip-path` and transforms animate.
+    fixes it slowly: a pink light sweeps out from the Stand, the shards
+    fly back up, each star closes last to first and the letters return one
+    by one. Only `clip-path` and transforms animate. The scroll stays
+    fixed from the windup to the relay (`holdScroll` in `lib/time-stop.ts`):
+    the cracks belong to the screen's glass. The skip button releases it.
   - **ZA WARUDO**: the Stand shouts ザ・ワールド and stops time for real
     (`lib/time-stop.ts`, the mini Stand's own power with its sphere).
     While time is stopped nothing visible happens: it freezes with
@@ -287,7 +290,8 @@ The render loop stops off-screen.
       that cools from white to orange to dark red and turns into a rising
       column of smoke, with debris and embers falling under gravity and a
       shock ring. The letters, the portrait, the copy, the buttons and
-      the nav are blown away. バイツァ・ダスト: each piece's empty slot
+      the nav are blown away, and as the fire clears a smoking crater is
+      left where the portrait was (`mini-stand/blast.ts`). バイツァ・ダスト: each piece's empty slot
       shows as a dashed outline and the pieces fly back one by one along
       the path they left by, with a trail, snapping into their slot; the
       explosion swallows itself. It ends there: the page is back as it

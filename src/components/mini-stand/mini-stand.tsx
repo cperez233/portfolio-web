@@ -318,6 +318,8 @@ export function MiniStand() {
         typing = { text: "", shown: 0, next: 0 };
         return;
       }
+      // Mientras el grande esta en escena el que habla es el: el chico se calla.
+      if (document.documentElement.classList.contains("stand-manifest")) return;
       lastSpokeAt = performance.now();
       anchor = null;
       if (text !== linesRef.current.sleep) saidLog.current = [...saidLog.current, text].slice(-4);
@@ -592,6 +594,8 @@ export function MiniStand() {
     // --- Reacciones a lo que pasa ---------------------------------------
     const lastReaction: Partial<Record<StandEvent, number>> = {};
     react.current = (kind, ms = 2600) => {
+      // Durante un poder habla el poder: un comentario suelto le pisaba la frase.
+      if (casting.current) return;
       const now = performance.now();
       // Las reacciones de ambiente no se repiten seguido.
       const ambient = [
@@ -818,6 +822,8 @@ export function MiniStand() {
       introWorld = false;
       root.classList.remove("intro-world");
       if (phase !== "end") return;
+      // Acaba de pasar algo: que no se duerma encima de su frase.
+      lastActivity = performance.now();
       const intro = linesRef.current.intro;
       const list =
         kind === "diamond"
@@ -827,7 +833,8 @@ export function MiniStand() {
             : kind === "skip"
               ? intro.skipped
               : (intro.end[kind as IntroLineId] ?? intro.world);
-      say.current(pickLine(short(list)).replace("{n}", String(visits)), 2600);
+      // Con ZA WARUDO el grande ya hablo dos veces (el chiste): el chico solo posa.
+      if (kind !== "world") say.current(pickLine(short(list)).replace("{n}", String(visits)), 2600);
       // La cara, cuando termina el cuadro del relevo (emerge, 800ms).
       const [face, mark] = INTRO_FACES[kind ?? ""] ?? INTRO_FACES.world;
       window.setTimeout(() => {
@@ -1126,7 +1133,8 @@ export function MiniStand() {
       if (action && now > action.until) action = null;
 
       const frozen = action?.kind === "freeze";
-      if (!sleeping && !panelOpen.current && !casting.current && now - lastActivity > SLEEP_MS) {
+      // Nunca a media frase: el "z z z" dejaba la frase cortada en dos letras.
+      if (!sleeping && !panelOpen.current && !casting.current && !bubbleUntil && now - lastActivity > SLEEP_MS) {
         sleeping = true;
         say.current(linesRef.current.sleep, Infinity);
         unlockSecret("sleep");
@@ -1332,10 +1340,11 @@ export function MiniStand() {
             sfx("", "dust", spriteW * 0.45, -2);
           }
         }
-        const recent = now - current.spokeAt < 12000 || now - lastSpokeAt < 4000;
+        const recent = now - current.spokeAt < 30000 || now - lastSpokeAt < 8000;
         if (!spokeHere && !recent && now - settledSince > 300) {
           spokeHere = true;
-          const line = nextLine(current);
+          // No comenta cada sitio donde se posa: a veces solo aterriza.
+          const line = Math.random() < 0.6 ? nextLine(current) : null;
           if (line) {
             say.current(line, 2800);
             current.spokeAt = now;
@@ -1396,7 +1405,7 @@ export function MiniStand() {
           siempre una ayuda de la seccion, señalando: que tocar, que
           arrastrar, a donde ir. Si no, piensa en voz alta.
         */
-        if (mode === "out" && now - lastSpokeAt > 26000 && now - lastActivity < 5000 && now - settledSince > 2500) {
+        if (mode === "out" && now - lastSpokeAt > 40000 && now - lastActivity < 5000 && now - settledSince > 2500) {
           const lines = linesRef.current;
           const tips = short(lines.tips[current?.id ?? ""] ?? lines.tips.default ?? []);
           if (!chatted.current && !nudged) {

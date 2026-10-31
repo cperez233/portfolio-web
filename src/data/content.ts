@@ -352,7 +352,7 @@ const en: Dictionary = {
   hero: {
     tagline: "Websites and software that run your business, and video that sells it.",
     description:
-      "I design, build and explain the systems small teams depend on, without the jargon.",
+      "I design them, build them and explain how they work, without the jargon.",
     badgeAvailability: "Open to new projects",
     badgeLocation: "Bucaramanga, Colombia · remote",
     ctaPrimary: "Let's Talk on WhatsApp",
@@ -366,15 +366,15 @@ const en: Dictionary = {
     blocks: [
       {
         title: "Engineering & security",
-        body: "I build complete systems, start to finish, with whatever technology the problem needs. I come from cybersecurity, so the first thing I check is where your data goes. I also run carpy, my software studio, for projects that need a team.",
+        body: "I build complete systems, start to finish. Projects that need a team I take on with carpy, my software studio.",
         traits: [
-          { label: "Right tool per problem", detail: "not per habit" },
-          { label: "Security first", detail: "your data, protected from day one" },
+          { label: "The right tech for each problem", detail: "React, Laravel, Python" },
+          { label: "Security first", detail: "I come from cybersecurity and check where your data goes" },
         ],
       },
       {
         title: "Brand & content",
-        body: "A website works better when the brand behind it is clear. I built a TikTok audience of 35K+ followers and 2.5M likes by talking to people the way they talk, and I put that same voice into content that brings customers to your business. Logo and colours included.",
+        body: "I reached 35K+ followers and 2.5M likes on TikTok by talking to people the way they talk. I put that same voice into your business's content.",
         traits: [
           { label: "Visual identity", detail: "logo, colours, fonts" },
           { label: "Content for social media", detail: "scripts and editing that hold attention" },
@@ -454,7 +454,7 @@ const en: Dictionary = {
         category: "My software studio · co-founder",
         title: "carpy: a team for the projects that need more than one person",
         problem:
-          "Some projects are too much for one person to do well: an internal system, an e-invoicing integration or a security audit, all with a deadline.",
+          "An internal system, an e-invoicing integration or a security audit with a deadline: some projects are too much for one person to do well.",
         solution:
           "I co-founded carpy, a software studio with its own team: custom software, websites and online stores, integrations, data dashboards and security audits, for businesses in Colombia and abroad.",
         result:
@@ -469,9 +469,9 @@ const en: Dictionary = {
         problem:
           "The FCV kept its information assets in an Excel matrix: no access control per area and no way to see the risks across the whole foundation at once.",
         solution:
-          "A web app (Java, Spring Boot and MariaDB) where each area registers its assets, rates confidentiality, integrity and availability, and the app works out the classification on its own. It has roles with per-area access, bulk loading from the original Excel, an approval flow, risks, controls and action plans, a dashboard, and an audit log nobody can edit.",
+          "A web app (Java, Spring Boot and MariaDB) where each area registers its assets and the app works out their classification. It has per-area access, bulk loading from the original Excel, an approval flow, a dashboard and an audit log nobody can edit.",
         result:
-          "Running in production at the FCV. Built with security from day one: a strict CSP, CSRF protection, a 404 for anything outside a user's area, and automated permission tests.",
+          "Running in production at the FCV, with a strict CSP, CSRF protection and automated permission tests.",
         shotAlts: [
           "Dashboard with assets by classification level, risk and status (demo data)",
           "Asset list with filters and classification levels, in dark mode (demo data)",
@@ -484,11 +484,11 @@ const en: Dictionary = {
         category: "Documentation platform · PHP · MediaWiki · cybersecurity team",
         title: "A wiki that finds what you meant, even with typos",
         problem:
-          "The cybersecurity team's documentation lived in a stock MediaWiki: the default look and a basic search that missed pages over a typo or a missing accent.",
+          "The cybersecurity team's documentation lived in a stock MediaWiki, with a search that missed pages over a typo or a missing accent.",
         solution:
-          "I wrote a MediaWiki extension (PHP, JavaScript and CSS) with a new theme: dark mode, a table of contents on the right and a redesigned home page. The search ignores accents and capitals, tolerates typos, finds words in any order, looks inside the articles and opens with Ctrl+K.",
+          "I wrote a MediaWiki extension (PHP, JavaScript and CSS) with a new theme and dark mode. The search ignores accents and capitals, tolerates typos, looks inside the articles and opens with Ctrl+K.",
         result:
-          "Live in production since September 2026. The deploy script saves a backup of the previous theme, so rolling back takes three commands.",
+          "Live in production since September 2026. Rolling back takes three commands.",
         shotAlts: [
           "Search finding a page despite a typo (demo content)",
           "Article page with a table of contents on the right (demo content)",
@@ -520,9 +520,9 @@ const en: Dictionary = {
         problem:
           "Playing trivia with friends usually means an app to install, an account to create and a server somewhere.",
         solution:
-          "A web game where a wheel picks the category, then 10 timed questions and points for streaks. Rooms of up to 10 players join from their own phones with a code, with a live scoreboard, chat and emotes. Mayhem mode adds power-ups, like Mario Kart's, that land on your friends' screens. It is React, TypeScript and Vite, with WebRTC (PeerJS), so there is no backend: the room creator's browser runs the match.",
+          "A wheel picks the category, then come 10 timed questions with points for streaks. Up to 10 players join from their phones with a code, with a live scoreboard and chat. Mayhem mode adds power-ups, like Mario Kart's. It is React, TypeScript and WebRTC: the room creator's browser runs the match, with no backend.",
         result:
-          "It plays in the browser with nothing to download and no account, in English and Spanish. It is a static site, so there is no server to maintain.",
+          "It plays in the browser with nothing to download and no account, in English and Spanish.",
         statLabel: "questions in 146 categories, in English and Spanish",
         shotAlts: [
           "The wheel that picks the category",
@@ -538,9 +538,9 @@ const en: Dictionary = {
         problem:
           "Tour dates are scattered across label posts, ticket sites and fan accounts, and none of them tells you how far a show is from where you live.",
         solution:
-          "A page with a small 3D globe where ten groups stand as chibis on their next tour stop, each with a countdown, the distance to you and a map of the venue's neighborhood. It has alerts for new dates and releases, a show-night mode and a sonar view of every group around you. It is plain HTML, CSS and JavaScript with no framework, and a GitHub Action refreshes the data every 15 minutes and rebuilds the page.",
+          "A 3D globe where ten groups stand as chibis on their next tour stop, each with a countdown and the distance to you. It has alerts for new dates and a show-night mode. It is plain JavaScript, and a GitHub Action refreshes the data every 15 minutes.",
         result:
-          "It only uses public, official schedules and posts, at city level, with no tracking of people. It installs as an app on your phone and works in English and Spanish.",
+          "It only uses official schedules and posts, at city level, with no tracking of people. It installs as an app on your phone.",
         statLabel: "hand-made chibis, one for every member of ten groups",
         shotAlts: [
           "The 3D globe with each group standing on its next tour stop",
@@ -721,7 +721,7 @@ const en: Dictionary = {
   pricing: {
     eyebrow: "Plans",
     title: "Pricing",
-    intro: "Starting prices for each type of project. The final price is agreed in writing before work begins.",
+    intro: "Starting prices. The final price is agreed in writing before work begins.",
     from: "From",
     featured: "Most chosen",
     includesPrevious: "Everything in the previous plan, plus:",
@@ -846,15 +846,15 @@ const en: Dictionary = {
       },
       {
         question: "What does showing up on ChatGPT or Google AI mean?",
-        answer: "More and more people ask ChatGPT, Perplexity or Google things like \"where can I find X in my city?\". I prepare your site with structured data and clear answers so AI understands it and can recommend you. Nobody can guarantee first place, but it can be ready.",
+        answer: "More and more people ask ChatGPT or Google \"where can I find X in my city?\". I prepare your site so AI understands it and can recommend you. Nobody can guarantee first place.",
       },
       {
         question: "Are the domain and hosting included?",
-        answer: "No, and that's on purpose. They are paid yearly (or monthly, for sites with a database) directly to the provider, in your name and on your card, so the website is yours and you don't depend on me to keep it online. I help you pick and set them up. If your site grows a lot, the provider may charge more for usage; I leave alerts on so it never takes you by surprise.",
+        answer: "No. They are paid directly to the provider, in your name and on your card, so the website is yours and you don't depend on me to keep it online. I help you pick and set them up, and I leave alerts on in case usage goes up.",
       },
       {
         question: "Do you work with clients outside Colombia?",
-        answer: "Yes. I'm based in Bucaramanga and work with businesses across Colombia and abroad, in Spanish or English, over WhatsApp and video calls. For clients abroad I quote in US dollars.",
+        answer: "Yes. I'm based in Bucaramanga and work with businesses across Colombia and abroad, in Spanish or English, over WhatsApp and video calls.",
       },
     ],
   },
@@ -901,12 +901,12 @@ const en: Dictionary = {
       nameJp: "パラノイド・アンドロイド",
       user: "Stand user: Cristian Pérez",
       description:
-        "Builds software, websites and apps that businesses put to work, and makes content that goes viral. Has a cybersecurity streak: checks the locks before handing over the keys.",
+        "Builds software and websites that businesses put to work, and content that goes viral. Checks the locks before handing over the keys.",
       stats: ["Power", "Speed", "Range", "Stamina", "Precision", "Potential"],
       chartLabel: "Stand stats: Power C, Speed B, Range A, Stamina A, Precision A, Potential A.",
       explainerTitle: "What's a Stand?",
       explainer:
-        "In the manga JoJo's Bizarre Adventure, a Stand is someone's spirit turned into a visible power, with its own stats card. This is my take: what I do, in that format.",
+        "In the manga JoJo's Bizarre Adventure, a Stand is someone's spirit turned into a power, with its own stats card. This one is mine.",
     },
     approach: "Oh? You're approaching me?",
     timeStop: "Cristian Pérez: tap to stop time",
@@ -935,7 +935,7 @@ const es: Dictionary = {
   hero: {
     tagline: "Páginas web y software que hacen funcionar tu negocio, y video que lo vende.",
     description:
-      "Diseño, construyo y explico, sin jerga, los sistemas de los que depende un equipo pequeño.",
+      "Los diseño, los construyo y te explico cómo funcionan, sin jerga.",
     badgeAvailability: "Disponible para proyectos nuevos",
     badgeLocation: "Bucaramanga, Colombia · remoto",
     ctaPrimary: "Hablemos por WhatsApp",
@@ -949,15 +949,15 @@ const es: Dictionary = {
     blocks: [
       {
         title: "Ingeniería y seguridad",
-        body: "Construyo sistemas completos, de principio a fin, con la tecnología que pide cada problema. Vengo de ciberseguridad: lo primero que reviso es por dónde pasan tus datos. También dirijo carpy, mi estudio de software, para los proyectos que piden un equipo.",
+        body: "Construyo sistemas completos, de principio a fin. Los proyectos que piden un equipo los hago con carpy, mi estudio de software.",
         traits: [
-          { label: "La herramienta que pide el problema", detail: "no la costumbre" },
-          { label: "Seguridad primero", detail: "tus datos protegidos desde el día uno" },
+          { label: "La tecnología que pide cada problema", detail: "React, Laravel, Python" },
+          { label: "Seguridad primero", detail: "vengo de ciberseguridad y reviso por dónde pasan tus datos" },
         ],
       },
       {
         title: "Marca y contenido",
-        body: "Una página funciona mejor cuando la marca detrás está clara. Construí una audiencia de 35K+ seguidores y 2.5M de likes en TikTok hablándole a la gente en su idioma, y esa misma forma de hablar la pongo en contenido que le trae clientes a tu negocio. Logo y colores incluidos.",
+        body: "Llegué a 35K+ seguidores y 2.5M de likes en TikTok hablándole a la gente en su idioma. Esa misma forma de hablar la pongo en el contenido de tu negocio.",
         traits: [
           { label: "Identidad visual", detail: "logo, colores, tipografías" },
           { label: "Contenido para redes", detail: "guiones y edición que retienen" },
@@ -1037,7 +1037,7 @@ const es: Dictionary = {
         category: "Mi estudio de software · cofundador",
         title: "carpy: un equipo para los proyectos que piden más de una persona",
         problem:
-          "Hay proyectos que una sola persona no alcanza a cubrir bien: un sistema interno, una integración con facturación electrónica o una auditoría, todo con fecha de entrega.",
+          "Un sistema interno, una integración con facturación electrónica o una auditoría con fecha de entrega: hay proyectos que una sola persona no alcanza a cubrir bien.",
         solution:
           "Cofundé carpy, un estudio de software con equipo propio: software a medida, páginas y tiendas en línea, integraciones, tableros de datos y auditorías de seguridad, para negocios en Colombia y afuera.",
         result:
@@ -1052,9 +1052,9 @@ const es: Dictionary = {
         problem:
           "La FCV llevaba sus activos de información en una matriz de Excel: sin control de acceso por área y sin forma de ver los riesgos de toda la fundación a la vez.",
         solution:
-          "Una app web (Java, Spring Boot y MariaDB) donde cada área registra sus activos, valora confidencialidad, integridad y disponibilidad, y la app calcula sola la clasificación. Trae roles con acceso por área, carga masiva desde el Excel original, flujo de aprobación, riesgos, controles y planes de acción, un tablero y una bitácora que nadie puede editar.",
+          "Una app web (Java, Spring Boot y MariaDB) donde cada área registra sus activos y la app calcula sola su clasificación. Trae acceso por área, carga masiva desde el Excel original, flujo de aprobación, tablero y una bitácora que nadie puede editar.",
         result:
-          "En producción en la FCV. Se hizo con seguridad desde el primer día: CSP estricta, protección CSRF, un 404 para todo lo que quede fuera del área de cada usuario y pruebas automáticas de permisos.",
+          "En producción en la FCV, con CSP estricta, protección CSRF y pruebas automáticas de permisos.",
         shotAlts: [
           "Tablero con activos por nivel de clasificación, riesgo y estado (datos de demostración)",
           "Lista de activos con filtros y niveles de clasificación, en modo oscuro (datos de demostración)",
@@ -1067,11 +1067,11 @@ const es: Dictionary = {
         category: "Plataforma de documentación · PHP · MediaWiki · equipo de ciberseguridad",
         title: "Una wiki que encuentra lo que quisiste buscar, aunque te equivoques al escribir",
         problem:
-          "La documentación del equipo de ciberseguridad vivía en un MediaWiki sin personalizar: aspecto por defecto y un buscador básico que no encontraba páginas por un error de tipeo o una tilde de menos.",
+          "La documentación del equipo de ciberseguridad vivía en un MediaWiki sin personalizar, con un buscador que no encontraba páginas por un error de tipeo o una tilde de menos.",
         solution:
-          "Escribí una extensión de MediaWiki (PHP, JavaScript y CSS) con un tema nuevo: modo oscuro, tabla de contenido a la derecha y portada rediseñada. El buscador ignora tildes y mayúsculas, tolera errores de tipeo, encuentra las palabras en cualquier orden, busca dentro de los artículos y se abre con Ctrl+K.",
+          "Escribí una extensión de MediaWiki (PHP, JavaScript y CSS) con tema nuevo y modo oscuro. El buscador ignora tildes y mayúsculas, tolera errores de tipeo, busca dentro de los artículos y se abre con Ctrl+K.",
         result:
-          "En producción desde septiembre de 2026. El script de despliegue guarda una copia del tema anterior, así que volver atrás son tres comandos.",
+          "En producción desde septiembre de 2026. Volver a la versión anterior toma tres comandos.",
         shotAlts: [
           "Búsqueda que encuentra una página pese a un error de tipeo (contenido de demostración)",
           "Artículo con tabla de contenido a la derecha (contenido de demostración)",
@@ -1103,9 +1103,9 @@ const es: Dictionary = {
         problem:
           "Jugar trivia con amigos suele pedir una app que instalar, una cuenta que crear y un servidor en algún lado.",
         solution:
-          "Un juego web donde una ruleta elige la categoría, y luego vienen 10 preguntas con reloj y puntos por racha. Las salas de hasta 10 jugadores entran desde su celular con un código, con marcador en vivo, chat y emotes. El modo Locura agrega poderes, como los de Mario Kart, que le caen a la pantalla de tus amigos. Es React, TypeScript y Vite, con WebRTC (PeerJS): no hay backend, la partida la corre el navegador de quien creó la sala.",
+          "Una ruleta elige la categoría y vienen 10 preguntas con reloj y puntos por racha. Hasta 10 jugadores entran desde el celular con un código, con marcador en vivo y chat. El modo Locura agrega poderes, como los de Mario Kart. Es React, TypeScript y WebRTC: la partida la corre el navegador de quien creó la sala, sin backend.",
         result:
-          "Se juega en el navegador, sin descargar nada ni crear cuenta, en español e inglés. Es un sitio estático: no hay servidor que mantener.",
+          "Se juega en el navegador, sin descargar nada ni crear cuenta, en español e inglés.",
         statLabel: "preguntas en 146 categorías, en español e inglés",
         shotAlts: [
           "La ruleta que elige la categoría",
@@ -1121,9 +1121,9 @@ const es: Dictionary = {
         problem:
           "Las fechas de las giras están regadas entre publicaciones de las disqueras, páginas de boletas y cuentas de fans, y ninguna te dice qué tan lejos te queda un show.",
         solution:
-          "Una página con un globo 3D donde diez grupos aparecen como chibis sobre su próxima parada de gira, cada uno con cuenta regresiva, la distancia hasta ti y un mapa del barrio del recinto. Trae alertas de fechas y lanzamientos nuevos, un modo para la noche del concierto y una vista de sonar con todos los grupos a tu alrededor. Es HTML, CSS y JavaScript puros, sin framework, y un GitHub Action actualiza los datos cada 15 minutos y reconstruye la página.",
+          "Un globo 3D donde diez grupos aparecen como chibis sobre su próxima parada de gira, cada uno con cuenta regresiva y la distancia hasta ti. Trae alertas de fechas y un modo para la noche del concierto. Es JavaScript puro, y un GitHub Action actualiza los datos cada 15 minutos.",
         result:
-          "Solo usa calendarios y publicaciones públicas y oficiales, a nivel de ciudad, sin rastrear a nadie. Se instala como app en el celular y funciona en español e inglés.",
+          "Solo usa calendarios y publicaciones oficiales, a nivel de ciudad, sin rastrear a nadie. Se instala como app en el celular.",
         statLabel: "chibis hechos a mano, uno por cada integrante de diez grupos",
         shotAlts: [
           "El globo 3D con cada grupo sobre su próxima parada de gira",
@@ -1304,7 +1304,7 @@ const es: Dictionary = {
   pricing: {
     eyebrow: "Planes",
     title: "Precios",
-    intro: "Valores de referencia para cada tipo de proyecto. El precio final se acuerda por escrito antes de empezar.",
+    intro: "Valores de referencia. El precio final se acuerda por escrito antes de empezar.",
     from: "Desde",
     featured: "El más elegido",
     includesPrevious: "Todo lo del plan anterior, más:",
@@ -1429,15 +1429,15 @@ const es: Dictionary = {
       },
       {
         question: "¿Qué es aparecer en ChatGPT o en la IA de Google?",
-        answer: "Cada vez más gente le pregunta a ChatGPT, Perplexity o a Google cosas como \"¿dónde encuentro X en mi ciudad?\". Preparo tu página con datos estructurados y respuestas claras para que la IA la entienda y pueda recomendarte. Nadie puede garantizar el primer lugar, pero sí dejarla lista.",
+        answer: "Cada vez más gente le pregunta a ChatGPT o a Google \"¿dónde encuentro X en mi ciudad?\". Preparo tu página para que la IA la entienda y pueda recomendarte. Nadie puede garantizar el primer lugar.",
       },
       {
         question: "¿El dominio y el hosting están incluidos?",
-        answer: "No, y es a propósito. Se pagan cada año (o cada mes, en webs con base de datos) directo al proveedor, a tu nombre y con tu tarjeta: así la página es tuya y no dependes de mí para mantenerla en línea. Yo te ayudo a elegirlos y configurarlos. Si tu página crece mucho, el proveedor puede cobrar más por uso; dejo alertas activas para que nunca te tome por sorpresa.",
+        answer: "No. Se pagan directo al proveedor, a tu nombre y con tu tarjeta: así la página es tuya y no dependes de mí para mantenerla en línea. Te ayudo a elegirlos y configurarlos, y dejo alertas activas por si el consumo sube.",
       },
       {
         question: "¿Trabajas fuera de Bucaramanga o de Colombia?",
-        answer: "Sí. Estoy en Bucaramanga y trabajo con negocios de toda Colombia y de otros países, en español o en inglés, por WhatsApp y videollamada. Afuera de Colombia cotizo en dólares.",
+        answer: "Sí. Estoy en Bucaramanga y trabajo con negocios de toda Colombia y de otros países, en español o en inglés, por WhatsApp y videollamada.",
       },
     ],
   },
@@ -1484,12 +1484,12 @@ const es: Dictionary = {
       nameJp: "パラノイド・アンドロイド",
       user: "Usuario del Stand: Cristian Pérez",
       description:
-        "Construye software, páginas web y apps que los negocios usan de verdad, y crea contenido que se vuelve viral. Tiene aires de ciberseguridad: revisa las cerraduras antes de entregar las llaves.",
+        "Hace software y páginas web que los negocios usan de verdad, y contenido que se vuelve viral. Revisa las cerraduras antes de entregar las llaves.",
       stats: ["Poder", "Velocidad", "Alcance", "Resistencia", "Precisión", "Potencial"],
       chartLabel: "Estadísticas del Stand: Poder C, Velocidad B, Alcance A, Resistencia A, Precisión A, Potencial A.",
       explainerTitle: "¿Qué es un Stand?",
       explainer:
-        "En el manga JoJo's Bizarre Adventure, un Stand es el espíritu de alguien convertido en un poder visible, con su propia tarjeta de estadísticas. Esta es mi versión: lo que hago, en ese formato.",
+        "En el manga JoJo's Bizarre Adventure, un Stand es el espíritu de alguien hecho poder, con su tarjeta de estadísticas. Esta es la mía.",
     },
     approach: "¿Oh? ¿Te acercas a mí?",
     timeStop: "Cristian Pérez: toca para detener el tiempo",

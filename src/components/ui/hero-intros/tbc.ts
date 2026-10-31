@@ -29,7 +29,7 @@ const T = {
   arrow: 2520,
   thaw: 5900,
   talk: 6300,
-  relay: 7600,
+  relay: 8900,
 } as const;
 
 /** Tu numero de visita (lo cuenta el mini Stand). */
@@ -67,7 +67,7 @@ function roundabout(kit: IntroKit) {
 
 export const tbc: IntroDef = {
   start: T.open,
-  condense: 8600,
+  condense: 9900,
   run(kit) {
     const pose = POSES[Math.floor(Math.random() * POSES.length)];
     const root = document.documentElement;

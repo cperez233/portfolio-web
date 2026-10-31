@@ -1,5 +1,6 @@
 /* editorial-ui · Cristian Pérez · cristianperez.me */
 
+import { detonate, type Blast } from "@/components/mini-stand/blast";
 import { pickLine } from "@/components/mini-stand/pick";
 import { pop, rand } from "@/components/mini-stand/power-kit";
 import { playSfx } from "@/lib/sfx";
@@ -37,10 +38,10 @@ const T = {
   call: 3650,
   // La activacion (btd-cut.ts) y el rebobinado. Al final no habla: el chico
   // remata con su frase al llegar (mini-stand.tsx), y asi no se pisan.
-  btd: 4950,
-  rewind: 4950 + CUT_MS,
+  btd: 5750,
+  rewind: 5750 + CUT_MS,
   rewindMs: 1550,
-  relay: 10000,
+  relay: 10800,
 } as const;
 
 /** Lo que tarda cada pieza en volver a su hueco. */
@@ -49,7 +50,7 @@ const BACK_MS = 620;
 export const dust: IntroDef = {
   name: "Killer Queen",
   start: T.open,
-  condense: 10900,
+  condense: 11000,
   run(kit) {
     const { vw, vh, small } = kit;
     const fx = kit.fx("dust-fx");
@@ -132,8 +133,27 @@ export const dust: IntroDef = {
     // Lo que la explosion mueve, con su hueco (donde estaba) para volver.
     type Flung = { piece: Piece; anim: Animation; slot: DOMRect };
     const flung: Flung[] = [];
+    let crater: Blast | null = null;
     kit.at(T.boom, () => {
       playSfx("boom");
+      // Lo que queda donde estaba el retrato: un crater, delante del nombre y detras del Stand.
+      crater = detonate({
+        x: spot.x,
+        y: spot.y,
+        radius: small ? 72 : 150,
+        reach: small ? 390 : 620,
+        neighbors: [],
+        small,
+        ground: kit.behind("blast-in-hero"),
+      });
+      kit.onCleanup(() => crater?.clear());
+      // El fuego se disuelve y deja ver el crater hasta que empieza la activacion.
+      kit.later(1100, () => {
+        const canvas = boom?.canvas;
+        if (!canvas) return;
+        canvas.style.transition = "opacity 0.7s ease-out";
+        canvas.style.opacity = "0.08";
+      });
       // Cuadro de impacto: un par de cuadros en negativo.
       const flash = kit.fx("dust-flash");
       kit.later(170, () => flash.remove());
@@ -203,6 +223,11 @@ export const dust: IntroDef = {
       const b = boom;
       const from = shown;
       if (b) kit.tween(T.rewindMs * 0.85, (t) => b.draw(from - (from + PRIME_MS) * t), ease.inOut);
+      void crater?.rewind(T.rewindMs * 0.85);
+      if (b) {
+        b.canvas.style.transition = "opacity 0.3s ease-in";
+        b.canvas.style.opacity = "1";
+      }
 
       // Los huecos: donde estaba cada cosa.
       const slots = flung.map(({ slot, piece }) => {

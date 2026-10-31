@@ -7,6 +7,7 @@ import { createGlass } from "@/components/ui/hero-crack";
 import { grow, paint, svgEl, type Limb, type Painted } from "@/components/ui/hero-intros/gold-art";
 import { BOOM_MS, PRIME_MS, createBoom } from "@/components/ui/hero-intros/boom";
 import { CUT_MS, btdCut } from "@/components/ui/hero-intros/btd-cut";
+import { detonate, type Blast } from "./blast";
 import {
   centerTarget,
   layer,
@@ -63,7 +64,6 @@ export interface PowerContext {
 export const POWER_VARIANTS: Partial<Record<PowerId, string[]>> = {
   starplatinum: ["rush", "finger", "world"],
   goldexperience: ["garden", "tree", "frog", "butterflies", "snake"],
-  bitesthedust: ["bomb", "rewind"],
   echoes: ["act1", "act2", "act3"],
 };
 
@@ -1227,20 +1227,20 @@ async function btdActivate(parent: HTMLElement, ctx: PowerContext) {
   await wait(CUT_MS);
 }
 
-/** Bites the Dust: dos formas, al azar (POWER_VARIANTS). */
+/** Bites the Dust: siempre la bomba; el rebobinado solo si no hay nada a que ponersela. */
 async function bitesTheDust(ctx: PowerContext) {
-  if (ctx.variant === "bomb") return btdBomb(ctx);
-  return btdRewind(ctx);
+  return btdBomb(ctx);
 }
 
 /**
  * La bomba, como la entrada del hero (hero-intros/dust.ts): Killer Queen
  * ya toco algo de la pagina cerca del Stand (すでに触っている…), カチッ, y
- * eso explota (boom.ts): lo de alrededor sale volando. Despues, la
- * activacion a pantalla completa (btd-cut.ts) y el rebobinado: donde
- * estaba cada pieza queda su hueco punteado, las piezas vuelven una tras
- * otra por el mismo camino, con su rastro, y la explosion se traga a si
- * misma. Todo queda como estaba.
+ * eso explota (boom.ts el fuego, blast.ts lo demas): se hace pedazos, lo de
+ * alrededor queda mordido, chamuscado y empujado, y en el suelo queda un
+ * crater humeando. Despues, la activacion a pantalla completa (btd-cut.ts)
+ * y el rebobinado: donde estaba cada pieza queda su hueco punteado, todo
+ * vuelve por el mismo camino y la explosion se traga a si misma. Todo queda
+ * como estaba.
  */
 async function btdBomb(ctx: PowerContext) {
   const w = window.innerWidth;
@@ -1265,8 +1265,7 @@ async function btdBomb(ctx: PowerContext) {
   const spot = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
   const node = layer("power-btd-bomb", true);
   standInFront(true);
-  const flung: { el: HTMLElement; anim: Animation; slot: DOMRect }[] = [];
-  const timers: number[] = [];
+  let blast: Blast | null = null;
   let boom: ReturnType<typeof createBoom> | null = null;
   let tape: HTMLElement | null = null;
   let raf = 0;
@@ -1277,7 +1276,7 @@ async function btdBomb(ctx: PowerContext) {
     pop("すでに触っている…", Math.min(w - 120, Math.max(120, spot.x)), Math.max(90, tr.top - 24), "power-pop-word is-pink", 1200);
     await wait(1000);
     // 2. カチッ.
-    pop("カチッ", Math.min(window.innerWidth - 90, Math.max(90, ctx.x)), Math.max(80, ctx.y - 60), "power-pop-word is-pink is-big", 800);
+    const click = pop("カチッ", Math.min(window.innerWidth - 90, Math.max(90, ctx.x)), Math.max(80, ctx.y - 60), "power-pop-word is-pink is-big", 800);
     playSfx("crack");
     await wait(260);
 
@@ -1296,36 +1295,23 @@ async function btdBomb(ctx: PowerContext) {
     await wait(PRIME_MS);
     playSfx("boom");
     btdFlash();
+    click.remove();
     pop("ドグォォン!!", Math.min(w - 140, Math.max(140, spot.x)), Math.max(100, spot.y - (small ? 110 : 170)), "power-pop-word is-pink is-big", 1300);
-    quake(600, false, true);
-    // Lo de alrededor sale volando desde la bomba; la bomba, deshecha.
-    const reach = small ? 380 : 620;
-    const push = small ? 220 : 400;
-    for (const el of pieces) {
-      if (flung.some((f) => f.el.contains(el) || el.contains(f.el))) continue;
-      const r = el.getBoundingClientRect();
-      const ux = r.left + r.width / 2 - spot.x;
-      const uy = r.top + r.height / 2 - spot.y;
-      const d = Math.max(30, Math.hypot(ux, uy));
-      if (el !== target && d > reach) continue;
-      const force = push * Math.min(1.6, 260 / d + 0.5);
-      const x = (ux / d) * force + rand(-24, 24);
-      const y = (uy / d) * force - rand(10, 60);
-      const rot = rand(-55, 55);
-      const frames: Keyframe[] =
-        el === target
-          ? [
-              { translate: "0 0", scale: "1", opacity: 1 },
-              { translate: `0 ${rand(-30, -10).toFixed(0)}px`, scale: "0.3", opacity: 0 },
-            ]
-          : [
-              { translate: "0 0", rotate: "0deg" },
-              { translate: `${(x * 0.85).toFixed(0)}px ${(y * 0.85).toFixed(0)}px`, rotate: `${(rot * 0.8).toFixed(0)}deg`, offset: 0.3 },
-              { translate: `${x.toFixed(0)}px ${(y + 30).toFixed(0)}px`, rotate: `${rot.toFixed(0)}deg` },
-            ];
-      const anim = el.animate(frames, { duration: el === target ? 380 : 1100, easing: "cubic-bezier(0.1, 0.85, 0.3, 1)", fill: "both", composite: "add" });
-      flung.push({ el, anim, slot: r });
-    }
+    // Pedazos, onda y crater.
+    blast = detonate({
+      x: spot.x,
+      y: spot.y,
+      radius: small ? 84 : Math.min(190, Math.min(w, h) * 0.21),
+      reach: small ? 430 : Math.max(620, Math.min(w, h) * 0.8),
+      target,
+      neighbors: pieces,
+      shake: document.querySelector("main"),
+      small,
+    });
+    // El fuego se disuelve y deja ver el crater.
+    await wait(1100);
+    b.canvas.style.transition = "opacity 0.7s ease-out";
+    b.canvas.style.opacity = "0.08";
     await wait(1700);
 
     // 4. バイツァ・ダスト: la activacion a pantalla completa, y la cinta al reves.
@@ -1345,45 +1331,16 @@ async function btdBomb(ctx: PowerContext) {
       if (t < 1) raf = requestAnimationFrame(back);
     };
     raf = requestAnimationFrame(back);
-    // Los huecos: donde estaba cada cosa.
-    const slots = flung.map(({ slot }) => {
+    // Los huecos: donde estaba cada cosa, y todo vuelve a ellos.
+    for (const slot of blast.moved) {
       const el = document.createElement("span");
       el.className = "btd-slot";
       Object.assign(el.style, { left: `${slot.left}px`, top: `${slot.top}px`, width: `${slot.width}px`, height: `${slot.height}px` });
       node.appendChild(el);
-      return el;
-    });
-    // Una tras otra, por el mismo camino, cada una a su hueco.
-    const BACK_MS = 560;
-    const order = flung.map((_, i) => i).sort(() => Math.random() - 0.5);
-    const spread = Math.max(0, REW - BACK_MS - 260) / Math.max(1, order.length - 1);
-    order.forEach((i, k) => {
-      timers.push(
-        window.setTimeout(() => {
-          const { anim, el } = flung[i];
-          const total = Number(anim.effect?.getComputedTiming().duration) || 1100;
-          anim.pause();
-          anim.currentTime = total;
-          anim.playbackRate = -total / BACK_MS;
-          anim.play();
-          let trail = 0;
-          const drop = window.setInterval(() => {
-            const r = el.getBoundingClientRect();
-            const ghost = document.createElement("span");
-            ghost.className = "btd-trail";
-            Object.assign(ghost.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
-            node.appendChild(ghost);
-            window.setTimeout(() => ghost.remove(), 380);
-            if (++trail > 9) window.clearInterval(drop);
-          }, 55);
-          timers.push(drop);
-          anim.onfinish = () => {
-            window.clearInterval(drop);
-            slots[i].classList.add("is-filled");
-          };
-        }, 160 + k * spread),
-      );
-    });
+    }
+    void blast.rewind(REW);
+    b.canvas.style.transition = "opacity 0.3s ease-in";
+    b.canvas.style.opacity = "1";
     await wait(REW + 200);
     tape.classList.add("is-flash");
     await wait(260);
@@ -1391,11 +1348,7 @@ async function btdBomb(ctx: PowerContext) {
     await wait(400);
   } finally {
     cancelAnimationFrame(raf);
-    timers.forEach((timer) => {
-      window.clearTimeout(timer);
-      window.clearInterval(timer);
-    });
-    flung.forEach(({ anim }) => anim.cancel());
+    blast?.clear();
     boom?.remove();
     tape?.remove();
     node.remove();

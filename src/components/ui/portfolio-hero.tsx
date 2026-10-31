@@ -20,7 +20,7 @@ import { FadeSwap } from "./FadeSwap";
 import { GithubMark } from "./github-mark";
 import { Magnetic } from "@/components/ui/magnetic";
 import { Menacing } from "@/components/ui/menacing";
-import { endTimeStop, stopTime as freezeTime, isTimeStopped, type TimeStopDetail } from "@/lib/time-stop";
+import { endTimeStop, holdScroll, stopTime as freezeTime, isTimeStopped, type TimeStopDetail } from "@/lib/time-stop";
 import { emitStandEvent } from "@/lib/stand-events";
 import { unlockSecret } from "@/lib/secrets";
 import { POSES, SPRITE_W, type Body, type Face, type Frame } from "@/components/mini-stand/sprite";
@@ -114,7 +114,9 @@ const LATE_HYDRATION_MS = 10000;
 /*
   Crazy Diamond, en el reloj de la animacion del Stand (que ya cuenta su
   retardo): se prepara, la rafaga contra la pantalla (un puno cada step),
-  el golpe final, el "uy", la reparacion, el "listo" y el relevo.
+  el golpe final, el "uy", la reparacion (sin prisa, ver heal en
+  hero-crack.ts) y el relevo. El scroll queda fijo desde que se prepara hasta
+  el relevo: las grietas son del vidrio de la pantalla.
 */
 const DIAMOND = {
   windup: 1580,
@@ -123,10 +125,9 @@ const DIAMOND = {
   step: 92,
   finisher: 3280,
   oops: 4000,
-  heal: 4900,
-  healMs: 900,
-  fixed: 5900,
-  condense: 6900,
+  heal: 5700,
+  healMs: 2600,
+  condense: 8700,
 } as const;
 
 /*
@@ -135,10 +136,10 @@ const DIAMOND = {
   el instante en que el tiempo vuelve (el evento de lib/time-stop.ts): en
   un equipo lento el time stop arranca tarde, y con horas fijas el Stand
   se movia con el tiempo aun detenido. Desde ese instante: ya esta en otro
-  sitio posando, la broma en dos tiempos (joke y punchline, ya con risa)
-  y el relevo (condense). condense en el reloj es solo el respaldo.
+  sitio posando, la broma en dos tiempos (cada frase se queda lo que tarda
+  en leerse: read) y el relevo. condense en el reloj es solo el respaldo.
 */
-const WORLD = { shout: 1560, stop: 1860, ms: 2800, joke: 460, punchline: 1810, condense: 8000, after: 3310 } as const;
+const WORLD = { shout: 1560, stop: 1860, ms: 2800, joke: 460, read: 1000, condense: 8000 } as const;
 
 /**
  * Cuanto se queda un globo a la vista despues de escribirse: lo pedido, y
@@ -555,6 +556,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     };
     const hush = () => {
       window.clearInterval(typing);
+      window.clearTimeout(hideAt);
       bubble?.removeAttribute("data-on");
     };
 
@@ -605,36 +607,25 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     };
 
     /*
-      Donde pegan los punos: toda la pantalla es el blanco. Una rejilla
-      barajada (sin dos golpes seguidos en la misma zona), con un punto al
-      azar dentro de cada celda y la parte de arriba libre de la barra.
+      Donde pegan los punos: toda la pantalla es el blanco y cada golpe
+      busca vidrio sano. De varios puntos al azar se queda con el mas lejos
+      de lo ya golpeado: en una rejilla, dos golpes de celdas vecinas podian
+      caer uno encima del otro y parecia que el segundo no rompia nada.
     */
     const hitPoints = (count: number) => {
-      // Al menos una celda por golpe: si hay mas golpes que celdas, los ultimos
-      // caen sobre un vidrio ya roto y parece que no rompen nada (en celular eran
-      // 10 golpes para 8 celdas; en escritorio, 14 para 12).
-      const cols = small ? 2 : 4;
-      const rowsN = Math.max(small ? 4 : 3, Math.ceil(count / cols));
-      const top = 90;
-      const cellW = vw / cols;
-      const cellH = (vh - top - 40) / rowsN;
-      const cells: { x: number; y: number }[] = [];
-      for (let r = 0; r < rowsN; r++) for (let c = 0; c < cols; c++) cells.push({ x: c, y: r });
       const out: { x: number; y: number }[] = [];
-      let last: { x: number; y: number } | null = null;
       while (out.length < count) {
-        const deck = [...cells].sort(() => Math.random() - 0.5);
-        // En la costura entre dos barajas, nunca la misma celda dos veces seguidas:
-        // el golpe caia sobre su propia grieta y parecia que no rompia nada.
-        if (last && deck[0] === last) deck.push(deck.shift()!);
-        for (const cell of deck) {
-          last = cell;
-          if (out.length >= count) break;
-          out.push({
-            x: (cell.x + rand(0.2, 0.8)) * cellW,
-            y: top + (cell.y + rand(0.2, 0.8)) * cellH,
-          });
+        let best = { x: vw / 2, y: vh / 2 };
+        let bestGap = -1;
+        for (let i = 0; i < 16; i++) {
+          const spot = { x: rand(vw * 0.08, vw * 0.92), y: rand(90, vh - 40) };
+          const gap = out.reduce((min, hit) => Math.min(min, Math.hypot(hit.x - spot.x, hit.y - spot.y)), Infinity);
+          if (gap > bestGap) {
+            best = spot;
+            bestGap = gap;
+          }
         }
+        out.push(best);
       }
       return out;
     };
@@ -678,6 +669,9 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
     const manifestDiamond = () => {
       const from = heart();
       if (!from || !stage) return;
+      // Ya bajo: romper el vidrio encima de otra seccion no tiene sentido.
+      if (window.scrollY > vh * 0.5) return relay();
+      cleanups.push(holdScroll(DIAMOND.condense - DIAMOND.windup + 1200));
       const tall = svg?.getBoundingClientRect().height ?? 200;
       window.dispatchEvent(new CustomEvent("jojo:intro", { detail: { phase: "start", kind: "diamond" } }));
       frame("stand", { face: "angry" });
@@ -757,17 +751,22 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
       });
       at(DIAMOND.oops + 650, () => frame("sweat"));
 
-      // Crazy Diamond lo arregla: vidrio, grietas y letras vuelven hacia su puno.
+      // Crazy Diamond lo arregla: la luz sale de su puno y todo vuelve a su sitio.
       at(DIAMOND.heal, () => {
         const origin = heart();
         if (!origin) return;
         hush();
         frame("stand", { body: "high", face: "happy" });
-        pop("ドララ", origin.x, origin.y - tall * 0.62, "power-pop-word is-pink", 900);
+        pop("ドララ", Math.min(vw - 70, Math.max(70, origin.x)), Math.max(90, origin.y - tall * 0.62), "power-pop-word is-pink", 1100);
         if (svg) {
           keep(
             svg.animate(
-              [{ filter: "none" }, { filter: "drop-shadow(0 0 16px #e891c4)" }, { filter: "none" }],
+              [
+                { filter: "drop-shadow(0 0 0 #e891c4)" },
+                { filter: "drop-shadow(0 0 18px #e891c4)", offset: 0.2 },
+                { filter: "drop-shadow(0 0 12px #e891c4)", offset: 0.8 },
+                { filter: "drop-shadow(0 0 0 #e891c4)" },
+              ],
               { duration: DIAMOND.healMs + 200, easing: "ease-in-out" },
             ),
           );
@@ -776,7 +775,7 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         shattered?.mend(DIAMOND.healMs);
       });
       // Sin frase aqui: el chico remata al llegar (mini-stand.tsx).
-      at(DIAMOND.fixed, () => frame("stand", { face: "wink" }));
+      at(DIAMOND.heal + DIAMOND.healMs, () => frame("stand", { face: "wink" }));
     };
 
     /*
@@ -873,14 +872,14 @@ export default function PortfolioHero({ cvHref }: PortfolioHeroProps) {
         resumed = true;
         window.removeEventListener("jojo:timestop", onResume);
         appear();
-        later(WORLD.joke, () => talk(setup, 1100));
-        later(WORLD.punchline, () => {
-          const at0 = heart();
+        later(WORLD.joke, () => talk(setup, WORLD.read));
+        // Cada frase se queda lo que tarda en escribirse y leerse; recien ahi la otra.
+        const punchAt = WORLD.joke + setup.length * 24 + readMs(setup, WORLD.read);
+        later(punchAt, () => {
           frame("stand", { body: pose, face: "laugh" });
-          talk(punch, 1000);
-          if (at0) pop(pickLine(lines.laughs), Math.min(vw - 60, at0.x + tall * 0.35), Math.max(90, at0.y - tall * 0.62), "power-pop-word is-gold", 1100);
+          talk(punch, WORLD.read);
         });
-        later(WORLD.after, relay);
+        later(punchAt + punch.length * 24 + readMs(punch, WORLD.read) + 100, relay);
       };
       onResume = (event: Event) => {
         if (!(event as CustomEvent<TimeStopDetail>).detail.active) resume();

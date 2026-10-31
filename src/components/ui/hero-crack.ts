@@ -15,8 +15,10 @@ import { playSfx } from "@/lib/sfx";
   (powers.ts): no rompe ni mueve ninguna pieza de la pagina, sin filtros y
   sin tocar el DOM del resto. Una capa fija con SVG ya dibujado; lo unico
   que se anima son recortes (clip-path) y transform. La telarana crece
-  con un circulo que nace en el golpe, y la reparacion es otro circulo que
-  se encoge hacia donde esta el Stand, con el rosa de Crazy Diamond.
+  con un circulo que nace en el golpe. La reparacion va despacio y por
+  partes: una luz rosa sale del Stand y tine las grietas, los trozos suben
+  y encajan, cada estrella se cierra de la ultima a la primera y al final
+  la telarana se recoge sobre el punto donde nacio.
 
   Hay dos trazos por grieta, uno de halo (el color del fondo) y otro de
   tinta (el color del texto), para que se lean sobre el tema claro y el
@@ -178,7 +180,7 @@ export interface HeroGlass {
   hit: (x: number, y: number, r: number) => void;
   /** El golpe final: telarana por toda la pantalla y trozos de vidrio que caen. */
   shatter: (x: number, y: number, letters: DOMRect[]) => void;
-  /** Lo repara todo hacia (x, y) en `ms` y se retira. Solo la primera vez. */
+  /** Lo repara todo en `ms`, con la luz saliendo de (x, y), y se retira. Solo la primera vez. */
   heal: (x: number, y: number, ms: number) => void;
   /** Quita todo ya, sin animar. */
   cancel: () => void;
@@ -196,7 +198,9 @@ export function createGlass(): HeroGlass {
   const animations: Animation[] = [];
   const timers: number[] = [];
   const shards: Animation[] = [];
-  // Donde nacio la rotura mas grande: el circulo de la reparacion sale de ahi.
+  const stars: { el: HTMLElement; x: number; y: number }[] = [];
+  let webLayer: HTMLElement | null = null;
+  // Donde nacio la rotura mas grande: la reparacion termina ahi.
   let center = { x: w / 2, y: h / 2 };
 
   const cancel = () => {
@@ -215,6 +219,7 @@ export function createGlass(): HeroGlass {
       crack.style.top = `${(y - r).toFixed(0)}px`;
       crack.innerHTML = star(r);
       node.appendChild(crack);
+      stars.push({ el: crack, x, y });
       // La grieta corre desde el golpe hacia afuera, en un parpadeo.
       animations.push(
         crack.animate([{ clipPath: "circle(4% at 50% 50%)" }, { clipPath: "circle(72% at 50% 50%)" }], {
@@ -233,6 +238,7 @@ export function createGlass(): HeroGlass {
       big.className = "hero-crack-web";
       big.innerHTML = web(x, y, w, h, letters);
       node.appendChild(big);
+      webLayer = big;
       animations.push(
         big.animate(
           [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${reach}px at ${x}px ${y}px)` }],
@@ -286,30 +292,83 @@ export function createGlass(): HeroGlass {
       healed = true;
       node.classList.add("is-healing");
       playSfx("heal");
-      // Los trozos vuelven volando a donde se soltaron, mas rapido que al caer.
-      shards.forEach((fly) => {
-        fly.updatePlaybackRate(-Math.max(1, (Number(fly.effect?.getComputedTiming().duration) || 1000) / (ms * 0.55)));
-        fly.play();
+      const at = (share: number, fn: () => void) => timers.push(window.setTimeout(fn, ms * share));
+
+      // La luz rosa sale de su puno y barre la pantalla: las grietas se ponen rosas.
+      const size = Math.ceil(Math.hypot(Math.max(tx, w - tx), Math.max(ty, h - ty))) * 2 + 40;
+      const ring = document.createElement("div");
+      ring.className = "hero-heal-ring";
+      Object.assign(ring.style, { left: `${tx - size / 2}px`, top: `${ty - size / 2}px`, width: `${size}px`, height: `${size}px` });
+      node.appendChild(ring);
+      animations.push(
+        ring.animate(
+          [
+            { transform: "scale(0.03)", opacity: 1 },
+            { transform: "scale(1)", opacity: 0.25 },
+          ],
+          { duration: ms * 0.42, easing: "cubic-bezier(0.25, 0.6, 0.4, 1)", fill: "forwards" },
+        ),
+      );
+
+      // Los trozos suben del suelo a donde se soltaron, sin prisa, y encajan.
+      shards.forEach((fly, i) => {
+        const span = Number(fly.effect?.getComputedTiming().duration) || 1000;
+        fly.pause();
+        at(0.08 + (0.28 * i) / Math.max(1, shards.length), () => {
+          fly.updatePlaybackRate(-span / (ms * 0.42));
+          fly.play();
+          fly.onfinish = () => {
+            const piece = (fly.effect as KeyframeEffect | null)?.target as HTMLElement | null;
+            if (!piece) return;
+            const box = piece.getBoundingClientRect();
+            if (i % 2 === 0) pop("✦", box.left + box.width / 2, box.top + box.height / 2, "power-sparkle", 700);
+            animations.push(piece.animate([{ opacity: 1, scale: "1" }, { opacity: 0, scale: "0.4" }], { duration: 220, easing: "ease-in", fill: "forwards" }));
+          };
+        });
       });
-      const reach = Math.ceil(Math.hypot(Math.max(center.x, w - center.x), Math.max(center.y, h - center.y))) + 200;
-      const close = node.animate(
+
+      // Cada estrella se cierra hacia su golpe, de la ultima a la primera, como un rebobinado.
+      [...stars].reverse().forEach((star, i) => {
+        at(0.2 + (0.45 * i) / Math.max(1, stars.length), () => {
+          const spin = rand(-40, 40);
+          animations.push(
+            star.el.animate(
+              [
+                { scale: "1", rotate: "0deg", opacity: 1 },
+                { scale: "1.08", rotate: `${spin * -0.1}deg`, opacity: 1, offset: 0.2 },
+                { scale: "0", rotate: `${spin}deg`, opacity: 0.4 },
+              ],
+              { duration: Math.max(120, ms * 0.2), easing: "cubic-bezier(0.55, 0, 0.3, 1)", fill: "forwards" },
+            ),
+          );
+          timers.push(window.setTimeout(() => pop("✦", star.x, star.y, "power-sparkle", 800), Math.max(100, ms * 0.17)));
+        });
+      });
+
+      // Al final la telarana se recoge sobre el punto donde nacio.
+      const reach = Math.ceil(Math.hypot(Math.max(center.x, w - center.x), Math.max(center.y, h - center.y))) + 80;
+      webLayer?.getAnimations().forEach((animation) => animation.cancel());
+      const close = webLayer?.animate(
         [
           { clipPath: `circle(${reach}px at ${center.x}px ${center.y}px)` },
-          { clipPath: `circle(${reach}px at ${center.x}px ${center.y}px)`, offset: 0.35 },
-          { clipPath: `circle(0px at ${tx}px ${ty}px)` },
+          { clipPath: `circle(${reach}px at ${center.x}px ${center.y}px)`, offset: 0.34 },
+          { clipPath: `circle(0px at ${center.x}px ${center.y}px)` },
         ],
-        { duration: ms, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+        { duration: ms, easing: "cubic-bezier(0.5, 0, 0.3, 1)", fill: "forwards" },
       );
-      animations.push(close);
-      close.onfinish = () => {
-        // Un destello donde cae: reparado.
-        playSfx("thud");
-        pop("ドラ", tx, ty - 28, "power-pop-word is-pink", 700);
-        for (let i = 0; i < 3; i++) {
-          timers.push(window.setTimeout(() => pop("✦", tx + rand(-34, 34), ty + rand(-30, 6), "power-sparkle", 800), i * 70));
-        }
-        node.remove();
-      };
+      if (close) animations.push(close);
+
+      timers.push(
+        window.setTimeout(() => {
+          // Reparado: un destello donde cerro la ultima grieta.
+          playSfx("thud");
+          pop("ドラ", center.x, center.y - 28, "power-pop-word is-pink", 700);
+          for (let i = 0; i < 5; i++) {
+            window.setTimeout(() => pop("✦", center.x + rand(-60, 60), center.y + rand(-50, 40), "power-sparkle", 800), i * 60);
+          }
+          node.remove();
+        }, ms),
+      );
     },
     cancel,
   };
@@ -352,6 +411,9 @@ export function shatterLetters(letters: HTMLElement[], from?: { x: number; y: nu
     mend(ms) {
       if (mended) return;
       mended = true;
+      // Una tras otra a lo largo de toda la reparacion, no todas de golpe.
+      const each = ms * 0.5;
+      const gap = (ms * 0.45) / Math.max(1, states.length);
       states.forEach(({ el, x, y, r }, i) => {
         animations.push(
           el.animate(
@@ -359,7 +421,7 @@ export function shatterLetters(letters: HTMLElement[], from?: { x: number; y: nu
               { translate: `${x.toFixed(1)}px ${y.toFixed(1)}px`, rotate: `${r.toFixed(1)}deg` },
               { translate: "0px 0px", rotate: "0deg" },
             ],
-            { duration: ms, delay: i * 16, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "both" },
+            { duration: each, delay: i * gap, easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", fill: "both" },
           ),
         );
       });
