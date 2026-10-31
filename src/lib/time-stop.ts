@@ -110,8 +110,9 @@ const HOLD_KEYS = new Set([" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "H
 /**
  * Fija el scroll sin detener el tiempo: la pagina sigue animando y se puede
  * tocar todo (el boton de saltar, el menu, Tab), solo que no se desplaza.
- * Lo usa Crazy Diamond: sus grietas son del vidrio de la pantalla, y al bajar
- * se quedaban sobre otra seccion. `maxMs` lo suelta pase lo que pase: nadie
+ * Lo usan Crazy Diamond y la bomba de Bites the Dust: sus grietas y su crater
+ * son de la pantalla, y al bajar se quedaban sobre otra seccion. `maxMs` lo
+ * suelta pase lo que pase: nadie
  * se queda sin poder bajar. Devuelve como soltarlo antes.
  */
 export function holdScroll(maxMs: number) {

@@ -184,11 +184,16 @@ The render loop stops off-screen.
   (thorny vines and a developing spirit photo with your visit), Made in
   Heaven (animations up to 14x, day and night flashing, then the universe
   starts resetting to the old burgundy site until the Stand stops it),
-  Bites the Dust (always the bomb: something near the Stand blows into
-  pieces with the hero's explosion, what is next to it gets bitten, burnt
-  and pushed aside by the shock wave and a smoking crater stays behind
-  (`mini-stand/blast.ts`), then everything rewinds to its dashed slot as the
-  explosion swallows itself, in VHS tape, and a déjà vu)
+  Bites the Dust (always the bomb, and a different one each time: a card, a
+  headline that bursts letter by letter, a button, an image, the menu or
+  Sheer Heart Attack chasing the cursor. It blows into pieces with the
+  hero's explosion, up to four more pieces go off in a chain with their own
+  craters, small things inside the bite are destroyed, the rest gets bitten,
+  burnt and pushed aside, nearby text sheds letters that pile up at the
+  bottom of the screen and the menu is left hanging from one end
+  (`mini-stand/blast.ts`). Scroll stays locked while it lasts, then
+  everything rewinds to its dashed slot as the explosion swallows itself, in
+  VHS tape, and a déjà vu)
   and King Crimson. All visual, nothing is removed, one at a time.
   Every random line comes from `pick.ts`: none of the last 3 picks of a
   list comes back until a fourth one has been said.

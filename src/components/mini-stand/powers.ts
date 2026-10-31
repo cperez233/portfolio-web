@@ -1,7 +1,7 @@
 /* editorial-ui · Cristian Pérez · cristianperez.me */
 
 import type { PowerId, StandLines } from "./lines";
-import { stopTime } from "@/lib/time-stop";
+import { holdScroll, stopTime } from "@/lib/time-stop";
 import { playSfx } from "@/lib/sfx";
 import { createGlass } from "@/components/ui/hero-crack";
 import { grow, paint, svgEl, type Limb, type Painted } from "@/components/ui/hero-intros/gold-art";
@@ -1227,54 +1227,228 @@ async function btdActivate(parent: HTMLElement, ctx: PowerContext) {
   await wait(CUT_MS);
 }
 
-/** Bites the Dust: siempre la bomba; el rebobinado solo si no hay nada a que ponersela. */
+/** Bites the Dust: siempre la bomba; el rebobinado solo con movimiento reducido. */
 async function bitesTheDust(ctx: PowerContext) {
   return btdBomb(ctx);
+}
+
+/** Lo que puede ser la bomba: cualquier cosa de la pagina, o Sheer Heart Attack. */
+type BombKind = "card" | "title" | "button" | "media" | "nav" | "tank";
+type BombChoices = Record<Exclude<BombKind, "tank">, HTMLElement[]>;
+
+const BOMB_KINDS: BombKind[] = ["card", "title", "button", "media", "nav", "tank"];
+/** Mazo: no se repite el tipo de bomba hasta que salieron todos los que hay en pantalla. */
+let bombBag: BombKind[] = [];
+
+/** Lo que se ve en pantalla de cada tipo, con su centro dentro de ella. */
+function bombChoices(pieces: HTMLElement[]): BombChoices {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const sized = (list: HTMLElement[], min: number, max: number) =>
+    list.filter((el) => {
+      const r = el.getBoundingClientRect();
+      const cy = r.top + r.height / 2;
+      const area = r.width * r.height;
+      return area >= min && area <= max && cy > 20 && cy < h - 40;
+    });
+  const screen = w * h;
+  return {
+    card: sized(pieces, 2500, screen * 0.18),
+    title: sized(onScreen("main h1, main h2, main h3, footer h2, footer h3", 12), 900, screen * 0.18),
+    button: sized(onScreen("main a, main button, footer a, footer button", 18), 500, screen * 0.08),
+    media: sized(onScreen("main img, main canvas, footer img", 6), 4000, screen * 0.18),
+    nav: sized([...document.querySelectorAll<HTMLElement>("[data-blast-nav]")], 500, screen * 0.18),
+  };
+}
+
+function nextBombKind(choices: BombChoices) {
+  const open = BOMB_KINDS.filter((kind) => kind === "tank" || choices[kind].length);
+  let bag = bombBag.filter((kind) => open.includes(kind));
+  if (!bag.length) bag = open;
+  const kind = bag[Math.floor(rand(0, bag.length))];
+  bombBag = bag.filter((other) => other !== kind);
+  return kind;
+}
+
+/** Lo mas cercano a un punto. */
+function nearestTo(list: HTMLElement[], x: number, y: number) {
+  let best: HTMLElement | null = null;
+  let distance = Infinity;
+  for (const el of list) {
+    const r = el.getBoundingClientRect();
+    const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+    if (d < distance) {
+      distance = d;
+      best = el;
+    }
+  }
+  return best;
+}
+
+/** Las piezas que revientan despues: de cada una a la mas cercana que quede. */
+function chainFrom(pieces: HTMLElement[], x: number, y: number, target: HTMLElement | null, count: number, hop: number) {
+  const area = window.innerWidth * window.innerHeight;
+  let left = pieces.filter((el) => {
+    if (el === target || target?.contains(el) || el.contains(target)) return false;
+    const r = el.getBoundingClientRect();
+    return r.width * r.height >= 1000 && r.width * r.height <= area * 0.18;
+  });
+  const out: HTMLElement[] = [];
+  let at = { x, y };
+  while (out.length < count && left.length) {
+    const next = nearestTo(left, at.x, at.y)!;
+    const r = next.getBoundingClientRect();
+    const spot = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    if (Math.hypot(spot.x - at.x, spot.y - at.y) > hop) break;
+    out.push(next);
+    left = left.filter((el) => el !== next);
+    at = spot;
+  }
+  return out;
+}
+
+const TANK_SVG = `<svg viewBox="0 0 64 54" aria-hidden="true">
+  <rect class="blast-tread" x="4" y="36" width="56" height="15" rx="7.5" fill="#2c2527" stroke="#050405" stroke-width="2.5"/>
+  <path d="M10 43.5 H54" fill="none" stroke="#6b5c5a" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M11 37 C10 16 22 5 34 5 C47 5 55 17 54 37 Z" fill="#8f8e7c" stroke="#050405" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M18 34 C17 21 25 13 33 13 C42 13 49 21 47 34 Z" fill="#f1e8d4" stroke="#050405" stroke-width="2"/>
+  <ellipse cx="27" cy="23" rx="4.6" ry="5.4" fill="#050405"/>
+  <ellipse cx="39" cy="23" rx="4.6" ry="5.4" fill="#050405"/>
+  <path d="M33 27 L30.5 31 H35.5 Z" fill="#050405"/>
+  <path d="M25 34 V30 M29 34 V30 M33 34 V30.5 M37 34 V30 M41 34 V30" stroke="#050405" stroke-width="1.6"/>
+</svg>`;
+
+/**
+ * Sheer Heart Attack: la otra bomba de Killer Queen. Sale del Stand y va tras
+ * lo que tenga calor: el cursor o el dedo, si te mueves; si no, lo que haya en
+ * medio de la pantalla. Lo que pisa da un salto. Explota al alcanzarte, o
+ * cuando se le acaba la paciencia.
+ */
+function sheerHeartAttack(parent: HTMLElement, ctx: PowerContext, pieces: HTMLElement[], small: boolean) {
+  return new Promise<{ x: number; y: number }>((resolve) => {
+    const tank = document.createElement("div");
+    tank.className = "blast-tank";
+    tank.innerHTML = TANK_SVG;
+    parent.appendChild(tank);
+    const size = small ? 48 : 62;
+    const first = centerTarget()?.getBoundingClientRect();
+    const goal = {
+      x: first ? first.left + first.width / 2 : window.innerWidth / 2,
+      y: first ? first.top + first.height / 2 : window.innerHeight / 2,
+    };
+    const aim = (event: PointerEvent) => {
+      goal.x = event.clientX;
+      goal.y = event.clientY;
+    };
+    window.addEventListener("pointermove", aim, { passive: true });
+    window.addEventListener("pointerdown", aim, { passive: true });
+    const say = (x: number, y: number) => {
+      pop("コッチヲ見ロ!", Math.min(window.innerWidth - 110, Math.max(110, x)), Math.max(90, y - 56), "power-pop-word is-pink", 1000);
+    };
+    // Sale de debajo del Stand, que va delante de todo.
+    let x = ctx.x;
+    let y = Math.min(window.innerHeight - 40, ctx.y + size * 0.9);
+    let last = performance.now();
+    const start = last;
+    let spoke = false;
+    const stepped = new Set<HTMLElement>();
+    say(x, y);
+    const step = (now: number) => {
+      const dt = Math.min(50, now - last);
+      last = now;
+      const dx = goal.x - x;
+      const dy = goal.y - y;
+      const d = Math.hypot(dx, dy);
+      const reach = ((small ? 330 : 470) * dt) / 1000;
+      if (d > 1) {
+        x += (dx / d) * Math.min(d, reach);
+        y += (dy / d) * Math.min(d, reach);
+        if (Math.abs(dx) > 2) tank.style.setProperty("--tank-face", dx < 0 ? "-1" : "1");
+      }
+      tank.style.transform = `translate(${(x - size / 2).toFixed(1)}px, ${(y - size / 2).toFixed(1)}px)`;
+      for (const el of pieces) {
+        if (stepped.has(el)) continue;
+        const r = el.getBoundingClientRect();
+        if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+        stepped.add(el);
+        const side = dx < 0 ? -1 : 1;
+        el.animate(
+          [
+            { translate: "0px 0px", rotate: "0deg" },
+            { translate: `${side * 7}px -9px`, rotate: `${side * 1.6}deg` },
+            { translate: "0px 0px", rotate: "0deg" },
+          ],
+          { duration: 280, easing: "ease-out", composite: "add" },
+        );
+      }
+      const elapsed = now - start;
+      if (!spoke && elapsed > 1300) {
+        spoke = true;
+        say(x, y);
+      }
+      if ((d < 16 && elapsed > 900) || elapsed > 2700) {
+        window.removeEventListener("pointermove", aim);
+        window.removeEventListener("pointerdown", aim);
+        tank.remove();
+        resolve({ x, y });
+        return;
+      }
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
 }
 
 /**
  * La bomba, como la entrada del hero (hero-intros/dust.ts): Killer Queen
  * ya toco algo de la pagina cerca del Stand (すでに触っている…), カチッ, y
- * eso explota (boom.ts el fuego, blast.ts lo demas): se hace pedazos, lo de
- * alrededor queda mordido, chamuscado y empujado, y en el suelo queda un
- * crater humeando. Despues, la activacion a pantalla completa (btd-cut.ts)
- * y el rebobinado: donde estaba cada pieza queda su hueco punteado, todo
- * vuelve por el mismo camino y la explosion se traga a si misma. Todo queda
- * como estaba.
+ * eso explota (boom.ts el fuego, blast.ts lo demas). Cada vez es otra cosa:
+ * una tarjeta, un titular, un boton, una imagen, el menu, o Sheer Heart
+ * Attack persiguiendo el cursor. Se hace pedazos, otras piezas revientan en
+ * cadena, lo de alrededor queda mordido, chamuscado y empujado, al texto se
+ * le caen letras, el menu queda colgando y en el suelo queda un crater
+ * humeando. Despues, la activacion a pantalla completa (btd-cut.ts) y el
+ * rebobinado: donde estaba cada pieza queda su hueco punteado, todo vuelve
+ * por el mismo camino y la explosion se traga a si misma. Todo queda como
+ * estaba. El crater es de la pantalla: el scroll queda fijo mientras dura.
  */
 async function btdBomb(ctx: PowerContext) {
+  if (ctx.reducedMotion) return btdRewind(ctx);
   const w = window.innerWidth;
   const h = window.innerHeight;
   const small = w < 640;
   const pieces = piecesOnScreen(36);
-  // La bomba: lo mas cercano al Stand que tenga buen tamano.
-  let target: HTMLElement | null = null;
-  let best = Infinity;
-  for (const el of pieces) {
-    const r = el.getBoundingClientRect();
-    const area = r.width * r.height;
-    if (area < 2500 || area > w * h * 0.18) continue;
-    const d = Math.hypot(r.left + r.width / 2 - ctx.x, r.top + r.height / 2 - ctx.y);
-    if (d < best) {
-      best = d;
-      target = el;
-    }
-  }
-  if (!target || ctx.reducedMotion) return btdRewind(ctx);
-  const tr = target.getBoundingClientRect();
-  const spot = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
+  const choices = bombChoices(pieces);
+  const kind = nextBombKind(choices);
+  const releaseScroll = holdScroll(16000);
   const node = layer("power-btd-bomb", true);
+  node.dataset.bomb = kind;
   standInFront(true);
   let blast: Blast | null = null;
   let boom: ReturnType<typeof createBoom> | null = null;
   let tape: HTMLElement | null = null;
   let raf = 0;
   try {
-    // 1. Ya lo toco.
-    target.animate([{ scale: "1" }, { scale: "0.95 1.04" }, { scale: "1" }], { duration: 260, easing: "ease-out", composite: "add" });
-    pop("✦", spot.x + rand(-20, 20), spot.y + rand(-14, 14), "power-sparkle", 700);
-    pop("すでに触っている…", Math.min(w - 120, Math.max(120, spot.x)), Math.max(90, tr.top - 24), "power-pop-word is-pink", 1200);
-    await wait(1000);
+    // 1. Ya lo toco; o ya viene en camino.
+    let target: HTMLElement | null = null;
+    let spot = { x: w / 2, y: h / 2 };
+    if (kind === "tank") {
+      spot = await sheerHeartAttack(node, ctx, pieces, small);
+      const area = w * h * 0.18;
+      target =
+        pieces.find((el) => {
+          const r = el.getBoundingClientRect();
+          return spot.x >= r.left && spot.x <= r.right && spot.y >= r.top && spot.y <= r.bottom && r.width * r.height <= area;
+        }) ?? null;
+    } else {
+      target = nearestTo(choices[kind], ctx.x, ctx.y)!;
+      const tr = target.getBoundingClientRect();
+      spot = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
+      target.animate([{ scale: "1" }, { scale: "0.95 1.04" }, { scale: "1" }], { duration: 260, easing: "ease-out", composite: "add" });
+      pop("✦", spot.x + rand(-20, 20), spot.y + rand(-14, 14), "power-sparkle", 700);
+      pop("すでに触っている…", Math.min(w - 120, Math.max(120, spot.x)), Math.max(90, tr.top - 24), "power-pop-word is-pink", 1200);
+      await wait(1000);
+    }
     // 2. カチッ.
     const click = pop("カチッ", Math.min(window.innerWidth - 90, Math.max(90, ctx.x)), Math.max(80, ctx.y - 60), "power-pop-word is-pink is-big", 800);
     playSfx("crack");
@@ -1298,21 +1472,25 @@ async function btdBomb(ctx: PowerContext) {
     click.remove();
     pop("ドグォォン!!", Math.min(w - 140, Math.max(140, spot.x)), Math.max(100, spot.y - (small ? 110 : 170)), "power-pop-word is-pink is-big", 1300);
     // Pedazos, onda y crater.
+    const radius = (small ? 84 : Math.min(190, Math.min(w, h) * 0.21)) * (kind === "button" || kind === "nav" ? 0.75 : 1);
     blast = detonate({
       x: spot.x,
       y: spot.y,
-      radius: small ? 84 : Math.min(190, Math.min(w, h) * 0.21),
+      radius,
       reach: small ? 430 : Math.max(620, Math.min(w, h) * 0.8),
       target,
       neighbors: pieces,
       shake: document.querySelector("main"),
       small,
+      chain: chainFrom(pieces, spot.x, spot.y, target, small ? 3 : 4, small ? 460 : 720),
+      hang: [...document.querySelectorAll<HTMLElement>("[data-blast-nav]")],
+      tearText: true,
     });
-    // El fuego se disuelve y deja ver el crater.
+    // El fuego se disuelve y deja ver el crater y lo que siguio reventando.
     await wait(1100);
     b.canvas.style.transition = "opacity 0.7s ease-out";
     b.canvas.style.opacity = "0.08";
-    await wait(1700);
+    await wait(2200);
 
     // 4. バイツァ・ダスト: la activacion a pantalla completa, y la cinta al reves.
     await btdActivate(node, ctx);
@@ -1353,6 +1531,7 @@ async function btdBomb(ctx: PowerContext) {
     tape?.remove();
     node.remove();
     standInFront(false);
+    releaseScroll();
   }
 }
 

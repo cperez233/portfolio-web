@@ -6251,9 +6251,62 @@ html.tbc-frozen main *::after {
 .blast-crater,
 .blast-frag,
 .blast-chip,
-.blast-smoke {
+.blast-smoke,
+.blast-fire,
+.blast-letter {
   position: absolute;
   will-change: transform, opacity;
+}
+/* La bola de fuego de cada eslabon de la cadena. */
+.blast-fire {
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    #fffbe8 0 12%,
+    #ffd36b 24%,
+    #ff8a2e 44%,
+    #c93a1a 60%,
+    rgba(70, 40, 36, 0.55) 70%,
+    transparent 74%
+  );
+}
+.blast-letter {
+  display: block;
+  text-align: center;
+  white-space: pre;
+}
+/* Sheer Heart Attack: rueda sobre sus orugas y mira hacia donde va. */
+.blast-tank {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  will-change: transform;
+}
+.blast-tank svg {
+  display: block;
+  width: 100%;
+  scale: var(--tank-face, 1) 1;
+  animation: blast-tank-bob 0.16s steps(2, end) infinite;
+}
+.blast-tread {
+  stroke-dasharray: 5 3;
+  animation: blast-tread 0.28s linear infinite;
+}
+@keyframes blast-tank-bob {
+  50% {
+    translate: 0 -2px;
+  }
+}
+@keyframes blast-tread {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+@media (min-width: 640px) {
+  .blast-tank {
+    width: 62px;
+  }
 }
 .blast-crater svg {
   display: block;

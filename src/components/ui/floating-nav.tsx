@@ -205,7 +205,7 @@ export function FloatingNav() {
   const state = isExpanded ? "expanded" : "collapsed";
 
   return (
-    <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 sm:top-5">
+    <div data-blast-nav className="fixed left-1/2 top-4 z-50 -translate-x-1/2 sm:top-5">
       <motion.nav
         aria-label={t.nav.about}
         initial={shouldReduceMotion ? false : { y: -80, opacity: 0 }}
